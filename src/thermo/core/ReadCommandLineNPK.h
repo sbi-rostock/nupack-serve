@@ -33,9 +33,12 @@ int calculateVPi( int *, int);
 
 //print outputs to the screen
 void printInputs( int, char**, const char *, int,  const float*, const char*, char*);
+int parameters2provenance(char*, int, char**, const char*, const float*,
+    const char*);
 
 //Prints a header with copyright information
 void header( int, char**, char*, char*);
+int header2provenance(char*, int, char**);
 
 #ifdef __cplusplus
 }

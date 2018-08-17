@@ -859,3 +859,356 @@ void printInputs( int argc, char **argv, const char *seq, int vs,
   }
 
 }
+
+
+
+/* create a string containing the provenance's header informations:
+ * - version
+ * - command invocation
+ * - cutoff
+ * return the length of the generated string
+ */
+int header2provenance(char *provenance, int argc, char **argv) {
+
+  char PROVENANCE_STARTS[] = "{ ";
+  char FIELD_VERSION[] = "\"version\": \"";
+  char FIELD_COMMAND[] = "\"command\": \"";
+  char FIELD_CUTOFF[]  = "\"cutoff\": ";
+  char FIELD_ENDS[] = "\"";
+  char FIELD_NEXT[] = ", ";
+
+  int len_entry_version;
+  int len_entry_command;
+  int len_entry_cutoff;
+  int len_provenance = 0;
+
+
+  /* retrieve each entry's value, and store it as provenance
+   */
+
+  len_provenance += strlen(PROVENANCE_STARTS);
+  provenance = strcpy(provenance, PROVENANCE_STARTS);
+
+
+  /* version
+   */
+
+  // retrieve the version's length, and add it to the provenance
+  len_entry_version = strlen(FIELD_VERSION) + strlen(NUPACK_VERSION)
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+  len_provenance += len_entry_version;
+
+  // store the version
+  provenance = strcat(
+                strcat(
+                  strcat(
+                    strcat(provenance, FIELD_VERSION),
+                    NUPACK_VERSION),
+                  FIELD_ENDS),
+                FIELD_NEXT);
+
+
+  /* command
+   */
+
+  // retrieve the command's length, and add it to the provenance
+  int len_nupack_command = 0;
+  for(int x=0 ; x<argc ; ++x) {
+    if(x<(argc-1)){
+      len_nupack_command += strlen(argv[x]) + 1;
+    }
+    else{
+      len_nupack_command += strlen(argv[x]);
+    }
+  }
+  len_entry_command = strlen(FIELD_COMMAND) + len_nupack_command
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+  len_provenance += len_entry_command;
+
+  // retrieve the command's value
+  char nupack_command[len_nupack_command];
+  char *n = strcpy(nupack_command, "");
+  for(int x=0 ; x<argc ; ++x) {
+    n = strcat(n, argv[x]);
+    if(x < (argc-1)){
+      n = strcat(n, " ");
+    }
+  }
+  // store the command
+  provenance = strcat(
+                strcat(
+                  strcat(
+                    strcat(provenance, FIELD_COMMAND),
+                    nupack_command),
+                  FIELD_ENDS),
+                FIELD_NEXT);
+
+
+  /* cutoff
+   */
+
+  // retrieve the cutoff's length, and add it to the provenance
+  int len_nupack_cutoff = (snprintf(NULL, 0, "%.3f", CUTOFF) + 1);
+  len_entry_cutoff = strlen(FIELD_CUTOFF) + len_nupack_cutoff
+        + strlen(FIELD_NEXT);
+  len_provenance += len_entry_cutoff;
+
+  // retrieve the cutoff's value
+  char nupack_cutoff[len_nupack_cutoff];
+  snprintf(nupack_cutoff, len_nupack_cutoff, "%.3f", CUTOFF);
+
+  // store the cutoff
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, FIELD_CUTOFF),
+                  nupack_cutoff),
+                FIELD_NEXT);
+
+
+  return len_provenance;
+}
+
+
+
+/* create a string containing all provenance's parameter informations:
+ * - sequence
+ * - structure
+ * - dangles
+ * - temperature
+ * - concentration sodium
+ * - concentration magnesium
+ * - energy
+ * - pseudoknot
+ * return the length of the generated string
+ */
+int parameters2provenance(char *provenance, int argc, char **argv, const char *seq, const float *gap, const char *structure) {
+
+  char FIELD_TEMPERATURE[] = "\"temperature (C)\": ";
+  char FIELD_PSEUDOKNOT[] = "\"pseudoknots\": ";
+  char FIELD_STRUCTURE[] = "\"structure\": \"";
+  char FIELD_SEQUENCE[] = "\"sequence\": \"";
+  char FIELD_DANGLES[] = "\"dangles\": \"";
+  char FIELD_CONC_NA[] = "\"concentration Na (M)\": ";
+  char FIELD_CONC_MG[] = "\"concentration Mg (M)\": ";
+  char FIELD_ENERGY[] = "\"energy (Kcal/mol)\": \"";
+  char FIELD_NEXT[] = ", ";
+  char FIELD_ENDS[] = "\"";
+
+  int len_entry_sequence;
+  int len_entry_structure;
+  int len_entry_dangles;
+  int len_entry_temperature;
+  int len_entry_conc_na;
+  int len_entry_conc_mg;
+  int len_entry_energy;
+  int len_entry_pseudoknot;
+  int len_provenance = 0;
+
+
+  /* retrieve each entry's value, and store it as provenance
+   */
+
+  provenance = strcpy(provenance, "");
+
+
+  /* sequence
+   */
+
+  if(seq != NULL){
+
+    // retrieve the sequence's length, and add it to the provenance
+    len_entry_sequence = strlen(FIELD_SEQUENCE) + strlen(seq)
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+    len_provenance += len_entry_sequence;
+
+    // store the sequence
+    provenance = strcat(
+                    strcat(
+                      strcat(
+                        strcat(provenance, FIELD_SEQUENCE),
+                        seq),
+                      FIELD_ENDS),
+                    FIELD_NEXT);
+  }
+
+
+  /* structure
+   */
+
+  if(structure != NULL){
+
+    // retrieve the structure's length, and add it to the provenance
+    len_entry_structure = strlen(FIELD_STRUCTURE) + strlen(structure)
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+    len_provenance += len_entry_structure;
+
+    // store the structure
+    provenance = strcat(
+                    strcat(
+                      strcat(
+                        strcat(provenance, FIELD_STRUCTURE),
+                        structure),
+                      FIELD_ENDS),
+                    FIELD_NEXT);
+  }
+  /* dangles, temperature, concentration sodium, concentration magnesium
+   */
+
+  if(DNARNACOUNT != COUNT) {
+
+    /* dangles
+     */
+
+    // retrieve the dangle's length, and add it to the provenance
+    int len_nupack_dangles = (snprintf(NULL, 0, "%d", DANGLETYPE) + 1);
+    len_entry_dangles = strlen(FIELD_DANGLES) + len_nupack_dangles
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+    len_provenance += len_entry_dangles;
+
+    // retrieve the dangle's value
+    char nupack_dangles[len_nupack_dangles];
+    snprintf(nupack_dangles, len_nupack_dangles, "%d", DANGLETYPE);
+
+    // store the dangles
+    provenance = strcat(
+                    strcat(
+                      strcat(
+                        strcat(provenance, FIELD_DANGLES),
+                        nupack_dangles),
+                      FIELD_ENDS),
+                    FIELD_NEXT);
+
+
+    /* temperature
+     */
+
+    // retrieve the temperature's length, and add it to the provenance
+    int len_nupack_temperature = (snprintf(NULL, 0, "%.1f",
+        ((float)(TEMP_K - ZERO_C_IN_KELVIN))) + 1);
+    len_entry_temperature = strlen(FIELD_TEMPERATURE) + len_nupack_temperature
+        + strlen(FIELD_NEXT);
+    len_provenance += len_entry_temperature;
+
+    // retrieve the temperature's value
+    char nupack_temperature[len_nupack_temperature];
+    snprintf(nupack_temperature, len_nupack_temperature, "%.1f",
+        ((float)(TEMP_K - ZERO_C_IN_KELVIN)));
+
+    // store the temperature
+    provenance = strcat(
+                    strcat(
+                      strcat(provenance, FIELD_TEMPERATURE),
+                      nupack_temperature),
+                    FIELD_NEXT);
+
+
+    /* sodium concentration
+     */
+
+    // retrieve the sodium's concentration length, and add it to the
+    // provenance
+    int len_nupack_conc_na = (snprintf(NULL, 0, "%.4f",
+        ((float)SODIUM_CONC)) + 1);
+    len_entry_conc_na = strlen(FIELD_CONC_NA) + len_nupack_conc_na
+        + strlen(FIELD_NEXT);
+    len_provenance += len_entry_conc_na;
+
+    // retrieve the sodium's concentration value
+    char nupack_conc_na[len_nupack_conc_na];
+    snprintf(nupack_conc_na, len_nupack_conc_na, "%.4f",
+        ((float)SODIUM_CONC));
+
+    // store the sodium concentration
+    provenance = strcat(
+                    strcat(
+                      strcat(provenance, FIELD_CONC_NA),
+                      nupack_conc_na),
+                    FIELD_NEXT);
+
+
+    /* magnesium concentration
+     */
+
+    // retrieve the magnesium's concentration length, and add it to the
+    // provenance
+    int len_nupack_conc_mg = (snprintf(NULL, 0, "%.4f",
+        ((float)MAGNESIUM_CONC)) + 1);
+    len_entry_conc_mg = strlen(FIELD_CONC_MG) + len_nupack_conc_mg
+        + strlen(FIELD_NEXT);
+    len_provenance += len_entry_conc_mg;
+
+    // retrieve the magnesium's concentration value
+    char nupack_conc_mg[len_nupack_conc_mg];
+    snprintf(nupack_conc_mg, len_nupack_conc_mg, "%.4f",
+        ((float)MAGNESIUM_CONC));
+
+    // store the magnesium concentration
+    provenance = strcat(
+                    strcat(
+                      strcat(provenance, FIELD_CONC_MG),
+                      nupack_conc_mg),
+                    FIELD_NEXT);
+  }
+
+  /* energy
+   */
+
+  if(gap != NULL){
+
+    // retrieve the energy's lenght, and add it to the provenance
+    int len_nupack_energy = (snprintf(NULL, 0, "%.1f", gap) + 1);
+    len_entry_energy = strlen(FIELD_ENERGY) + len_nupack_energy
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+    len_provenance += len_entry_energy;
+
+    // retrieve the energy's value
+    char nupack_energy[len_nupack_energy];
+    snprintf(nupack_energy, len_nupack_energy, "%.1f", gap);
+
+    // store the energy
+    provenance = strcat(
+                    strcat(
+                      strcat(
+                        strcat(provenance, FIELD_ENERGY),
+                        nupack_energy),
+                      FIELD_ENDS),
+                    FIELD_NEXT);
+  }
+
+
+  /* pseudoknots
+   */
+
+  char nupack_pseudoknot[5];
+  char nupack_pseudoknot_true[]  = "true";
+  char nupack_pseudoknot_false[] = "false";
+
+  // retrieve the pseudoknot's length, and add it to the provenance
+  len_entry_pseudoknot = strlen(FIELD_PSEUDOKNOT) + strlen(FIELD_NEXT);
+
+  if(DO_PSEUDOKNOTS){
+
+    // add the ("True") pseudoknot's length, and set its value
+    len_entry_pseudoknot += strlen(nupack_pseudoknot_true);
+    strcpy(nupack_pseudoknot, nupack_pseudoknot_true);
+
+  } else{
+
+    // add the ("False") pseudoknot's length, and set its value
+    len_entry_pseudoknot += strlen(nupack_pseudoknot_false);
+    strcpy(nupack_pseudoknot, nupack_pseudoknot_false);
+
+  }
+  len_provenance += len_entry_pseudoknot;
+
+  // store the pseudoknot
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, FIELD_PSEUDOKNOT),
+                  nupack_pseudoknot),
+                FIELD_NEXT);
+
+
+  return len_provenance;
+}
+

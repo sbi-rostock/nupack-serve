@@ -1211,3 +1211,325 @@ void print_pf_mat(DBL_TYPE *mat, int len, char *name, FILE *stream) {
 }
 
 
+/* create a string containing the provenance's structural informations:
+ * - dot-bracket
+ * - pairing
+ * return the length of the generated string
+ */
+int structure2provenance(char *provenance, char *thefold, const int *thepairs,
+    int **etaN, int seqlength){
+
+  char PROVENANCE_ENDS[] = " }\n";
+  char FIELD_DOTBRACKET[] = "\"dot-bracket\": \"";
+  char FIELD_PAIRS[] = "\"pairs\": ";
+  char FIELD_ENDS[]  = "\"";
+  char FIELD_NEXT[]  = ", ";
+  char LIST_STARTS[] = "[";
+  char LIST_ENDS[]   = "]";
+  char PAIR_STARTS[] = "(";
+  char PAIR_ENDS[]   = ")";
+  char COMMA[] = ",";
+
+  int len_entry_dotbracket;
+  int len_entry_pairs;
+  int len_provenance = 0;
+
+  char pairSymbols[] = { '(', ')', '{','}', '[', ']', '<', '>' };
+
+  int type = 0;
+  int nTypes = 4;
+  int nStrands = etaN[ EtaNIndex( 0.5, seqlength-0.5, seqlength)][0] + 1;
+  int **pairlist; // Each row is i,j pair
+  int npairs; // number of pairs in structure
+
+  char *parensString;
+  parensString = ( char*) malloc( (seqlength+1)*sizeof( char) );
+  int lastL, lastR;
+
+  // Allocate memory for pairlist
+  // (this is more than we need, but to be safe)
+  pairlist = (int**) malloc(sizeof(int*) * seqlength);
+  for (int i=0; i<seqlength ; i++){
+    pairlist[i] = (int*) malloc(sizeof(int) * 2);
+  }
+
+  // Create pairlist from thepairs
+  npairs = 0;
+  for(int j=0 ; j<seqlength ; ++j){
+    if(thepairs[j] > j){
+      pairlist[npairs][0] = j;
+      pairlist[npairs++][1] = thepairs[j];
+    }
+  }
+
+  // Create dot-paren structure
+  for(int i=0 ; i<seqlength+1 ; ++i) {
+    parensString[i] = '.';
+  }
+
+  //offSet = 0;
+  lastL = -1;
+  lastR = seqlength;
+  for(int i=0 ; i<seqlength ; ++i){
+    if( (thepairs[i] != -1) && (thepairs[i] > i) ){
+      if( (i > lastR) || (thepairs[i] > lastR) ){
+        for(int j=0 ; j<i ; ++j) {
+          if( (thepairs[j] > i) && (thepairs[j] < thepairs[i]) ){
+            type = (type + 1) % nTypes;
+            break;
+          }
+        }
+      }
+      parensString[i] = pairSymbols[2*type];
+      parensString[thepairs[i]] = pairSymbols[(2 * type) + 1];
+      lastL = i;
+      lastR = thepairs[i];
+    }
+  }
+
+
+  /* dot-bracket
+   */
+
+  // retrieve the dot-bracket's length, and add it to the provenance
+  int len_nupack_dotbracket = (seqlength + nStrands - 1);
+  len_entry_dotbracket = strlen(FIELD_DOTBRACKET)
+        + len_nupack_dotbracket + strlen(FIELD_ENDS);
+  len_provenance += len_entry_dotbracket;
+
+  // retrieve the dot-bracket's value
+  for(int i=0 ; i<len_nupack_dotbracket ; ++i){
+    thefold[i] = '.';
+  }
+  int pos = 0;
+  for(int i=0 ; i<seqlength ; i++){
+    thefold[pos++] = parensString[i];
+    if(etaN[EtaNIndex_same(i+0.5, seqlength)][0] == 1){
+      thefold[pos++] = '+';
+    }
+  }
+  char nupack_dotbracket[len_nupack_dotbracket];
+  snprintf(nupack_dotbracket, len_nupack_dotbracket, "%s", thefold);
+
+  // store the dot-bracket
+  provenance = strcat(
+                strcat(
+                  strcat(
+                    strcat(provenance, FIELD_DOTBRACKET),
+                    nupack_dotbracket),
+                  FIELD_ENDS),
+                FIELD_NEXT);
+
+
+  /* pairs
+   */
+
+  // retrieve the pairs' length, and add it to the provenance
+  int len_nupack_pairs = strlen(LIST_STARTS);
+  for(int j=0 ; j<npairs ; ++j) {
+    int len_nupack_pair_a = (snprintf(NULL, 0, "%d", pairlist[j][0]+1) + 1);
+    int len_nupack_pair_b = (snprintf(NULL, 0, "%d", pairlist[j][1]+1) + 1);
+    len_nupack_pairs += (strlen(PAIR_STARTS)
+        + len_nupack_pair_a
+        + strlen(COMMA) +
+        + len_nupack_pair_b
+        + strlen(PAIR_ENDS));
+    if(j<npairs-1){
+      len_nupack_pairs += strlen(COMMA);
+    }
+  }
+  len_nupack_pairs += strlen(LIST_ENDS);
+
+  len_entry_pairs = (strlen(FIELD_PAIRS) + len_nupack_pairs);
+
+  len_provenance += len_entry_pairs;
+
+  // retrieve the pairs' value
+  char *nupack_pairs = malloc(sizeof(char) * len_nupack_pairs);
+  if(!nupack_pairs){
+    exit(1);
+  }
+  for(size_t x=0 ; x < len_nupack_pairs ; ++x){
+    nupack_pairs[x] = 0;
+  }
+  nupack_pairs = strcpy(nupack_pairs, LIST_STARTS);
+
+  for(int j=0 ; j<npairs ; ++j) {
+
+    // pair's value a
+    int len_nupack_pair_a = (snprintf(NULL, 0, "%d", pairlist[j][0]+1) + 1);
+    char nupack_pair_a[len_nupack_pair_a];
+    snprintf(nupack_pair_a, len_nupack_pair_a, "%d", pairlist[j][0]+1);
+
+    // pair's value b
+    int len_nupack_pair_b = (snprintf(NULL, 0, "%d", pairlist[j][1]+1) + 1);
+    char nupack_pair_b[len_nupack_pair_b];
+    snprintf(nupack_pair_b, len_nupack_pair_b, "%d", pairlist[j][1]+1);
+
+    int len_nupack_pair = (strlen(PAIR_STARTS)
+            + len_nupack_pair_a + strlen(COMMA) + len_nupack_pair_b
+            + strlen(PAIR_ENDS));
+    if(j<npairs-1){
+      len_nupack_pair += strlen(COMMA);
+    }
+
+    char *nupack_pair = malloc(sizeof(char) * len_nupack_pair);
+    if(!nupack_pair){
+      exit(1);
+    }
+    for(size_t x=0 ; x < len_nupack_pair ; ++x){
+      nupack_pair[x] = 0;
+    }
+
+    nupack_pair = strcat(
+                    strcat(
+                      strcat(
+                        strcat(
+                          strcpy(nupack_pair, PAIR_STARTS),
+                          nupack_pair_a),
+                        COMMA),
+                      nupack_pair_b),
+                    PAIR_ENDS);
+    if(j<npairs-1){
+      nupack_pair = strcat(nupack_pair, COMMA);
+    }
+
+    nupack_pairs = strcat(nupack_pairs, nupack_pair);
+
+    // free each pair
+    free(nupack_pair);
+    nupack_pair = NULL;
+  }
+  nupack_pairs = strcat(nupack_pairs, LIST_ENDS);
+
+  // store the pairs
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, FIELD_PAIRS),
+                  nupack_pairs),
+                PROVENANCE_ENDS);
+
+
+  // free all memory objects
+  free(nupack_pairs);
+  nupack_pairs = NULL;
+
+  free(parensString);
+  parensString = NULL;
+
+  for(int i=0 ; i<seqlength ; ++i){
+    free(pairlist[i]);
+  }
+  free(pairlist);
+
+  return len_provenance;
+}
+
+
+
+/* create a string containing all provenance's dna structures:
+ * - sequence length
+ * - minimum free energy
+ * return the length of the generated string
+ */
+int dnastructures2provenance(char *provenance, const dnaStructures *ds,
+    int **etaN, const int *nicks, int symmetry){
+
+  char FIELD_SEQUENCE_LENGTH[] = "\"sequence length (nt)\": ";
+  char FIELD_MIN_FREE_ENERGY[] = "\"minimum free energy (Kcal/mol)\": ";
+  char FIELD_NEXT[] = ", ";
+
+  int len_entry_sequence_length;
+  int len_entry_min_free_energy;
+  int len_entry_structure = 0;
+  int len_provenance = 0;
+
+  int nStrands = etaN[EtaNIndex(0.5, ds->seqlength-0.5, ds->seqlength)][0]+1;
+  char *foldParens = malloc(sizeof(char) * (ds->seqlength + nStrands));
+  if(!foldParens){
+    exit(1);
+  }
+  for(size_t x=0 ; x < (ds->seqlength + nStrands) ; ++x){
+    foldParens[x] = 0;
+  }
+  int nPercent = 40; // Number of percent signs in a line with all comments
+
+
+  /* retrieve each entry's value, and store it as provenance
+   */
+
+  /* sequence length
+   */
+
+  // retrieve the sequence length's length, and add it to the provenance
+  int len_nupack_sequence_length = (snprintf(NULL, 0, "%d",
+        ds->seqlength) + 1);
+  len_entry_sequence_length = strlen(FIELD_SEQUENCE_LENGTH)
+      + len_nupack_sequence_length + strlen(FIELD_NEXT);
+  len_provenance += len_entry_sequence_length;
+
+  // retrieve the sequence length's value
+  char nupack_sequence_length[len_nupack_sequence_length];
+  snprintf(nupack_sequence_length, len_nupack_sequence_length, "%d",
+      ds->seqlength);
+
+  // store the sequence length
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, FIELD_SEQUENCE_LENGTH),
+                  nupack_sequence_length),
+                FIELD_NEXT);
+
+
+  /* minimum free energy
+   */
+  int len_nupack_min_free_energy;
+  char nupack_min_free_energy[50];
+
+  // retrieve the minimum free energy's length, and add it to the provenance
+  len_entry_min_free_energy = strlen(FIELD_MIN_FREE_ENERGY)
+        + strlen(FIELD_NEXT);
+
+  if(!NUPACK_VALIDATE){
+
+    // add the "unval" minimum free energy's length
+    len_nupack_min_free_energy = (snprintf(NULL, 0, "%.3Lf",
+        ((long double) ds->validStructs[0].correctedEnergy)) + 1);
+
+    // retrieve the minimum free energy value
+    snprintf(nupack_min_free_energy, len_nupack_min_free_energy, "%.3Lf",
+        ((long double) ds->validStructs[0].correctedEnergy));
+
+  } else{
+
+    // add the "val" minimum free energy's length
+    len_nupack_min_free_energy = (snprintf(NULL, 0, "%.14Le",
+        ((long double) ds->validStructs[0].correctedEnergy)) + 1);
+
+    // retrieve the minimum free energy value
+    snprintf(nupack_min_free_energy, len_nupack_min_free_energy, "%.14Le",
+        ((long double) ds->validStructs[0].correctedEnergy));
+
+  }
+  len_provenance += (len_entry_min_free_energy
+        + len_nupack_min_free_energy);
+
+  // store the minimum free energy
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, FIELD_MIN_FREE_ENERGY),
+                  nupack_min_free_energy),
+                FIELD_NEXT);
+
+
+  /* dot-bracket notation and pairs
+   */
+  len_entry_structure = structure2provenance(provenance, foldParens,
+            (ds->validStructs)[0].theStruct, etaN, ds->seqlength);
+  len_provenance += len_entry_structure;
+
+  free(foldParens);
+
+  return len_provenance;
+}
+

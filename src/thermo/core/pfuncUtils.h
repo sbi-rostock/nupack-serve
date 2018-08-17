@@ -126,10 +126,13 @@ void addDnaStructures( dnaStructures*, const dnaStructures*, DBL_TYPE newErr,
 //as pseudoknots are introduced.
 void PrintStructure( char *thefold, const int *thepairs, int **etaN,
                      int seqlength, char *filename);
+int structure2provenance(char*, char*, const int*, int**, int);
 
 //Print all structures saved in *ds, using PrintStructure
 void PrintDnaStructures( const dnaStructures *ds, int **etaN, const int *nicks,
                          int symmetry, char *filename);
+int dnastructures2provenance(char*, const dnaStructures*, int**, const int*,
+    int);
 
 //A dumbed down version of PrintDnaStructures, but only uses . ( ), ignoring multistrands and
 //pseudoknots.  Used only for debugging
