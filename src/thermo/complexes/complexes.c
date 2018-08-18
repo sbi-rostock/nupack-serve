@@ -37,7 +37,7 @@ globalArgs_t globalArgs;
 int main( int argc, char **argv) {
   //generate subsets for given sequences
 
-  int i, j, k, q, r;  // Counters
+  int i, j, k;  // Counters
 
   char **seqs; //list of all seqs
   int *seqlength; //list of all seqlengths
@@ -74,10 +74,10 @@ int main( int argc, char **argv) {
   int status;
 
   int seqCode;
-  FILE *F_ocx = NULL,
-  *F_list = NULL, *F_perm = NULL,
-  *F_prog = NULL,
-  *F_defect = NULL;
+  FILE *F_ocx = NULL;
+  FILE *F_list = NULL;
+  FILE *F_perm = NULL;
+  FILE *F_prog = NULL;
   char filePrefix[100], ocxName[110],
   listName[110], permName[110],
   permPrName[110],
@@ -101,14 +101,11 @@ int main( int argc, char **argv) {
 
   int permId;
   long double **permPr = NULL;
-  int pf_qr;
   double estimatedTime = 0;
   double N3C = 1.0e-6; //estimatedTime = N3C * seqlength^3
 
   time_t curtime; //for printing date and time
   struct tm *loctime;
-
-  dnaStructures mfes = {NULL, 0, 0, 0, 10000};
 
   int lastCxId = 1; //used to index complex id#,
   //in case some are not used due to no possible secondary structures
@@ -130,14 +127,10 @@ int main( int argc, char **argv) {
   globalArgs.sodiumconc = 1.0;
   globalArgs.magnesiumconc = 0.0;
   globalArgs.uselongsalt = 0;
-  globalArgs.dodefect = 0;
   strcpy( globalArgs.inputFilePrefix, "NoInputFile");
 
   inputFileSpecified = ReadCommandLine( argc, argv);
 
-  if (globalArgs.dodefect == 1) {
-    globalArgs.permsOn = 1;
-  }
   if (globalArgs.permsOn == 0) {
     printf("As a result, -ordered has been enabled.\n");
     globalArgs.permsOn = 1;
@@ -174,15 +167,6 @@ int main( int argc, char **argv) {
   sprintf( defectName, "%s.ocx-defect", filePrefix);
 
   if( globalArgs.out == 1) {
-
-    if( globalArgs.dodefect) {
-      F_defect = fopen(defectName,"w");
-      if(!F_defect) {
-        printf("Error: unable to create %s\n",
-                defectName);
-      }
-    }
-
 
     if ( globalArgs.progress) {
       F_prog = fopen(progName,"w");
@@ -318,19 +302,6 @@ int main( int argc, char **argv) {
       printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
                   nNewPerms, nSets,
                   nNewComplexes, F_perm, argc, argv, 0);
-    }
-
-    if(globalArgs.dodefect) {
-      printHeader(nStrands, seqs, maxComplexSize, nTotalOrders,
-                  nNewPerms, nSets, nNewComplexes, F_defect, argc, argv, 1);
-      fprintf(F_defect,"%%\n");
-      fprintf(F_defect,"%% Ensemble defects n(s,phi) and normalized ensemble defects n(s,phi)/N\n");
-      fprintf(F_defect,"%% Comp\tPerm\t");
-      int i_strand;
-      for(i_strand = 0 ; i_strand < nStrands; i_strand++) {
-        fprintf(F_defect, "S%i\t", i_strand+1);
-      }
-      fprintf(F_defect,"n(s,phi)\tn(s,phi)/N\tStruc Prob\tPart Func\n");
     }
   }
 
@@ -588,55 +559,8 @@ int main( int argc, char **argv) {
             fprintf( F_ocx, "No legal secondary structures!\n");
           }
 
-
-          if( globalArgs.dodefect ) {
-            if( pf <= 0.0) {
-              fprintf(F_defect, "%% ");
-            }
-            fprintf(F_defect, "%d\t%d\t", lastCxId, permId);
-
-            for( j = 0; j <= nStrands - 1; j++) {
-              fprintf( F_defect, "%d\t", allSets[i].code[j]); //strand composition
-            }
-          }
-
           permId++;
         }
-
-        if(globalArgs.dodefect ) {
-          if(pf > 0) {
-            int * cur_struct = mfes.validStructs[0].theStruct;
-            DBL_TYPE cur_mfe = mfes.validStructs[0].correctedEnergy;
-            DBL_TYPE cur_defect = 0;
-            DBL_TYPE norm_defect = 0 ;
-            for(q = 0 ; q < mfes.seqlength ; q++) {
-              r = cur_struct[q];
-              if(r < 0) {
-                r = mfes.seqlength;
-              }
-              pf_qr = (q * (allSets[i].totalLength + 1)) + r;
-              cur_defect += 1 - (pairPr[pf_qr]);
-              norm_defect = cur_defect / mfes.seqlength;
-            }
-
-            if(NUPACK_VALIDATE) {
-              fprintf(F_defect, "%.14Le\t",(long double) cur_defect);
-              fprintf(F_defect, "%.14Le\t",(long double) norm_defect);
-              fprintf(F_defect, "%.14Le\t",(long double) EXP_FUNC(-cur_mfe/(kB*TEMP_K))/pf);
-              fprintf(F_defect, "%.14Le\n",(long double) pf);
-            } else {
-              fprintf(F_defect, "%.6Le\t",(long double) cur_defect);
-              fprintf(F_defect, "%.6Le\t",(long double) norm_defect);
-              fprintf(F_defect, "%.6Le\t",(long double) EXP_FUNC(-cur_mfe/(kB*TEMP_K))/pf);
-              fprintf(F_defect, "%.6Le\n",(long double) pf);
-            }
-          } else {
-            fprintf(F_defect, "No legal secondary structures!\n");
-          }
-        }
-
-
-        //avgBp[i][j] initialized to zero; average bp for this permutation
 
         currentPerm->pf = pf;
         allSets[i].pf += pf;
@@ -651,7 +575,6 @@ int main( int argc, char **argv) {
       }
 
       if( allSets[i].pf > 0.0) lastCxId++; //this will keep complex Ids consecutive
-
 
 
       // Assess progress and write to a file
@@ -678,12 +601,6 @@ int main( int argc, char **argv) {
     free( permPr);
     permPr = NULL;
   }
-
-
-  //debug by printing
-  //print subsets, perms
-  //time( &end);
-  //printf("Final Time: %.0f\n", difftime( end,start));
 
   if (globalArgs.debug){
     for( i = setStart; i<=totalSets-1; i++) {
@@ -718,9 +635,6 @@ int main( int argc, char **argv) {
     if( globalArgs.permsOn) {
       fclose( F_perm);
       fclose( F_ocx);
-    }
-    if( globalArgs.dodefect) {
-      fclose(F_defect);
     }
   }
 

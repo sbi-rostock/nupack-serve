@@ -59,7 +59,6 @@ int ReadCommandLine(int nargs, char **args) {
       {"magnesium",     required_argument,  NULL, 'p'},
       {"longhelixsalt", no_argument,        NULL, 'q'},
       {"validate",      no_argument,        NULL, 'r'},
-      {"defect",        no_argument,        NULL, 's'},
       {0, 0, 0, 0}
     };
 
@@ -212,11 +211,7 @@ int ReadCommandLine(int nargs, char **args) {
         NUPACK_VALIDATE=1;
         globalArgs.permsOn = 1;
         globalArgs.cutoff = 0.0;
-        
-        break;
 
-      case 's':
-        globalArgs.dodefect = 1;
         break;
 
       default:
