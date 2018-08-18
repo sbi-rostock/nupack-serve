@@ -48,7 +48,6 @@ int ReadCommandLine(int nargs, char **args) {
       {"dangles",       required_argument,  NULL, 'f'},
       {"material",      required_argument,  NULL, 'g'},
       {"help",          no_argument,        NULL, 'h'},
-      {"timeonly",      no_argument,        NULL, 'i'},
       {"cutoff",        required_argument,  NULL, 'l'},
       {"degenerate",    no_argument,        NULL, 'n'},
       {"sodium",        required_argument,  NULL, 'o'},
@@ -150,10 +149,6 @@ int ReadCommandLine(int nargs, char **args) {
 
       case 'h':
         ShowHelp = 1;
-        break;
-
-      case 'i':
-        globalArgs.timeonly = 1;
         break;
 
       case 'l':

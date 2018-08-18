@@ -19,7 +19,6 @@
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
-#include <time.h>
 #include <sys/stat.h>
 
 #include <thermo/core.h>
@@ -99,9 +98,6 @@ int main( int argc, char **argv) {
   int permId;
   long double **permPr = NULL;
 
-  time_t curtime; //for printing date and time
-  struct tm *loctime;
-
   int lastCxId = 1; //used to index complex id#,
   //in case some are not used due to no possible secondary structures
 
@@ -112,7 +108,6 @@ int main( int argc, char **argv) {
   globalArgs.dopairs = 0;
   globalArgs.parameters = RNA;
   globalArgs.out = 1; //.cx file
-  globalArgs.timeonly = 0;
   globalArgs.listonly = 0;
   globalArgs.cutoff = 0.001; // Cutoff bp probability to report
   globalArgs.onlyOneMFE = 1;
@@ -419,8 +414,7 @@ int main( int argc, char **argv) {
     fclose( F_list);
   }
 
-  if(!(globalArgs.timeonly))
-    printf("Starting partition function calculations.\n");
+  printf("Starting partition function calculations.\n");
 
 
   // 2006/03/08, Add in a sorting subroutine, to order sets by total # of strands
@@ -450,99 +444,96 @@ int main( int argc, char **argv) {
 
 
   status = setStart;
-  if (!globalArgs.timeonly) {
-    for( i = setStart; i <= totalSets-1; i++) {
+  for( i = setStart; i <= totalSets-1; i++) {
 
-      //time( &end);
-      printf("Status: Set %d / %d: nPerms (%d)  %d / %d\n", i+1,
-               totalSets,
-               allSets[i].nPerms, status+1, totalOrders2);
-      status += allSets[i].nPerms;
+    printf("Status: Set %d / %d: nPerms (%d)  %d / %d\n", i+1,
+             totalSets,
+             allSets[i].nPerms, status+1, totalOrders2);
+    status += allSets[i].nPerms;
 
-      allSets[i].pf = 0; //initialize pf
+    allSets[i].pf = 0; //initialize pf
 
 
-      currentPerm = allSets[i].perms;
-      permId = 1;
-      while( currentPerm != NULL) {
-        resetNicks( maxListComplexSize, nicks);
+    currentPerm = allSets[i].perms;
+    permId = 1;
+    while( currentPerm != NULL) {
+      resetNicks( maxListComplexSize, nicks);
 
-        seqCode = (currentPerm->code)[0] - 1;
-        strcpy(pfSeq, seqs[ seqCode]);
+      seqCode = (currentPerm->code)[0] - 1;
+      strcpy(pfSeq, seqs[ seqCode]);
 
-        //set sequences and nicks
-        if( allSets[i].nSeqs >= 2) nicks[0] = seqlength[ seqCode] - 1;
+      //set sequences and nicks
+      if( allSets[i].nSeqs >= 2) nicks[0] = seqlength[ seqCode] - 1;
 
-        for( k = 0; k <= allSets[i].nSeqs-2; k++) {
+      for( k = 0; k <= allSets[i].nSeqs-2; k++) {
 
-          seqCode = (currentPerm->code)[k+1] - 1;
+        seqCode = (currentPerm->code)[k+1] - 1;
 
-          strcat( pfSeq, "+");
-          strcat( pfSeq, seqs[ seqCode]);
+        strcat( pfSeq, "+");
+        strcat( pfSeq, seqs[ seqCode]);
 
-          if( k != allSets[i].nSeqs-2)
-            nicks[k+1] = nicks[k]+
-            seqlength[ seqCode];
+        if( k != allSets[i].nSeqs-2)
+          nicks[k+1] = nicks[k]+
+          seqlength[ seqCode];
 
+      }
+
+      strncpy( currentPerm->seq, pfSeq,
+              allSets[i].totalLength + allSets[i].nSeqs);
+
+
+      //call library function to compute pseudoknot-free partition function
+      tmpLength = strlen( pfSeq);
+      convertSeq(pfSeq, seqNum, tmpLength);
+      pf =  pfuncFullWithSym( seqNum, 3, globalArgs.parameters,
+                              globalArgs.dangles,
+                              globalArgs.T,
+                              globalArgs.dopairs,
+                              currentPerm->symmetryFactor,
+                              globalArgs.sodiumconc,
+                              globalArgs.magnesiumconc,
+                              globalArgs.uselongsalt);
+
+
+      //print permutation info
+      if( globalArgs.permsOn && globalArgs.out == 1) {
+        if( pf <= 0.0) fprintf(F_ocx, "%% ");
+        fprintf(F_ocx, "%d\t%d\t", lastCxId, permId);
+
+        for( j = 0; j <= nStrands - 1; j++) {
+          fprintf( F_ocx, "%d\t", allSets[i].code[j]); //strand composition
         }
 
-        strncpy( currentPerm->seq, pfSeq,
-                allSets[i].totalLength + allSets[i].nSeqs);
-
-
-        //call library function to compute pseudoknot-free partition function
-        tmpLength = strlen( pfSeq);
-        convertSeq(pfSeq, seqNum, tmpLength);
-        pf =  pfuncFullWithSym( seqNum, 3, globalArgs.parameters,
-                                globalArgs.dangles,
-                                globalArgs.T,
-                                globalArgs.dopairs,
-                                currentPerm->symmetryFactor,
-                                globalArgs.sodiumconc,
-                                globalArgs.magnesiumconc,
-                                globalArgs.uselongsalt);
-
-
-        //print permutation info
-        if( globalArgs.permsOn && globalArgs.out == 1) {
-          if( pf <= 0.0) fprintf(F_ocx, "%% ");
-          fprintf(F_ocx, "%d\t%d\t", lastCxId, permId);
-
-          for( j = 0; j <= nStrands - 1; j++) {
-            fprintf( F_ocx, "%d\t", allSets[i].code[j]); //strand composition
-          }
-
-          if( pf > 0.0) {
-            if(!NUPACK_VALIDATE) {
-              fprintf( F_ocx, "%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
-            } else {
-              fprintf( F_ocx, "%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
-            }
+        if( pf > 0.0) {
+          if(!NUPACK_VALIDATE) {
+            fprintf( F_ocx, "%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
           } else {
-            fprintf( F_ocx, "No legal secondary structures!\n");
+            fprintf( F_ocx, "%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
           }
-
-          permId++;
+        } else {
+          fprintf( F_ocx, "No legal secondary structures!\n");
         }
 
-        currentPerm->pf = pf;
-        allSets[i].pf += pf;
-
-        currentPerm = currentPerm->next;
-
+        permId++;
       }
 
+      currentPerm->pf = pf;
+      allSets[i].pf += pf;
 
-      if( globalArgs.out == 1 && globalArgs.permsOn && allSets[i].pf > 0.0) {
-        printPerms( F_perm, lastCxId, nStrands, &(allSets[i]));
-      }
-
-      if( allSets[i].pf > 0.0) lastCxId++; //this will keep complex Ids consecutive
+      currentPerm = currentPerm->next;
 
     }
+
+
+    if( globalArgs.out == 1 && globalArgs.permsOn && allSets[i].pf > 0.0) {
+      printPerms( F_perm, lastCxId, nStrands, &(allSets[i]));
+    }
+
+    if( allSets[i].pf > 0.0) lastCxId++; //this will keep complex Ids consecutive
+
   }
 
-  if( globalArgs.permsOn && !globalArgs.timeonly) {
+  if( globalArgs.permsOn) {
 
     for( j = 0; j < nStrands; j++) { //free
       free( permPr[j]);
@@ -593,14 +584,8 @@ int main( int argc, char **argv) {
   //free( seqlength); seqlength = NULL;
   free( pfSeq); pfSeq = NULL;
 
-  if(!(globalArgs.timeonly)) {
-    printf("Total number of terms calculated: %d (%d)\n",
-           totalOrders2, nTotalOrders);
-    curtime = time(NULL); //current time
-    loctime = localtime( &curtime);
-    printf( "Calculation finished on: %s\n",
-           asctime( loctime));
-  }
+  printf("Total number of terms calculated: %d (%d)\n",
+         totalOrders2, nTotalOrders);
 
   return 0;
 }
