@@ -38,11 +38,9 @@ int ReadCommandLine(int nargs, char **args) {
   float temp;
 
   /* version 3 output */
-  int prev_ordered = 0; // used to keep -ordered off if not specified before -v3
 
   static struct option long_options [] =
     {
-      {"ordered",       no_argument,        NULL, 'b'},
       {"T",             required_argument,  NULL, 'e'},
       {"dangles",       required_argument,  NULL, 'f'},
       {"material",      required_argument,  NULL, 'g'},
@@ -76,10 +74,6 @@ int ReadCommandLine(int nargs, char **args) {
         break;
 
       switch (options) {
-      case 'b':
-        globalArgs.permsOn = 1;
-        prev_ordered = 1;
-        break;
 
       case 'e':
         strcpy( line, optarg);
@@ -248,7 +242,6 @@ void DisplayHelpComplexes() {
   printf("of the input strands up to user-defined size L_max\n");
   PrintNupackThermoHelp();
   printf("Additional options:\n");
-  printf(" -ordered         store properties for ordered complexes\n");
   printf(" -cutoff CUTOFF   set the minimum stored probability/expected value\n");
   printf("\n");
 }

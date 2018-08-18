@@ -102,7 +102,6 @@ int main( int argc, char **argv) {
   //in case some are not used due to no possible secondary structures
 
   // Set defaults of global args
-  globalArgs.permsOn = 1;
   globalArgs.T = 37.0;
   globalArgs.dangles = 1;
   globalArgs.dopairs = 0;
@@ -116,11 +115,6 @@ int main( int argc, char **argv) {
   strcpy( globalArgs.inputFilePrefix, "NoInputFile");
 
   inputFileSpecified = ReadCommandLine( argc, argv);
-
-  if (globalArgs.permsOn == 0) {
-    printf("As a result, -ordered has been enabled.\n");
-    globalArgs.permsOn = 1;
-  }
 
   if (!inputFileSpecified) {
     printf("No input file specified.\n");
@@ -159,13 +153,11 @@ int main( int argc, char **argv) {
     printf("There is no input list %s.\n", listName);
   }
 
-  if( globalArgs.permsOn) {
-    F_perm = fopen( permName, "w");
-    if( !F_perm) printf("Error: Unable to create %s\n", permName);
+  F_perm = fopen( permName, "w");
+  if( !F_perm) printf("Error: Unable to create %s\n", permName);
 
-    F_ocx = fopen( ocxName, "w");
-    if( !F_ocx) printf("Error: Unable to create %s\n", ocxName);
-  }
+  F_ocx = fopen( ocxName, "w");
+  if( !F_ocx) printf("Error: Unable to create %s\n", ocxName);
 
 
   if( !fileRead) { //if error in reading input file, get manual input
@@ -263,13 +255,11 @@ int main( int argc, char **argv) {
   totalSets = nSets + nNewComplexes;
 
 
-  if( globalArgs.permsOn) {
-    printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                nNewPerms, nSets, nNewComplexes, F_ocx, argc, argv, 0);
-    printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                nNewPerms, nSets,
-                nNewComplexes, F_perm, argc, argv, 0);
-  }
+  printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
+              nNewPerms, nSets, nNewComplexes, F_ocx, argc, argv, 0);
+  printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
+              nNewPerms, nSets,
+              nNewComplexes, F_perm, argc, argv, 0);
 
   // Generate all necklaces for each length with order nStrands
 
@@ -421,17 +411,11 @@ int main( int argc, char **argv) {
   //allocate memory for pfSeq;
   pfSeq = (char*) malloc( (maxSeqLength + 1) *sizeof(char) );
 
-  if( globalArgs.permsOn) {
-    //for( i = 0; i <= totalSets-1; i++)
-    //  printPerms( F_perm, i+1, nStrands, &(allSets[i]));
-
-
-    permPr = (long double **)
-      malloc( nStrands*sizeof( long double*));
-    for( j = 0; j < nStrands; j++) { //calloc initialize to zero
-      permPr[j] = (long double*)
-        calloc( seqlength[j], sizeof( long double));
-    }
+  permPr = (long double **)
+    malloc( nStrands*sizeof( long double*));
+  for( j = 0; j < nStrands; j++) { //calloc initialize to zero
+    permPr[j] = (long double*)
+      calloc( seqlength[j], sizeof( long double));
   }
 
   for( i = setStart; i <= totalSets-1; i++) {
@@ -493,26 +477,24 @@ int main( int argc, char **argv) {
 
 
       //print permutation info
-      if( globalArgs.permsOn) {
-        if( pf <= 0.0) fprintf(F_ocx, "%% ");
-        fprintf(F_ocx, "%d\t%d\t", lastCxId, permId);
+      if( pf <= 0.0) fprintf(F_ocx, "%% ");
+      fprintf(F_ocx, "%d\t%d\t", lastCxId, permId);
 
-        for( j = 0; j <= nStrands - 1; j++) {
-          fprintf( F_ocx, "%d\t", allSets[i].code[j]); //strand composition
-        }
-
-        if( pf > 0.0) {
-          if(!NUPACK_VALIDATE) {
-            fprintf( F_ocx, "%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
-          } else {
-            fprintf( F_ocx, "%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
-          }
-        } else {
-          fprintf( F_ocx, "No legal secondary structures!\n");
-        }
-
-        permId++;
+      for( j = 0; j <= nStrands - 1; j++) {
+        fprintf( F_ocx, "%d\t", allSets[i].code[j]); //strand composition
       }
+
+      if( pf > 0.0) {
+        if(!NUPACK_VALIDATE) {
+          fprintf( F_ocx, "%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
+        } else {
+          fprintf( F_ocx, "%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
+        }
+      } else {
+        fprintf( F_ocx, "No legal secondary structures!\n");
+      }
+
+      permId++;
 
       currentPerm->pf = pf;
       allSets[i].pf += pf;
@@ -522,7 +504,7 @@ int main( int argc, char **argv) {
     }
 
 
-    if(globalArgs.permsOn && allSets[i].pf > 0.0) {
+    if(allSets[i].pf > 0.0) {
       printPerms( F_perm, lastCxId, nStrands, &(allSets[i]));
     }
 
@@ -530,20 +512,15 @@ int main( int argc, char **argv) {
 
   }
 
-  if( globalArgs.permsOn) {
-
-    for( j = 0; j < nStrands; j++) { //free
-      free( permPr[j]);
-      permPr[j] = NULL;
-    }
-    free( permPr);
-    permPr = NULL;
+  for( j = 0; j < nStrands; j++) { //free
+    free( permPr[j]);
+    permPr[j] = NULL;
   }
+  free( permPr);
+  permPr = NULL;
 
-  if( globalArgs.permsOn) {
-    fclose( F_perm);
-    fclose( F_ocx);
-  }
+  fclose( F_perm);
+  fclose( F_ocx);
 
   free( nicks); nicks = NULL;
 
@@ -556,7 +533,6 @@ int main( int argc, char **argv) {
 
 
   for( i = setStart; i <= totalSets-1; i++) {
-
 
     free( allSets[i].code); allSets[i].code = NULL;
 
