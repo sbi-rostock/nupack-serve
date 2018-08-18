@@ -49,7 +49,6 @@ int ReadCommandLine(int nargs, char **args) {
       {"material",      required_argument,  NULL, 'g'},
       {"help",          no_argument,        NULL, 'h'},
       {"timeonly",      no_argument,        NULL, 'i'},
-      {"listonly",      no_argument,        NULL, 'w'},
       {"echo",          no_argument,        NULL, 'j'},
       {"cutoff",        required_argument,  NULL, 'l'},
       {"progress",      no_argument,        NULL, 'm'},
@@ -157,10 +156,6 @@ int ReadCommandLine(int nargs, char **args) {
 
       case 'i':
         globalArgs.timeonly = 1;
-        break;
-
-      case 'w':
-        globalArgs.listonly = 1;
         break;
 
       case 'j':

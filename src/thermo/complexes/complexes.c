@@ -434,8 +434,6 @@ int main( int argc, char **argv) {
 
   printf("Permutation generation complete.\n");
 
-  if (globalArgs.listonly) setStart=nSets; // Don't do all sets
-
   if( nTotalOrders != totalOrders2) {
     printf("Internal error! Total number of permutations is incorrect! %d != %d\n",
            nTotalOrders, totalOrders2);
