@@ -83,7 +83,6 @@ int main( int argc, char **argv) {
   //*F_permAvgP=NULL,
   *F_cxAvg=NULL, // *.cx-epairs, only output with -v3
   //*F_cxAvgP=NULL,
-  *F_permMfe = NULL,
   //*F_cxMfe = NULL,
   *F_permAvg = NULL,
   *F_prog = NULL,
@@ -94,7 +93,6 @@ int main( int argc, char **argv) {
   //permAvgPName[110],
   cxAvgName[110],
   //cxAvgPName[110],
-  permMfeName[110],
   //cxMfeName[110],
   permAvgName[110],
   progName[110],
@@ -140,7 +138,6 @@ int main( int argc, char **argv) {
   struct tm *loctime;
 
   dnaStructures mfes = {NULL, 0, 0, 0, 10000};
-  long double mfeValue;
 
   int lastCxId = 1; //used to index complex id#,
   //in case some are not used due to no possible secondary structures
@@ -156,7 +153,6 @@ int main( int argc, char **argv) {
   globalArgs.listonly = 0;
   globalArgs.debug = 0;
   globalArgs.echo = 0;
-  globalArgs.mfe = 0;
   globalArgs.cutoff = 0.001; // Cutoff bp probability to report
   globalArgs.progress = 0;
   globalArgs.onlyOneMFE = 1;
@@ -173,12 +169,10 @@ int main( int argc, char **argv) {
   
 
   if (globalArgs.dodefect == 1) {
-    globalArgs.mfe = 1;
     globalArgs.permsOn = 1;
     globalArgs.dopairs = 1;
   }
-  if (globalArgs.mfe == 1 && globalArgs.permsOn == 0) {
-    printf("Warning, including -mfe requires -ordered. ");
+  if (globalArgs.permsOn == 0) {
     printf("As a result, -ordered has been enabled.\n");
     globalArgs.permsOn = 1;
   }
@@ -215,7 +209,6 @@ int main( int argc, char **argv) {
   sprintf( listName, "%s.list", filePrefix);
   sprintf( permName, "%s.ocx-key", filePrefix);
   sprintf( permPrName, "%s.ocx-ppairs", filePrefix);
-  sprintf( permMfeName, "%s.ocx-mfe", filePrefix);
   sprintf( permAvgName, "%s.ocx-epairs", filePrefix);
   sprintf( progName, "%s.prog", filePrefix);
   sprintf( defectName, "%s.ocx-defect", filePrefix);
@@ -237,12 +230,6 @@ int main( int argc, char **argv) {
     if(globalArgs.v3) {
       F_cx = fopen( cxName, "w");
       if( !F_cx) printf("Error: Unable to create %s\n", cxName);
-    }
-
-    if( globalArgs.mfe) {
-      F_permMfe = fopen( permMfeName, "w");
-      if( !F_permMfe )
-        printf("Error: Unable to create %s\n", permMfeName);
     }
 
     if( globalArgs.dopairs) {
@@ -439,12 +426,6 @@ int main( int argc, char **argv) {
       printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
                   nNewPerms, nSets,
                   nNewComplexes, F_perm, argc, argv, 0);
-    }
-
-    if( globalArgs.mfe) {
-      printHeader( nStrands, seqs, maxComplexSize,
-                  nTotalOrders, nNewPerms, nSets,
-                  nNewComplexes, F_permMfe, argc, argv, 0);
     }
 
     if( globalArgs.dopairs) {
@@ -654,8 +635,6 @@ int main( int argc, char **argv) {
   }
 
   for( i = setStart; i <= totalSets-1; i++) {
-    //initialize complex mfe variables
-    allSets[i].mfe = 10000;
     allSets[i].nMfePerms = 0;
     allSets[i].mfePerms = (int *) calloc( 10, sizeof(int));
   }
@@ -743,36 +722,6 @@ int main( int argc, char **argv) {
                                 globalArgs.magnesiumconc,
                                 globalArgs.uselongsalt);
 
-        if( globalArgs.mfe) {
-          //if desired, calculate mfe.  This could potentially be exponentially slow
-          //if there is a high degree of symmetry.
-          mfeValue = mfeFullWithSym( seqNum, tmpLength, &mfes, 3, globalArgs.parameters,
-                                     globalArgs.dangles, globalArgs.T,
-                                     currentPerm->symmetryFactor,globalArgs.onlyOneMFE,
-                                     globalArgs.sodiumconc, globalArgs.magnesiumconc,
-                                     globalArgs.uselongsalt);
-
-
-          if( mfes.nStructs >= 1) {
-            mfeValue = mfes.validStructs[0].correctedEnergy;
-          }
-
-          if( mfeValue <= allSets[i].mfe) {
-            if( mfeValue < allSets[i].mfe) {
-              allSets[i].mfe = mfeValue;
-              allSets[i].nMfePerms = 1;
-              allSets[i].mfePerms[0] = permId;
-            }
-            else {
-              allSets[i].mfePerms[ (allSets[i].nMfePerms)++] = permId;
-              if( allSets[i].nMfePerms % 10 == 0) {
-                allSets[i].mfePerms =
-                  (int *) realloc( allSets[i].mfePerms,
-                                  (allSets[i].nMfePerms + 10)*sizeof( int));
-              }
-            }
-          }
-        }
 
         //print permutation info
         if( globalArgs.permsOn && globalArgs.out == 1) {
@@ -791,22 +740,6 @@ int main( int argc, char **argv) {
             }
           } else {
             fprintf( F_ocx, "No legal secondary structures!\n");
-          }
-
-          // Print results to ocx.mfe file
-          if (globalArgs.mfe && pf > 0.0) {
-            // Print a comment line for separation
-            fprintf(F_permMfe,"\n%% ");
-            for (l = 0; l < nPercent; l++) {
-              fprintf(F_permMfe,"%%");
-            }
-            fprintf(F_permMfe," %%\n");
-
-            // Print the record number /* version 3 output */
-            fprintf(F_permMfe,"%% %s%d-%s%d\n",composition,lastCxId,ordering,permId);
-
-            // Print the total strand length
-            fprintf(F_permMfe,"%d\n",allSets[i].totalLength);
           }
 
 
@@ -879,19 +812,6 @@ int main( int argc, char **argv) {
           }
         }
 
-        if( globalArgs.mfe && globalArgs.permsOn && pf > 0.0) {
-          printMfesToFile( &mfes, F_permMfe, nicks);
-          // Print a comment line for separation
-          fprintf(F_permMfe,"%% ");
-          for (l = 0; l < nPercent; l++) {
-            fprintf(F_permMfe,"%%");
-          }
-          fprintf(F_permMfe," %%\n");
-        }
-
-        if( globalArgs.mfe) {
-          clearDnaStructures( &mfes);
-        }
 
         //avgBp[i][j] initialized to zero; average bp for this permutation
 
@@ -1175,9 +1095,6 @@ int main( int argc, char **argv) {
     /* version 3 output */
     if(globalArgs.v3) {
       fclose( F_cx);
-    }
-    if( globalArgs.mfe) {
-      fclose( F_permMfe);
     }
     if( globalArgs.permsOn) {
       fclose( F_perm);

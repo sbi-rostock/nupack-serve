@@ -53,7 +53,6 @@ int ReadCommandLine(int nargs, char **args) {
       {"listonly",      no_argument,        NULL, 'w'},
       {"debug",         no_argument,        NULL, 'v'},
       {"echo",          no_argument,        NULL, 'j'},
-      {"mfe",           no_argument,        NULL, 'k'},
       {"cutoff",        required_argument,  NULL, 'l'},
       {"progress",      no_argument,        NULL, 'm'},
       {"degenerate",    no_argument,        NULL, 'n'},
@@ -180,10 +179,6 @@ int ReadCommandLine(int nargs, char **args) {
         globalArgs.echo = 1;
         break;
 
-      case 'k':
-        globalArgs.mfe = 1;
-        break;
-
       case 'l':
         strcpy( line, optarg);
         if( sscanf(line, "%f", &(temp)) != 1) {
@@ -306,7 +301,6 @@ void DisplayHelpComplexes() {
   printf(" -ordered         store properties for ordered complexes\n");
   printf(" -pairs           store base-pairing observables\n");
   printf(" -cutoff CUTOFF   set the minimum stored probability/expected value\n");
-  printf(" -mfe             compute and store MFEs for all ordered complexes\n");
   printf("\n");
   // printf("Common options are:\n");
   // printf("\t-material [parameters]\n");
@@ -320,7 +314,6 @@ void DisplayHelpComplexes() {
   // printf("\t\tStore properties for ordered complexes.\n\n");
   // printf("\t-pairs\n");
   // printf("\t\tCalculate base-pairing observables as for the pairs executable.\n\n");
-  // printf("\t-mfe\n");
   // printf("\t\tCalculate all minimum free energy structures for each ordered complex.\n");
   // printf("\t\tMust be used in conjunction with the -ordered flag.\n\n");
   // printf("\t\tSuppress output to the screen\n");
@@ -519,7 +512,6 @@ void print_deprecation_info(FILE *out) {
   "the complexes executable:\n"
   "  -ordered is on by default\n"
   "  output files .cx and .cx-epairs are not written\n"
-  "  the comment lines in .ocx-epairs and .ocx-mfe employ updated terminology\n"
   "Use the -v3.0 option to revert to NUPACK 3.0 behavior.\n\n";
 
   fprintf(out, "%s", dep_mess);
