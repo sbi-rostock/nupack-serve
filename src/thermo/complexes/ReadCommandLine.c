@@ -44,7 +44,6 @@ int ReadCommandLine(int nargs, char **args) {
     {
       {"ordered",       no_argument,        NULL, 'b'},
       {"out",           required_argument,  NULL, 'c'},
-      {"pairs",         no_argument,        NULL, 'd'},
       {"T",             required_argument,  NULL, 'e'},
       {"dangles",       required_argument,  NULL, 'f'},
       {"material",      required_argument,  NULL, 'g'},
@@ -96,10 +95,6 @@ int ReadCommandLine(int nargs, char **args) {
           printf("Invalid out value\n");
           exit(1);
         }
-        break;
-
-      case 'd':
-        globalArgs.dopairs = 1;
         break;
 
       case 'e':
@@ -299,7 +294,6 @@ void DisplayHelpComplexes() {
   PrintNupackThermoHelp();
   printf("Additional options:\n");
   printf(" -ordered         store properties for ordered complexes\n");
-  printf(" -pairs           store base-pairing observables\n");
   printf(" -cutoff CUTOFF   set the minimum stored probability/expected value\n");
   printf("\n");
   // printf("Common options are:\n");
@@ -312,8 +306,6 @@ void DisplayHelpComplexes() {
   // printf("\t\tTemperature specified in degrees Celsius\n\n");
   // printf("\t-ordered\n");
   // printf("\t\tStore properties for ordered complexes.\n\n");
-  // printf("\t-pairs\n");
-  // printf("\t\tCalculate base-pairing observables as for the pairs executable.\n\n");
   // printf("\t\tCalculate all minimum free energy structures for each ordered complex.\n");
   // printf("\t\tMust be used in conjunction with the -ordered flag.\n\n");
   // printf("\t\tSuppress output to the screen\n");

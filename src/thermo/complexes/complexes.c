@@ -37,9 +37,7 @@ globalArgs_t globalArgs;
 int main( int argc, char **argv) {
   //generate subsets for given sequences
 
-  int i, j, k, q, r, l;  // Counters
-
-  int nPercent = 40; // Number of percent signs in a line with all comments
+  int i, j, k, q, r;  // Counters
 
   char **seqs; //list of all seqs
   int *seqlength; //list of all seqlengths
@@ -68,7 +66,6 @@ int main( int argc, char **argv) {
   long double pf;
   int *nicks;
 
-  //int done;
 
   double totalOrders;
   int nTotalOrders;
@@ -79,21 +76,11 @@ int main( int argc, char **argv) {
   int seqCode;
   FILE *F_cx = NULL, *F_ocx = NULL, // *.cx, only output with -v3
   *F_list = NULL, *F_perm = NULL,
-  *F_permPr=NULL,
-  //*F_permAvgP=NULL,
-  *F_cxAvg=NULL, // *.cx-epairs, only output with -v3
-  //*F_cxAvgP=NULL,
-  //*F_cxMfe = NULL,
-  *F_permAvg = NULL,
   *F_prog = NULL,
   *F_defect = NULL;
   char filePrefix[100], cxName[110], ocxName[110],
   listName[110], permName[110],
   permPrName[110],
-  //permAvgPName[110],
-  cxAvgName[110],
-  //cxAvgPName[110],
-  //cxMfeName[110],
   permAvgName[110],
   progName[110],
   defectName[110];
@@ -104,13 +91,9 @@ int main( int argc, char **argv) {
 
   long double TEMP_K;
 
-  int strandId, strandId2;
-  int strandPos, strandPos2;
-
   permutation *currentPerm=NULL;
   permutation *tmpPerm;
 
-  //time_t start, end;
   char line[ MAXLINE];
   char line2[MAXLINE];
   int fileRead;
@@ -118,19 +101,7 @@ int main( int argc, char **argv) {
 
   int permId;
   long double **permPr = NULL;
-  int indQ;
   int pf_qr;
-  int **indexCx = NULL;
-  int totalStrandsLength=0; //length of all the strand types, concatenated
-  int row, column;
-  long double expectedUnpaired;
-
-  //permAvgPairs and cxAvgPairs store the expected value of each
-  //class of base pairs, grouped by permutation or complex, respectively
-  long double *permAvgPairs = NULL;
-  long double *cxAvgPairs=NULL;
-  long double ppf;
-
   double estimatedTime = 0;
   double N3C = 1.0e-6; //estimatedTime = N3C * seqlength^3
 
@@ -144,9 +115,9 @@ int main( int argc, char **argv) {
 
   // Set defaults of global args
   globalArgs.permsOn = 1;
-  globalArgs.dopairs = 0;
   globalArgs.T = 37.0;
   globalArgs.dangles = 1;
+  globalArgs.dopairs = 0;
   globalArgs.parameters = RNA;
   globalArgs.out = 1; //.cx file
   globalArgs.timeonly = 0;
@@ -170,7 +141,6 @@ int main( int argc, char **argv) {
 
   if (globalArgs.dodefect == 1) {
     globalArgs.permsOn = 1;
-    globalArgs.dopairs = 1;
   }
   if (globalArgs.permsOn == 0) {
     printf("As a result, -ordered has been enabled.\n");
@@ -202,7 +172,6 @@ int main( int argc, char **argv) {
   /* version 3 output */
   if(globalArgs.v3) {
     sprintf( cxName, "%s.cx", filePrefix);
-    sprintf( cxAvgName, "%s.cx-epairs", filePrefix);
   }
 
   sprintf( ocxName, "%s.ocx", filePrefix);
@@ -232,23 +201,6 @@ int main( int argc, char **argv) {
       if( !F_cx) printf("Error: Unable to create %s\n", cxName);
     }
 
-    if( globalArgs.dopairs) {
-      /* version 3 output */
-      if(globalArgs.v3) {
-        F_cxAvg = fopen( cxAvgName, "w");
-        if( !F_cxAvg) printf("Error: Unable to create %s\n", cxAvgName);
-      }
-
-      if( globalArgs.permsOn) {
-        F_permPr = fopen( permPrName, "w");
-
-        F_permAvg = fopen( permAvgName, "w");
-        if( !F_permPr || !F_permAvg)
-          printf("Error: Unable to create %s or %s\n",
-                 permPrName,
-                 permAvgName);
-      }
-    }
     if( globalArgs.dodefect) {
       F_defect = fopen(defectName,"w");
       if(!F_defect) {
@@ -312,35 +264,6 @@ int main( int argc, char **argv) {
     printf("Enter max complex size to completely enumerate: ");
     scanf("%d", &maxComplexSize);
   }
-
-  if( globalArgs.dopairs) {
-    indexCx = (int **) malloc( nStrands*sizeof( int*));
-
-    totalStrandsLength = 0;
-    for( i = 0; i < nStrands; i++) {
-      if( globalArgs.dopairs) {
-        indexCx[i] = (int*) malloc( seqlength[i]*sizeof( int) );
-        for( j = 0; j < seqlength[i]; j++) {
-          indexCx[i][j] = totalStrandsLength++;
-        }
-      }
-    }
-
-    //these will store the average number of pairs for a particular base type
-    cxAvgPairs = (long double *) malloc (totalStrandsLength*
-                                         totalStrandsLength*
-                                         sizeof( long double));
-    permAvgPairs = (long double *) malloc (totalStrandsLength*
-                                           totalStrandsLength*
-                                           sizeof( long double));
-
-    if( !cxAvgPairs || !permAvgPairs) {
-      printf("Unable to allocate cxAvgPairs or permAvgPairs!\n");
-      exit(1);
-    }
-  }
-
-  //time( &start);
 
 
   // Read information from .list file
@@ -428,23 +351,6 @@ int main( int argc, char **argv) {
                   nNewComplexes, F_perm, argc, argv, 0);
     }
 
-    if( globalArgs.dopairs) {
-      /* version 3 output */
-      if(globalArgs.v3) {
-        printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                    nNewPerms, nSets,
-                    nNewComplexes, F_cxAvg, argc, argv, 1);
-      }
-      if( globalArgs.permsOn) {
-        printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                    nNewPerms, nSets,
-                    nNewComplexes, F_permPr, argc, argv, 1);
-        printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                    nNewPerms, nSets,
-                    nNewComplexes, F_permAvg, argc, argv, 1);
-
-      }
-    }
     if(globalArgs.dodefect) {
       printHeader(nStrands, seqs, maxComplexSize, nTotalOrders,
                   nNewPerms, nSets, nNewComplexes, F_defect, argc, argv, 1);
@@ -652,20 +558,6 @@ int main( int argc, char **argv) {
 
       allSets[i].pf = 0; //initialize pf
 
-      if( globalArgs.dopairs) {
-        //initialize avgBp
-        allSets[i].avgBp = (long double **)
-          malloc( nStrands*sizeof( long double*));
-        for( j = 0; j < nStrands; j++) { //calloc initialize to zero
-          allSets[i].avgBp[j] = (long double*)
-            calloc( seqlength[j], sizeof( long double));
-        }
-        //initialize expectation of pairs for complex
-        for( j = 0; j < totalStrandsLength*totalStrandsLength; j++)
-          cxAvgPairs[ j] = 0;
-
-      }
-
 
       currentPerm = allSets[i].perms;
       permId = 1;
@@ -694,21 +586,6 @@ int main( int argc, char **argv) {
         strncpy( currentPerm->seq, pfSeq,
                 allSets[i].totalLength + allSets[i].nSeqs);
 
-
-        if( globalArgs.dopairs) {
-          pairPr = (DBL_TYPE *) malloc( (allSets[i].totalLength+1)*
-                                       (allSets[i].totalLength+1)*
-                                       sizeof( DBL_TYPE) );
-          if( globalArgs.permsOn) {
-            for( j = 0; j < nStrands; j++)  //initialize to zero
-              for( k = 0; k < seqlength[j]; k++)
-              permPr[j][k] = 0;
-
-            for( j = 0; j < totalStrandsLength*totalStrandsLength; j++)
-              permAvgPairs[j] = 0; //initialize to zero
-
-          }
-        }
 
         //call library function to compute pseudoknot-free partition function
         tmpLength = strlen( pfSeq);
@@ -742,29 +619,6 @@ int main( int argc, char **argv) {
             fprintf( F_ocx, "No legal secondary structures!\n");
           }
 
-
-          // Print results to the ocx-ppairs and ocx-epairs files
-          if( globalArgs.dopairs && pf > 0.0) {
-
-            // Print a comment line for separation
-            fprintf(F_permPr,"\n%% ");
-            fprintf(F_permAvg,"\n%% ");
-            for (l = 0; l < nPercent; l++) {
-              fprintf(F_permPr,"%%");
-              fprintf(F_permAvg,"%%");
-            }
-            fprintf(F_permPr," %%\n");
-            fprintf(F_permAvg," %%\n");
-
-            // Print the record number /* version 3 output */
-            fprintf(F_permPr,"%% %s%d-%s%d\n",composition,lastCxId,ordering,permId);
-            fprintf(F_permAvg,"%% %s%d-%s%d\n",composition,lastCxId,ordering,permId);
-
-            // Print the total strand length
-            fprintf(F_permPr,"%d\n",allSets[i].totalLength);
-            fprintf(F_permAvg, "%d\n",totalStrandsLength);
-
-          }
 
           if( globalArgs.dodefect ) {
             if( pf <= 0.0) {
@@ -815,106 +669,6 @@ int main( int argc, char **argv) {
 
         //avgBp[i][j] initialized to zero; average bp for this permutation
 
-        if( globalArgs.dopairs && pf > 0.0) {
-          for( q = 0; q <= allSets[i].totalLength-1; q++) {
-            //compute the strand type and relative position for each base in the
-            //concatenation of sequences
-            strandId = (currentPerm->baseCode)[2*q];
-            strandPos = (currentPerm->baseCode)[2*q+1];
-            indQ = (1+allSets[i].totalLength)*q;
-            for( r = 0; r <= allSets[i].totalLength-1; r++) {
-              strandId2 = (currentPerm->baseCode)[2*r];
-              strandPos2 = (currentPerm->baseCode)[2*r+1];
-
-              pf_qr = indQ + r;
-
-              ppf = pairPr[ pf_qr]*pf;
-
-              allSets[i].avgBp[ strandId][ strandPos] += ppf;
-
-              cxAvgPairs[ indexCx[ strandId][ strandPos]*totalStrandsLength +
-                          indexCx[ strandId2][ strandPos2] ] += ppf;
-
-              if( globalArgs.permsOn)  {
-                permPr[ strandId][strandPos] += pairPr[ pf_qr];
-                permAvgPairs[ indexCx[ strandId][ strandPos]*totalStrandsLength +
-                             indexCx[ strandId2][ strandPos2] ] +=
-                  pairPr[ pf_qr];
-
-                if( globalArgs.out == 1 && r > q &&
-                   pairPr[ pf_qr] >= globalArgs.cutoff) {
-                    if(!NUPACK_VALIDATE) {
-                     fprintf( F_permPr, "%d\t%d\t%.3Le\n", q+1, r+1, (long double)pairPr[ pf_qr]);
-                    } else {
-                     fprintf( F_permPr, "%d\t%d\t%.14Le\n", q+1, r+1, (long double)pairPr[ pf_qr]);
-                    }
-                   }
-              }
-
-            }
-          }
-          if( globalArgs.out == 1 && globalArgs.permsOn && pf > 0.0) {
-
-            //add in unpaired probabilities to F_permPr (.ocx-ppairs)
-            for( q = 0; q <= allSets[i].totalLength-1; q++) {
-              r = allSets[i].totalLength;
-              pf_qr = (1+allSets[i].totalLength)*q+r;
-              if(!NUPACK_VALIDATE) {
-                fprintf( F_permPr, "%d\t%d\t%.3Le\n", q+1, r+1, (long double)pairPr[ pf_qr]);
-              } else {
-                fprintf( F_permPr, "%d\t%d\t%.14Le\n", q+1, r+1, (long double)pairPr[ pf_qr]);
-              }
-            }
-            // Print a comment line for separation
-            fprintf(F_permPr,"%% ");
-            for (l = 0; l < nPercent; l++) {
-              fprintf(F_permPr,"%%");
-            }
-            fprintf(F_permPr," %%\n");
-
-            //store average number of each type of pair (.ocx-epairs)
-            for( q = 0; q < totalStrandsLength*totalStrandsLength; q++) {
-              row = (q/totalStrandsLength) + 1;
-              column = (q%totalStrandsLength) + 1;
-
-              if( permAvgPairs[q] >= globalArgs.cutoff &&
-                 row < column ) {
-                  if(!NUPACK_VALIDATE) {
-                   fprintf( F_permAvg, "%d\t%d\t%.3Le\n", row, column, permAvgPairs[q]);
-                  } else {
-                   fprintf( F_permAvg, "%d\t%d\t%.14Le\n", row, column, permAvgPairs[q]);
-                  }
-                 }
-            }
-
-          }
-
-          free( pairPr); pairPr = NULL;
-
-          //Also store average unpaired for each base (.ocx-epairs)
-          if( globalArgs.permsOn && globalArgs.out == 1 && pf > 0.0) {
-            for( q = 0; q < nStrands; q++) {
-              for( r = 0; r < seqlength[q]; r++) {
-                row = indexCx[q][r] + 1;
-                column = totalStrandsLength + 1;
-                expectedUnpaired = allSets[i].code[q] - permPr[q][r];
-                if (expectedUnpaired >= globalArgs.cutoff) {
-                  if(!NUPACK_VALIDATE) {
-                  fprintf( F_permAvg, "%d\t%d\t%.3Le\n", row, column, expectedUnpaired);
-                } else {
-                  fprintf( F_permAvg, "%d\t%d\t%.14Le\n", row, column, expectedUnpaired);
-                }
-                }
-              }
-            }
-            // Print a comment line for separation
-            fprintf(F_permAvg,"%% ");
-            for (l = 0; l < nPercent; l++) {
-              fprintf(F_permAvg,"%%");
-            }
-            fprintf(F_permAvg," %%\n");
-          }
-        }
         currentPerm->pf = pf;
         allSets[i].pf += pf;
 
@@ -949,23 +703,6 @@ int main( int argc, char **argv) {
         fprintf( F_cx, "\n");
       }
 
-      /* version 3 output */
-      if(globalArgs.v3 && globalArgs.out == 1 && globalArgs.dopairs) {
-
-        // Row of percent signs for separation
-        fprintf(F_cxAvg,"\n%% ");
-        for (l = 0; l < nPercent; l++) {
-          fprintf(F_cxAvg,"%%");
-        }
-        fprintf(F_cxAvg," %%\n");
-
-        // Print the record number
-        fprintf(F_cxAvg,"%% complex%d\n",lastCxId);
-
-        // Print N_distinct
-        fprintf(F_cxAvg,"%d\n",totalStrandsLength);
-
-      }
 
       if( globalArgs.out == 1 && globalArgs.permsOn && allSets[i].pf > 0.0) {
         printPerms( F_perm, lastCxId, nStrands, &(allSets[i]));
@@ -973,63 +710,7 @@ int main( int argc, char **argv) {
 
       if( allSets[i].pf > 0.0) lastCxId++; //this will keep complex Ids consecutive
 
-      if( globalArgs.dopairs && allSets[i].pf > 0.0) {
-        for( q = 0; q < nStrands; q++) {
-          for( r = 0; r < seqlength[q]; r++) {
-            allSets[i].avgBp[q][r] /= allSets[i].pf;
-            //divide by total pf to get average
-          }
-        }
 
-        //print expected number of pairs of each type
-        for( q = 0; q < totalStrandsLength*totalStrandsLength; q++) {
-          cxAvgPairs[ q ] /= allSets[i].pf;
-          row = (q / totalStrandsLength)+1; //1 to totalStrandsLength
-          column = (q % totalStrandsLength)+1; //1 to totalStrandsLength
-          /* version 3 output */
-          if(globalArgs.v3) {
-            if( cxAvgPairs[q] >= globalArgs.cutoff && row < column ) {
-              if(!NUPACK_VALIDATE) {
-                fprintf( F_cxAvg, "%d\t%d\t%.3Le\n", row, column, cxAvgPairs[q]);
-              } else {
-                fprintf( F_cxAvg, "%d\t%d\t%.14Le\n", row, column, cxAvgPairs[q]);
-              }
-            }
-          }
-        }
-
-      }
-
-      //print expected number of unpaired bases of each type
-      if( globalArgs.dopairs &&  globalArgs.out == 1 && allSets[i].pf > 0.0) {
-        // Avg Base Pairs
-        for( q = 0; q < nStrands; q++) {
-          for( r = 0; r < seqlength[q]; r++) {
-            row = indexCx[q][r] + 1;
-            column = totalStrandsLength + 1;
-            expectedUnpaired = allSets[i].code[q] - allSets[i].avgBp[q][r];
-            /* version 3 output */
-            if(globalArgs.v3) {
-              if( expectedUnpaired >= globalArgs.cutoff) {
-                if(!NUPACK_VALIDATE) {
-                  fprintf( F_cxAvg, "%d\t%d\t%.3Le\n", row, column, expectedUnpaired);
-                } else {
-                  fprintf( F_cxAvg, "%d\t%d\t%.14Le\n", row, column, expectedUnpaired);
-                }
-              }
-            }
-          }
-        }
-        /* version 3 output */
-        // Row of percent signs for separation
-        if(globalArgs.v3) {
-          fprintf(F_cxAvg,"%% ");
-          for (l = 0; l < nPercent; l++) {
-            fprintf(F_cxAvg,"%%");
-          }
-          fprintf(F_cxAvg," %%\n");
-        }
-      }
 
       // Assess progress and write to a file
       if (globalArgs.progress) {
@@ -1100,16 +781,6 @@ int main( int argc, char **argv) {
       fclose( F_perm);
       fclose( F_ocx);
     }
-    if( globalArgs.dopairs) {
-      /* version 3 output */
-      if(globalArgs.v3) {
-        fclose( F_cxAvg);
-      }
-      if( globalArgs.permsOn) {
-        fclose( F_permPr);
-        fclose( F_permAvg);
-      }
-    }
     if( globalArgs.dodefect) {
       fclose(F_defect);
     }
@@ -1119,31 +790,15 @@ int main( int argc, char **argv) {
 
   for( i = 0; i<=nStrands-1; i++) {
     free( seqs[i]); seqs[i] = NULL;
-
-    if( globalArgs.dopairs) {
-      free( indexCx[i]);
-      indexCx[i] = NULL;
-    }
   }
 
   free( seqlength); seqlength = NULL;
   free( seqs); seqs = NULL;
 
-  if( globalArgs.dopairs) {
-    free( indexCx); indexCx = NULL;
-    free( cxAvgPairs); cxAvgPairs = NULL;
-    free( permAvgPairs); permAvgPairs = NULL;
-  }
 
 
   for( i = setStart; i <= totalSets-1; i++) {
 
-    if( globalArgs.dopairs && !globalArgs.timeonly) {
-      for(j = 0; j <= nStrands -1 ; j++) {
-        free( allSets[i].avgBp[j]); allSets[i].avgBp[j] = NULL;
-      }
-      free( allSets[i].avgBp);
-    }
 
     free( allSets[i].code); allSets[i].code = NULL;
 
