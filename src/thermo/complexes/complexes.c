@@ -77,7 +77,6 @@ int main( int argc, char **argv) {
   FILE *F_ocx = NULL;
   FILE *F_list = NULL;
   FILE *F_perm = NULL;
-  FILE *F_prog = NULL;
   char filePrefix[100], ocxName[110],
   listName[110], permName[110],
   permPrName[110],
@@ -86,8 +85,6 @@ int main( int argc, char **argv) {
   defectName[110];
 
   char *token;
-
-  double prog = 0.0, progDenom = 0.0; // Used in calculating progress
 
   long double TEMP_K;
 
@@ -101,8 +98,6 @@ int main( int argc, char **argv) {
 
   int permId;
   long double **permPr = NULL;
-  double estimatedTime = 0;
-  double N3C = 1.0e-6; //estimatedTime = N3C * seqlength^3
 
   time_t curtime; //for printing date and time
   struct tm *loctime;
@@ -120,7 +115,6 @@ int main( int argc, char **argv) {
   globalArgs.timeonly = 0;
   globalArgs.listonly = 0;
   globalArgs.cutoff = 0.001; // Cutoff bp probability to report
-  globalArgs.progress = 0;
   globalArgs.onlyOneMFE = 1;
   globalArgs.sodiumconc = 1.0;
   globalArgs.magnesiumconc = 0.0;
@@ -164,24 +158,6 @@ int main( int argc, char **argv) {
   sprintf( progName, "%s.prog", filePrefix);
   sprintf( defectName, "%s.ocx-defect", filePrefix);
 
-  if( globalArgs.out == 1) {
-
-    if ( globalArgs.progress) {
-      F_prog = fopen(progName,"w");
-      if (!F_prog) {
-        printf("Error: Unable to create %s.\n",progName);
-      }
-      else {
-        prog = 0.0;
-        if(!NUPACK_VALIDATE) {
-          fprintf(F_prog,"%.4f\n\n",prog); // Second newline is necessary for webserver
-        } else {
-          fprintf(F_prog,"%.14f\n\n",prog); // Second newline is necessary for webserver
-        }
-        fclose(F_prog);
-      }
-    }
-  }
 
   F_list = fopen( listName, "r");
 
@@ -467,15 +443,6 @@ int main( int argc, char **argv) {
     }
   }
 
-  //estimate total time needed and denominator for progress
-  for( i = setStart; i <= totalSets-1; i++) {
-    estimatedTime += allSets[i].nPerms * N3C * pow(allSets[i].totalLength, 3);
-    progDenom += pow(allSets[i].totalLength,3);
-  }
-  if(globalArgs.timeonly) {
-    printf("Rough time estimate for calculation: %.2f seconds\n", estimatedTime);
-  }
-
   for( i = setStart; i <= totalSets-1; i++) {
     allSets[i].nMfePerms = 0;
     allSets[i].mfePerms = (int *) calloc( 10, sizeof(int));
@@ -571,19 +538,6 @@ int main( int argc, char **argv) {
       }
 
       if( allSets[i].pf > 0.0) lastCxId++; //this will keep complex Ids consecutive
-
-
-      // Assess progress and write to a file
-      if (globalArgs.progress) {
-        prog += pow(allSets[i].totalLength,3);
-        F_prog = fopen(progName,"w");
-        if(!NUPACK_VALIDATE) {
-          fprintf(F_prog,"%.3f\n\n",prog/progDenom);
-        } else {
-          fprintf(F_prog,"%.14f\n\n",prog/progDenom);
-        }
-        fclose(F_prog);
-      }
 
     }
   }

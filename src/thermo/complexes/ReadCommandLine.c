@@ -50,7 +50,6 @@ int ReadCommandLine(int nargs, char **args) {
       {"help",          no_argument,        NULL, 'h'},
       {"timeonly",      no_argument,        NULL, 'i'},
       {"cutoff",        required_argument,  NULL, 'l'},
-      {"progress",      no_argument,        NULL, 'm'},
       {"degenerate",    no_argument,        NULL, 'n'},
       {"sodium",        required_argument,  NULL, 'o'},
       {"magnesium",     required_argument,  NULL, 'p'},
@@ -164,10 +163,6 @@ int ReadCommandLine(int nargs, char **args) {
           exit(1);
         }
         globalArgs.cutoff = (long double) temp;
-        break;
-
-      case 'm':
-        globalArgs.progress = 1;
         break;
 
       case 'n':
