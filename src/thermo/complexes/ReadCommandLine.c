@@ -42,7 +42,6 @@ int ReadCommandLine(int nargs, char **args) {
 
   static struct option long_options [] =
     {
-      {"quiet",         no_argument,        NULL, 'a'},
       {"ordered",       no_argument,        NULL, 'b'},
       {"out",           required_argument,  NULL, 'c'},
       {"pairs",         no_argument,        NULL, 'd'},
@@ -87,10 +86,6 @@ int ReadCommandLine(int nargs, char **args) {
         break;
 
       switch (options) {
-      case 'a':
-        globalArgs.quiet = 1;
-        break;
-
       case 'b':
         globalArgs.permsOn = 1;
         prev_ordered = 1;
@@ -244,12 +239,6 @@ int ReadCommandLine(int nargs, char **args) {
         abort ();
       }
     }
-      
-
-  /* version 3 output */
-  if (!globalArgs.quiet) {
-    print_deprecation_info(stdout);
-  }
 
   if (ShowHelp) {
     DisplayHelpComplexes();
@@ -318,7 +307,6 @@ void DisplayHelpComplexes() {
   printf(" -pairs           store base-pairing observables\n");
   printf(" -cutoff CUTOFF   set the minimum stored probability/expected value\n");
   printf(" -mfe             compute and store MFEs for all ordered complexes\n");
-  printf(" -quiet           suppress output to the screen\n");
   printf("\n");
   // printf("Common options are:\n");
   // printf("\t-material [parameters]\n");
@@ -335,7 +323,6 @@ void DisplayHelpComplexes() {
   // printf("\t-mfe\n");
   // printf("\t\tCalculate all minimum free energy structures for each ordered complex.\n");
   // printf("\t\tMust be used in conjunction with the -ordered flag.\n\n");
-  // printf("\t-quiet\n");
   // printf("\t\tSuppress output to the screen\n");
 }
 /* ******************************************************************************** */

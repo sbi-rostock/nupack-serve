@@ -146,7 +146,6 @@ int main( int argc, char **argv) {
   //in case some are not used due to no possible secondary structures
 
   // Set defaults of global args
-  globalArgs.quiet = 0;
   globalArgs.permsOn = 1;
   globalArgs.dopairs = 0;
   globalArgs.T = 37.0;
@@ -179,10 +178,8 @@ int main( int argc, char **argv) {
     globalArgs.dopairs = 1;
   }
   if (globalArgs.mfe == 1 && globalArgs.permsOn == 0) {
-    if( !globalArgs.quiet) {
-      printf("Warning, including -mfe requires -ordered. ");
-      printf("As a result, -ordered has been enabled.\n");
-    }
+    printf("Warning, including -mfe requires -ordered. ");
+    printf("As a result, -ordered has been enabled.\n");
     globalArgs.permsOn = 1;
   }
 
@@ -293,7 +290,7 @@ int main( int argc, char **argv) {
 
   F_list = fopen( listName, "r");
 
-  if( F_list == NULL && !(globalArgs.quiet)) {  // check if file exists
+  if(F_list == NULL) {  // check if file exists
     printf("There is no input list %s.\n", listName);
   }
 
@@ -609,8 +606,8 @@ int main( int argc, char **argv) {
   maxListComplexSize = GetMaxComplexSize(allSets,totalSets);
   nicks = (int*) malloc( maxListComplexSize*sizeof(int) );
 
-  if( !(globalArgs.quiet))
-    printf("Permutation generation complete.\n");
+  printf("Permutation generation complete.\n");
+
   if (globalArgs.listonly) setStart=nSets; // Don't do all sets
 
   if( nTotalOrders != totalOrders2) {
@@ -623,7 +620,7 @@ int main( int argc, char **argv) {
     fclose( F_list);
   }
 
-  if( !(globalArgs.quiet) && !(globalArgs.timeonly))
+  if(!(globalArgs.timeonly))
     printf("Starting partition function calculations.\n");
 
 
@@ -652,7 +649,7 @@ int main( int argc, char **argv) {
     estimatedTime += allSets[i].nPerms * N3C * pow(allSets[i].totalLength, 3);
     progDenom += pow(allSets[i].totalLength,3);
   }
-  if( !(globalArgs.quiet) || globalArgs.timeonly) {
+  if(globalArgs.timeonly) {
     printf("Rough time estimate for calculation: %.2f seconds\n", estimatedTime);
   }
 
@@ -669,8 +666,7 @@ int main( int argc, char **argv) {
     for( i = setStart; i <= totalSets-1; i++) {
 
       //time( &end);
-      if( !(globalArgs.quiet))
-        printf("Status: Set %d / %d: nPerms (%d)  %d / %d\n", i+1,
+      printf("Status: Set %d / %d: nPerms (%d)  %d / %d\n", i+1,
                totalSets,
                allSets[i].nPerms, status+1, totalOrders2);
       status += allSets[i].nPerms;
@@ -1141,39 +1137,37 @@ int main( int argc, char **argv) {
   }
 
 
-  if( !(globalArgs.quiet)) {
-    //debug by printing
-    //print subsets, perms
-    //time( &end);
-    //printf("Final Time: %.0f\n", difftime( end,start));
+  //debug by printing
+  //print subsets, perms
+  //time( &end);
+  //printf("Final Time: %.0f\n", difftime( end,start));
 
-    if (globalArgs.debug){
-      for( i = setStart; i<=totalSets-1; i++) {
-        for( j = 0; j <= nStrands - 1; j++) {
-          printf("%d", allSets[i].code[j]);
+  if (globalArgs.debug){
+    for( i = setStart; i<=totalSets-1; i++) {
+      for( j = 0; j <= nStrands - 1; j++) {
+        printf("%d", allSets[i].code[j]);
+      }
+      if(!NUPACK_VALIDATE) {
+        printf(" %.8Le\n", allSets[i].pf);
+      } else {
+        printf(" %.14Le\n", allSets[i].pf);
+      }
+
+      currentPerm = allSets[i].perms;
+      while( currentPerm != NULL) {
+        for( k = 0; k <= allSets[i].nSeqs - 1; k++) {
+          printf("%d", (currentPerm->code)[k]);
         }
         if(!NUPACK_VALIDATE) {
-          printf(" %.8Le\n", allSets[i].pf);
+          printf(" - %s %.8Le\n", currentPerm->seq,
+               currentPerm->pf);
         } else {
-          printf(" %.14Le\n", allSets[i].pf);
+          printf(" - %s %.8Le\n", currentPerm->seq,
+               currentPerm->pf);
         }
-
-        currentPerm = allSets[i].perms;
-        while( currentPerm != NULL) {
-          for( k = 0; k <= allSets[i].nSeqs - 1; k++) {
-            printf("%d", (currentPerm->code)[k]);
-          }
-          if(!NUPACK_VALIDATE) {
-            printf(" - %s %.8Le\n", currentPerm->seq,
-                 currentPerm->pf);
-          } else {
-            printf(" - %s %.8Le\n", currentPerm->seq,
-                 currentPerm->pf);
-          }
-          currentPerm = currentPerm->next;
-        }
-        printf("\n");
+        currentPerm = currentPerm->next;
       }
+      printf("\n");
     }
   }
 
@@ -1255,7 +1249,7 @@ int main( int argc, char **argv) {
   //free( seqlength); seqlength = NULL;
   free( pfSeq); pfSeq = NULL;
 
-  if( !(globalArgs.quiet) && !(globalArgs.timeonly)) {
+  if(!(globalArgs.timeonly)) {
     printf("Total number of terms calculated: %d (%d)\n",
            totalOrders2, nTotalOrders);
     curtime = time(NULL); //current time
