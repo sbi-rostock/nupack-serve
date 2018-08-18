@@ -119,7 +119,6 @@ int main( int argc, char **argv) {
   globalArgs.out = 1; //.cx file
   globalArgs.timeonly = 0;
   globalArgs.listonly = 0;
-  globalArgs.debug = 0;
   globalArgs.echo = 0;
   globalArgs.cutoff = 0.001; // Cutoff bp probability to report
   globalArgs.progress = 0;
@@ -602,35 +601,6 @@ int main( int argc, char **argv) {
     permPr = NULL;
   }
 
-  if (globalArgs.debug){
-    for( i = setStart; i<=totalSets-1; i++) {
-      for( j = 0; j <= nStrands - 1; j++) {
-        printf("%d", allSets[i].code[j]);
-      }
-      if(!NUPACK_VALIDATE) {
-        printf(" %.8Le\n", allSets[i].pf);
-      } else {
-        printf(" %.14Le\n", allSets[i].pf);
-      }
-
-      currentPerm = allSets[i].perms;
-      while( currentPerm != NULL) {
-        for( k = 0; k <= allSets[i].nSeqs - 1; k++) {
-          printf("%d", (currentPerm->code)[k]);
-        }
-        if(!NUPACK_VALIDATE) {
-          printf(" - %s %.8Le\n", currentPerm->seq,
-               currentPerm->pf);
-        } else {
-          printf(" - %s %.8Le\n", currentPerm->seq,
-               currentPerm->pf);
-        }
-        currentPerm = currentPerm->next;
-      }
-      printf("\n");
-    }
-  }
-
   if( globalArgs.out == 1) {
     if( globalArgs.permsOn) {
       fclose( F_perm);
@@ -646,7 +616,6 @@ int main( int argc, char **argv) {
 
   free( seqlength); seqlength = NULL;
   free( seqs); seqs = NULL;
-
 
 
   for( i = setStart; i <= totalSets-1; i++) {
@@ -686,8 +655,6 @@ int main( int argc, char **argv) {
     printf( "%s\n", filePrefix);
   }
 
-
   return 0;
 }
-
 
