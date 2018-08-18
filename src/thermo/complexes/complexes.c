@@ -119,7 +119,6 @@ int main( int argc, char **argv) {
   globalArgs.out = 1; //.cx file
   globalArgs.timeonly = 0;
   globalArgs.listonly = 0;
-  globalArgs.echo = 0;
   globalArgs.cutoff = 0.001; // Cutoff bp probability to report
   globalArgs.progress = 0;
   globalArgs.onlyOneMFE = 1;
@@ -647,10 +646,6 @@ int main( int argc, char **argv) {
     loctime = localtime( &curtime);
     printf( "Calculation finished on: %s\n",
            asctime( loctime));
-  }
-
-  if( globalArgs.echo) {
-    printf( "%s\n", filePrefix);
   }
 
   return 0;
