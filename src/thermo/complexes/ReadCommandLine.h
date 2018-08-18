@@ -9,5 +9,5 @@ int ReadInputFileComplexes(char *filePrefix, int *nStrands,
 void printHeader(int nStrands, char **seqs, int maxComplexSize,
                  int totalOrders, int nNewPerms, int nSets, int nNewComplexes,
                  FILE *F_cx, int nargs, char **argv, int isPairs);
-
+int complexes_header(char*, int, char**);
 void print_deprecation_info(FILE *out);

@@ -445,3 +445,88 @@ void print_deprecation_info(FILE *out) {
   
   return;
 }
+
+
+
+/* create a string containing the provenance's header informations:
+ * - version
+ * - command invocation
+ * return the length of the generated string
+ */
+int complexes_header(char *provenance, int argc, char **argv) {
+
+  char PROVENANCE_STARTS[] = "{ ";
+  char FIELD_VERSION[] = "\"version\": \"";
+  char FIELD_COMMAND[] = "\"command\": \"";
+  char FIELD_ENDS[] = "\"";
+  char FIELD_NEXT[] = ", ";
+
+  int len_entry_version;
+  int len_entry_command;
+  int len_provenance = 0;
+
+
+  /* retrieve each entry's value, and store it as provenance
+   */
+
+  len_provenance += strlen(PROVENANCE_STARTS);
+  provenance = strcpy(provenance, PROVENANCE_STARTS);
+
+
+  /* version
+   */
+
+  // retrieve the version's length, and add it to the provenance
+  len_entry_version = strlen(FIELD_VERSION) + strlen(NUPACK_VERSION)
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+  len_provenance += len_entry_version;
+
+  // store the version
+  provenance = strcat(
+                strcat(
+                  strcat(
+                    strcat(provenance, FIELD_VERSION),
+                    NUPACK_VERSION),
+                  FIELD_ENDS),
+                FIELD_NEXT);
+
+
+  /* command
+   */
+
+  // retrieve the command's length, and add it to the provenance
+  int len_nupack_command = 0;
+  for(int x=0 ; x<argc ; ++x) {
+    if(x<(argc-1)){
+      len_nupack_command += strlen(argv[x]) + 1;
+    }
+    else{
+      len_nupack_command += strlen(argv[x]);
+    }
+  }
+  len_entry_command = strlen(FIELD_COMMAND) + len_nupack_command
+        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+  len_provenance += len_entry_command;
+
+  // retrieve the command's value
+  char nupack_command[len_nupack_command];
+  char *n = strcpy(nupack_command, "");
+  for(int x=0 ; x<argc ; ++x) {
+    n = strcat(n, argv[x]);
+    if(x < (argc-1)){
+      n = strcat(n, " ");
+    }
+  }
+  // store the command
+  provenance = strcat(
+                strcat(
+                  strcat(
+                    strcat(provenance, FIELD_COMMAND),
+                    nupack_command),
+                  FIELD_ENDS),
+                FIELD_NEXT);
+
+
+  return len_provenance;
+}
+

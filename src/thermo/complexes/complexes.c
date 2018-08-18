@@ -101,6 +101,12 @@ int main( int argc, char **argv) {
   int lastCxId = 1; //used to index complex id#,
   //in case some are not used due to no possible secondary structures
 
+
+  // provenance blocks
+  int len_header = 1000;
+  int len_provenance;
+
+
   // Set defaults of global args
   globalArgs.T = 37.0;
   globalArgs.dangles = 1;
@@ -254,6 +260,31 @@ int main( int argc, char **argv) {
 
   totalSets = nSets + nNewComplexes;
 
+
+  /* echo provenance header starts
+   */
+
+  // allocate provenance block
+  char *header = malloc(sizeof(char) * len_header);
+  if(!header){
+    exit(1);
+  }
+  for(int y=0 ; y<len_header ; ++y){
+    header[y] = 0;
+  }
+
+  // fill provenance block
+  len_provenance = complexes_header(header, argc, argv);
+  for(int y=0 ; y<len_provenance ; ++y){
+    printf("%c", header[y]);
+  }
+
+  // free provenance block
+  free(header);
+  header = NULL;
+
+  /*
+   * echo provenance header ends */
 
   printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
               nNewPerms, nSets, nNewComplexes, F_ocx, argc, argv, 0);
