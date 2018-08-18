@@ -43,7 +43,6 @@ int ReadCommandLine(int nargs, char **args) {
   static struct option long_options [] =
     {
       {"ordered",       no_argument,        NULL, 'b'},
-      {"out",           required_argument,  NULL, 'c'},
       {"T",             required_argument,  NULL, 'e'},
       {"dangles",       required_argument,  NULL, 'f'},
       {"material",      required_argument,  NULL, 'g'},
@@ -80,14 +79,6 @@ int ReadCommandLine(int nargs, char **args) {
       case 'b':
         globalArgs.permsOn = 1;
         prev_ordered = 1;
-        break;
-
-      case 'c':
-        strcpy( line, optarg);
-        if( sscanf(line, "%d", &(globalArgs.out)) != 1) {
-          printf("Invalid out value\n");
-          exit(1);
-        }
         break;
 
       case 'e':

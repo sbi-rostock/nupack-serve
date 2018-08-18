@@ -107,7 +107,6 @@ int main( int argc, char **argv) {
   globalArgs.dangles = 1;
   globalArgs.dopairs = 0;
   globalArgs.parameters = RNA;
-  globalArgs.out = 1; //.cx file
   globalArgs.listonly = 0;
   globalArgs.cutoff = 0.001; // Cutoff bp probability to report
   globalArgs.onlyOneMFE = 1;
@@ -160,7 +159,7 @@ int main( int argc, char **argv) {
     printf("There is no input list %s.\n", listName);
   }
 
-  if( globalArgs.permsOn && globalArgs.out) {
+  if( globalArgs.permsOn) {
     F_perm = fopen( permName, "w");
     if( !F_perm) printf("Error: Unable to create %s\n", permName);
 
@@ -263,15 +262,13 @@ int main( int argc, char **argv) {
 
   totalSets = nSets + nNewComplexes;
 
-  if( globalArgs.out == 1) {
 
-    if( globalArgs.permsOn) {
-      printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                  nNewPerms, nSets, nNewComplexes, F_ocx, argc, argv, 0);
-      printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                  nNewPerms, nSets,
-                  nNewComplexes, F_perm, argc, argv, 0);
-    }
+  if( globalArgs.permsOn) {
+    printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
+                nNewPerms, nSets, nNewComplexes, F_ocx, argc, argv, 0);
+    printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
+                nNewPerms, nSets,
+                nNewComplexes, F_perm, argc, argv, 0);
   }
 
   // Generate all necklaces for each length with order nStrands
@@ -496,7 +493,7 @@ int main( int argc, char **argv) {
 
 
       //print permutation info
-      if( globalArgs.permsOn && globalArgs.out == 1) {
+      if( globalArgs.permsOn) {
         if( pf <= 0.0) fprintf(F_ocx, "%% ");
         fprintf(F_ocx, "%d\t%d\t", lastCxId, permId);
 
@@ -525,7 +522,7 @@ int main( int argc, char **argv) {
     }
 
 
-    if( globalArgs.out == 1 && globalArgs.permsOn && allSets[i].pf > 0.0) {
+    if(globalArgs.permsOn && allSets[i].pf > 0.0) {
       printPerms( F_perm, lastCxId, nStrands, &(allSets[i]));
     }
 
@@ -543,11 +540,9 @@ int main( int argc, char **argv) {
     permPr = NULL;
   }
 
-  if( globalArgs.out == 1) {
-    if( globalArgs.permsOn) {
-      fclose( F_perm);
-      fclose( F_ocx);
-    }
+  if( globalArgs.permsOn) {
+    fclose( F_perm);
+    fclose( F_ocx);
   }
 
   free( nicks); nicks = NULL;
