@@ -389,8 +389,6 @@ int main( int argc, char **argv) {
   maxListComplexSize = GetMaxComplexSize(allSets,totalSets);
   nicks = (int*) malloc( maxListComplexSize*sizeof(int) );
 
-  printf("Permutation generation complete.\n");
-
   if( nTotalOrders != totalOrders2) {
     printf("Internal error! Total number of permutations is incorrect! %d != %d\n",
            nTotalOrders, totalOrders2);
@@ -400,9 +398,6 @@ int main( int argc, char **argv) {
   if( F_list != NULL) {
     fclose( F_list);
   }
-
-  printf("Starting partition function calculations.\n");
-
 
   // 2006/03/08, Add in a sorting subroutine, to order sets by total # of strands
   // Don't sort with -listonly so we can skip all i < nSets
@@ -427,9 +422,6 @@ int main( int argc, char **argv) {
   status = setStart;
   for( i = setStart; i <= totalSets-1; i++) {
 
-    printf("Status: Set %d / %d: nPerms (%d)  %d / %d\n", i+1,
-             totalSets,
-             allSets[i].nPerms, status+1, totalOrders2);
     status += allSets[i].nPerms;
 
     allSets[i].pf = 0; //initialize pf
@@ -554,9 +546,6 @@ int main( int argc, char **argv) {
 
   //free( seqlength); seqlength = NULL;
   free( pfSeq); pfSeq = NULL;
-
-  printf("Total number of terms calculated: %d (%d)\n",
-         totalOrders2, nTotalOrders);
 
   return 0;
 }
