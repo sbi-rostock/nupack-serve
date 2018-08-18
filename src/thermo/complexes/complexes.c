@@ -74,11 +74,11 @@ int main( int argc, char **argv) {
   int status;
 
   int seqCode;
-  FILE *F_cx = NULL, *F_ocx = NULL, // *.cx, only output with -v3
+  FILE *F_ocx = NULL,
   *F_list = NULL, *F_perm = NULL,
   *F_prog = NULL,
   *F_defect = NULL;
-  char filePrefix[100], cxName[110], ocxName[110],
+  char filePrefix[100], ocxName[110],
   listName[110], permName[110],
   permPrName[110],
   permAvgName[110],
@@ -133,11 +133,7 @@ int main( int argc, char **argv) {
   globalArgs.dodefect = 0;
   strcpy( globalArgs.inputFilePrefix, "NoInputFile");
 
-  /* version 3 output */
-  globalArgs.v3 = 0;
-
   inputFileSpecified = ReadCommandLine( argc, argv);
-  
 
   if (globalArgs.dodefect == 1) {
     globalArgs.permsOn = 1;
@@ -168,11 +164,6 @@ int main( int argc, char **argv) {
   }
 
   TEMP_K = globalArgs.T + ZERO_C_IN_KELVIN;
-  
-  /* version 3 output */
-  if(globalArgs.v3) {
-    sprintf( cxName, "%s.cx", filePrefix);
-  }
 
   sprintf( ocxName, "%s.ocx", filePrefix);
   sprintf( listName, "%s.list", filePrefix);
@@ -181,25 +172,8 @@ int main( int argc, char **argv) {
   sprintf( permAvgName, "%s.ocx-epairs", filePrefix);
   sprintf( progName, "%s.prog", filePrefix);
   sprintf( defectName, "%s.ocx-defect", filePrefix);
-  
-  /* version 3 output */
-  char *composition = NULL;
-  char *ordering = NULL;
-  if (globalArgs.v3) {
-    composition = "complex";
-    ordering = "order";
-  }
-  else {
-    composition = "composition";
-    ordering = "ordering";
-  }
 
   if( globalArgs.out == 1) {
-    /* version 3 output */
-    if(globalArgs.v3) {
-      F_cx = fopen( cxName, "w");
-      if( !F_cx) printf("Error: Unable to create %s\n", cxName);
-    }
 
     if( globalArgs.dodefect) {
       F_defect = fopen(defectName,"w");
@@ -337,12 +311,7 @@ int main( int argc, char **argv) {
   totalSets = nSets + nNewComplexes;
 
   if( globalArgs.out == 1) {
-    
-    /* version 3 output */
-    if(globalArgs.v3) {
-      printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-                  nNewPerms, nSets, nNewComplexes, F_cx, argc, argv, 0);
-    }
+
     if( globalArgs.permsOn) {
       printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
                   nNewPerms, nSets, nNewComplexes, F_ocx, argc, argv, 0);
@@ -677,33 +646,6 @@ int main( int argc, char **argv) {
       }
 
 
-      /* version 3 output */
-      //print to .cx on the fly
-      if(globalArgs.v3 && globalArgs.out == 1) {
-        if( allSets[i].pf <= 0) {
-          fprintf( F_cx, "%% ");
-        }
-
-        fprintf( F_cx, "%d\t", lastCxId);
-
-        for( j = 0; j <= nStrands - 1; j++) {
-          fprintf( F_cx, "%d\t", allSets[i].code[j]); //strand composition
-        }
-
-        if( allSets[i].pf > 0) {
-          if(!NUPACK_VALIDATE) {
-            fprintf( F_cx, "%.8Le", -1*(kB*TEMP_K)*LOG_FUNC( allSets[i].pf));
-          } else {
-            fprintf( F_cx, "%.14Le", -1*(kB*TEMP_K)*LOG_FUNC( allSets[i].pf));
-          }
-        } else {
-          fprintf( F_cx, "No legal secondary structures!");
-        }
-
-        fprintf( F_cx, "\n");
-      }
-
-
       if( globalArgs.out == 1 && globalArgs.permsOn && allSets[i].pf > 0.0) {
         printPerms( F_perm, lastCxId, nStrands, &(allSets[i]));
       }
@@ -773,10 +715,6 @@ int main( int argc, char **argv) {
   }
 
   if( globalArgs.out == 1) {
-    /* version 3 output */
-    if(globalArgs.v3) {
-      fclose( F_cx);
-    }
     if( globalArgs.permsOn) {
       fclose( F_perm);
       fclose( F_ocx);

@@ -60,7 +60,6 @@ int ReadCommandLine(int nargs, char **args) {
       {"longhelixsalt", no_argument,        NULL, 'q'},
       {"validate",      no_argument,        NULL, 'r'},
       {"defect",        no_argument,        NULL, 's'},
-      {"v3.0",          no_argument,        NULL, 'z'},
       {0, 0, 0, 0}
     };
 
@@ -219,12 +218,7 @@ int ReadCommandLine(int nargs, char **args) {
       case 's':
         globalArgs.dodefect = 1;
         break;
-      
-      case 'z':
-        globalArgs.v3 = 1;
-        globalArgs.permsOn = prev_ordered;
-        break;
-      
+
       default:
         abort ();
       }
@@ -296,19 +290,6 @@ void DisplayHelpComplexes() {
   printf(" -ordered         store properties for ordered complexes\n");
   printf(" -cutoff CUTOFF   set the minimum stored probability/expected value\n");
   printf("\n");
-  // printf("Common options are:\n");
-  // printf("\t-material [parameters]\n");
-  // printf("\t\tSee the manual and references for parameter sources\n");
-  // printf("\t\trna1995\n");
-  // printf("\t\tdna1998\n");
-  // printf("\t\trna1999\n"); 
-  // printf("\t-T [temperature]\n");
-  // printf("\t\tTemperature specified in degrees Celsius\n\n");
-  // printf("\t-ordered\n");
-  // printf("\t\tStore properties for ordered complexes.\n\n");
-  // printf("\t\tCalculate all minimum free energy structures for each ordered complex.\n");
-  // printf("\t\tMust be used in conjunction with the -ordered flag.\n\n");
-  // printf("\t\tSuppress output to the screen\n");
 }
 /* ******************************************************************************** */
 
