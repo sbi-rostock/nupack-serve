@@ -76,12 +76,7 @@ int main( int argc, char **argv) {
   FILE *F_ocx = NULL;
   FILE *F_list = NULL;
   FILE *F_perm = NULL;
-  char filePrefix[100], ocxName[110],
-  listName[110], permName[110],
-  permPrName[110],
-  permAvgName[110],
-  progName[110],
-  defectName[110];
+  char filePrefix[100], ocxName[110], listName[110], permName[110];
 
   char *token;
 
@@ -104,6 +99,7 @@ int main( int argc, char **argv) {
 
   // provenance blocks
   int len_header = 1000;
+  int len_parameters = 1000;
   int len_provenance;
 
 
@@ -147,10 +143,6 @@ int main( int argc, char **argv) {
   sprintf( ocxName, "%s.ocx", filePrefix);
   sprintf( listName, "%s.list", filePrefix);
   sprintf( permName, "%s.ocx-key", filePrefix);
-  sprintf( permPrName, "%s.ocx-ppairs", filePrefix);
-  sprintf( permAvgName, "%s.ocx-epairs", filePrefix);
-  sprintf( progName, "%s.prog", filePrefix);
-  sprintf( defectName, "%s.ocx-defect", filePrefix);
 
 
   F_list = fopen( listName, "r");
@@ -261,7 +253,7 @@ int main( int argc, char **argv) {
   totalSets = nSets + nNewComplexes;
 
 
-  /* echo provenance header starts
+  /* echo provenance header
    */
 
   // allocate provenance block
@@ -283,14 +275,30 @@ int main( int argc, char **argv) {
   free(header);
   header = NULL;
 
-  /*
-   * echo provenance header ends */
 
-  printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-              nNewPerms, nSets, nNewComplexes, F_ocx, argc, argv, 0);
-  printHeader( nStrands, seqs, maxComplexSize, nTotalOrders,
-              nNewPerms, nSets,
-              nNewComplexes, F_perm, argc, argv, 0);
+  /* echo provenance parameters starts
+   */
+
+  // allocate provenance block
+  char *parameters = malloc(sizeof(char) * len_parameters);
+  if(!parameters){
+    exit(1);
+  }
+  for(int y=0 ; y<len_parameters ; ++y){
+    parameters[y] = 0;
+  }
+
+  // fill provenance block
+  len_provenance = complexes_parameters(parameters, nStrands, seqs,
+        nTotalOrders);
+  for(int y=0 ; y<len_provenance ; ++y){
+    printf("%c", parameters[y]);
+  }
+
+  // free provenance block
+  free(parameters);
+  parameters = NULL;
+
 
   // Generate all necklaces for each length with order nStrands
 

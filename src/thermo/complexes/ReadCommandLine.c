@@ -458,7 +458,7 @@ int complexes_header(char *provenance, int argc, char **argv) {
   char PROVENANCE_STARTS[] = "{ ";
   char FIELD_VERSION[] = "\"version\": \"";
   char FIELD_COMMAND[] = "\"command\": \"";
-  char FIELD_ENDS[] = "\"";
+  char QUOTE[] = "\"";
   char FIELD_NEXT[] = ", ";
 
   int len_entry_version;
@@ -478,7 +478,7 @@ int complexes_header(char *provenance, int argc, char **argv) {
 
   // retrieve the version's length, and add it to the provenance
   len_entry_version = strlen(FIELD_VERSION) + strlen(NUPACK_VERSION)
-        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+        + strlen(QUOTE) + strlen(FIELD_NEXT);
   len_provenance += len_entry_version;
 
   // store the version
@@ -487,7 +487,7 @@ int complexes_header(char *provenance, int argc, char **argv) {
                   strcat(
                     strcat(provenance, FIELD_VERSION),
                     NUPACK_VERSION),
-                  FIELD_ENDS),
+                  QUOTE),
                 FIELD_NEXT);
 
 
@@ -505,7 +505,7 @@ int complexes_header(char *provenance, int argc, char **argv) {
     }
   }
   len_entry_command = strlen(FIELD_COMMAND) + len_nupack_command
-        + strlen(FIELD_ENDS) + strlen(FIELD_NEXT);
+        + strlen(QUOTE) + strlen(FIELD_NEXT);
   len_provenance += len_entry_command;
 
   // retrieve the command's value
@@ -523,9 +523,256 @@ int complexes_header(char *provenance, int argc, char **argv) {
                   strcat(
                     strcat(provenance, FIELD_COMMAND),
                     nupack_command),
-                  FIELD_ENDS),
+                  QUOTE),
                 FIELD_NEXT);
 
+
+  return len_provenance;
+}
+
+
+
+/* create a string containing all provenance's parameter informations:
+ * - dangles
+ * - concentration sodium
+ * - concentration magnesium
+ * - temperature
+ * - strands
+ * return the length of the generated string
+ */
+int complexes_parameters(char* provenance, int nStrands, char **seqs,
+        int nTotalOrders) {
+
+  char PROVENANCE_ENDS[] = " }\n";
+  char FIELD_TEMPERATURE[] = "\"temperature (C)\": ";
+  char FIELD_DANGLES[] = "\"dangles\": \"";
+  char FIELD_CONC_NA[] = "\"concentration Na (M)\": ";
+  char FIELD_CONC_MG[] = "\"concentration Mg (M)\": ";
+  char FIELD_STRANDS[] = "\"strands\": ";
+  char FIELD_NEXT[] = ", ";
+  char LIST_STARTS[] = "[";
+  char LIST_ENDS[]   = "]";
+  char PAIR_STARTS[] = "(";
+  char PAIR_ENDS[]   = ")";
+  char COMMA[] = ",";
+  char QUOTE[] = "\"";
+
+
+  int len_entry_temperature;
+  int len_entry_dangles;
+  int len_entry_conc_na;
+  int len_entry_conc_mg;
+  int len_entry_strands;
+  int len_provenance = 0;
+
+
+  /* retrieve each entry's value, and store it as provenance
+   */
+
+  provenance = strcpy(provenance, "");
+
+
+  /* dangles
+   */
+
+  // retrieve the dangle's length, and add it to the provenance
+  int len_nupack_dangles = (snprintf(NULL, 0, "%d", globalArgs.dangles) + 1);
+  len_entry_dangles = strlen(FIELD_DANGLES) + len_nupack_dangles
+        + strlen(QUOTE) + strlen(FIELD_NEXT);
+  len_provenance += len_entry_dangles;
+
+  // retrieve the dangle's value
+  char nupack_dangles[len_nupack_dangles];
+  snprintf(nupack_dangles, len_nupack_dangles, "%d", globalArgs.dangles);
+
+  // store the dangles
+  provenance = strcat(
+                strcat(
+                  strcat(
+                    strcat(provenance, FIELD_DANGLES),
+                    nupack_dangles),
+                  QUOTE),
+                FIELD_NEXT);
+
+
+  /* temperature
+   */
+
+  // retrieve the temperature's length, and add it to the provenance
+  int len_nupack_temperature = (snprintf(NULL, 0, "%.1f",
+        ((float)globalArgs.T)) + 1);
+  len_entry_temperature = strlen(FIELD_TEMPERATURE) + len_nupack_temperature
+        + strlen(FIELD_NEXT);
+  len_provenance += len_entry_temperature;
+
+  // retrieve the temperature's value
+  char nupack_temperature[len_nupack_temperature];
+  snprintf(nupack_temperature, len_nupack_temperature, "%.1f",
+        ((float)globalArgs.T));
+
+  // store the temperature
+  provenance = strcat(
+                  strcat(
+                    strcat(provenance, FIELD_TEMPERATURE),
+                    nupack_temperature),
+                  FIELD_NEXT);
+
+
+  /* sodium concentration
+   */
+
+  // retrieve the sodium's concentration length, and add it to the
+  // provenance
+  int len_nupack_conc_na = (snprintf(NULL, 0, "%.4f",
+        ((float)globalArgs.sodiumconc)) + 1);
+  len_entry_conc_na = strlen(FIELD_CONC_NA) + len_nupack_conc_na
+        + strlen(FIELD_NEXT);
+  len_provenance += len_entry_conc_na;
+
+  // retrieve the sodium's concentration value
+  char nupack_conc_na[len_nupack_conc_na];
+  snprintf(nupack_conc_na, len_nupack_conc_na, "%.4f",
+        ((float)globalArgs.sodiumconc));
+
+  // store the sodium concentration
+  provenance = strcat(
+                  strcat(
+                    strcat(provenance, FIELD_CONC_NA),
+                    nupack_conc_na),
+                  FIELD_NEXT);
+
+
+  /* magnesium concentration
+   */
+
+  // retrieve the magnesium's concentration length, and add it to the
+  // provenance
+  int len_nupack_conc_mg = (snprintf(NULL, 0, "%.4f",
+        ((float)globalArgs.magnesiumconc)) + 1);
+  len_entry_conc_mg = strlen(FIELD_CONC_MG) + len_nupack_conc_mg
+        + strlen(FIELD_NEXT);
+  len_provenance += len_entry_conc_mg;
+
+  // retrieve the magnesium's concentration value
+  char nupack_conc_mg[len_nupack_conc_mg];
+  snprintf(nupack_conc_mg, len_nupack_conc_mg, "%.4f",
+        ((float)globalArgs.magnesiumconc));
+
+  // store the magnesium concentration
+  provenance = strcat(
+                  strcat(
+                    strcat(provenance, FIELD_CONC_MG),
+                    nupack_conc_mg),
+                  FIELD_NEXT);
+
+
+  /* strands
+   */
+
+  // retrieve the strands' length, and add it to the provenance
+  int len_nupack_strands = strlen(LIST_STARTS);
+  for(int j=0 ; j<nStrands ; ++j) {
+    int len_nupack_strand_a = strlen(QUOTE) + (snprintf(NULL, 0, "%d", j) + 1)
+        + strlen(QUOTE);
+    int len_nupack_strand_b = strlen(QUOTE) + strlen(seqs[j]) + strlen(QUOTE);
+    len_nupack_strands += (strlen(PAIR_STARTS)
+        + len_nupack_strand_a
+        + strlen(COMMA) +
+        + len_nupack_strand_b
+        + strlen(PAIR_ENDS));
+    if(j<nStrands-1){
+      len_nupack_strands += strlen(COMMA);
+    }
+  }
+  len_nupack_strands += strlen(LIST_ENDS);
+
+  len_entry_strands = (strlen(FIELD_STRANDS) + len_nupack_strands);
+
+  len_provenance += len_entry_strands;
+
+  // retrieve the strands' value
+  char *nupack_strands = malloc(sizeof(char) * len_nupack_strands);
+  if(!nupack_strands){
+    exit(1);
+  }
+  for(size_t x=0 ; x < len_nupack_strands ; ++x){
+    nupack_strands[x] = 0;
+  }
+  nupack_strands = strcpy(nupack_strands, LIST_STARTS);
+
+  for(int j=0 ; j<nStrands ; ++j) {
+
+    // strand's value a
+    int len_nupack_strand_a = strlen(QUOTE) + (snprintf(NULL, 0, "%d", j) + 1)
+        + strlen(QUOTE);
+    char nupack_strand_a[len_nupack_strand_a];
+    snprintf(nupack_strand_a, len_nupack_strand_a, "%s%d%s", QUOTE, j, QUOTE);
+
+    // strand's value b
+    int len_nupack_strand_b = strlen(QUOTE) + strlen(seqs[j]) + strlen(QUOTE);
+    char *nupack_strand_b = malloc(sizeof(char) * len_nupack_strand_b);
+    if(!nupack_strand_b){
+      exit(1);
+    }
+    for(size_t x=0 ; x < len_nupack_strand_b ; ++x){
+      nupack_strand_b[x] = 0;
+    }
+    nupack_strand_b = strcat(
+                        strcat(
+                          strcpy(nupack_strand_b, QUOTE),
+                          seqs[j]),
+                        QUOTE);
+
+    int len_nupack_strand = (strlen(PAIR_STARTS)
+            + len_nupack_strand_a + strlen(COMMA) + len_nupack_strand_b
+            + strlen(PAIR_ENDS));
+    if(j<nStrands-1){
+      len_nupack_strand += strlen(COMMA);
+    }
+
+    char *nupack_strand = malloc(sizeof(char) * len_nupack_strand);
+    if(!nupack_strand){
+      exit(1);
+    }
+    for(size_t x=0 ; x < len_nupack_strand ; ++x){
+      nupack_strand[x] = 0;
+    }
+
+    nupack_strand = strcat(
+                      strcat(
+                        strcat(
+                          strcat(
+                            strcpy(nupack_strand, PAIR_STARTS),
+                            nupack_strand_a),
+                          COMMA),
+                        nupack_strand_b),
+                      PAIR_ENDS);
+    if(j<nStrands-1){
+      nupack_strand = strcat(nupack_strand, COMMA);
+    }
+
+    nupack_strands = strcat(nupack_strands, nupack_strand);
+
+    // free each strand
+    free(nupack_strand);
+    nupack_strand = NULL;
+
+    free(nupack_strand_b);
+    nupack_strand_b = NULL;
+  }
+  nupack_strands = strcat(nupack_strands, LIST_ENDS);
+
+  // store the strands
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, FIELD_STRANDS),
+                  nupack_strands),
+                PROVENANCE_ENDS);
+
+
+  // free all memory objects
+  free(nupack_strands);
+  nupack_strands = NULL;
 
   return len_provenance;
 }
