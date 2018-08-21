@@ -57,10 +57,6 @@ int main( int argc, char **argv) {
   int nTotalOrders = 0;
   int totalOrders2 = 0;
 
-  FILE *F_ocx = NULL;
-  char filePrefix[100], ocxName[110];
-
-
   long double TEMP_K;
 
   // permutations
@@ -69,9 +65,6 @@ int main( int argc, char **argv) {
   char line[MAXLINE];
   char line2[MAXLINE];
   char *token;
-
-  int fileRead;
-  int inputFileSpecified;
 
   long double **permPr = NULL;
 
@@ -83,6 +76,7 @@ int main( int argc, char **argv) {
   // provenance blocks
   int len_header = 1000;
   int len_parameters = 1000;
+  int len_complexes = 1000;
   int len_provenance;
 
 
@@ -99,77 +93,48 @@ int main( int argc, char **argv) {
   globalArgs.uselongsalt = 0;
   strcpy(globalArgs.inputFilePrefix, "NoInputFile");
 
-  inputFileSpecified = ReadCommandLine(argc, argv);
 
-  if (!inputFileSpecified) {
-    printf("No input file specified.\n");
-    fileRead = 0;
-  }
-  else {
-    fileRead = ReadInputFileComplexes(filePrefix, &nStrands,
-                &seqs, &seqlength, &maxLength, &maxComplexSize);
-    if (fileRead == 2) {
-      printf("Input file %s.in not found.\n",filePrefix);
-      fileRead = 0;
-    }
-  }
-
-  if( !fileRead ) {
-    printf("Requesting input manually.\n");
-    printf("Enter file prefix: ");
-    scanf("%s", filePrefix);
-  }
+  printf("No input file specified.\n");
+  printf("Requesting input manually.\n");
 
   TEMP_K = globalArgs.T + ZERO_C_IN_KELVIN;
 
-  sprintf( ocxName, "%s.ocx", filePrefix);
 
-  F_ocx = fopen( ocxName, "w");
-  if( !F_ocx) printf("Error: Unable to create %s\n", ocxName);
+  /* read number of sequences
+   */
+  char newline;
+  printf("Enter number of different sequences: ");
+  scanf("%d%c", &nStrands, &newline);
 
+  // allocate function variables
+  seqs = (char**) malloc(sizeof(char*) * nStrands);
+  seqlength = (int*) malloc(sizeof(int) * nStrands);
 
-  if( !fileRead) { // if error in reading input file, get manual input
+  maxLength = 0;
 
-    /* read number of sequences
-     */
-    char *p, s[MAXLINE];
-    while (fgets(s, MAXLINE, stdin)) {
-        nStrands = strtol(s, &p, 10);
-        if (p == s || *p != '\n') {
-          printf("Enter number of different sequences: ");
-        } else break;
+  /* read sequences
+   */
+  for(int i=0 ; i<=(nStrands-1) ; ++i) {
+    printf("Enter Sequence %d:\n", i+1);
+    scanf("%s", line);
+    seqlength[i] = strlen(line);
+
+    if(seqlength[i] > maxLength){
+      maxLength = seqlength[i];
     }
 
-    // allocate function variables
-    seqs = (char**) malloc(sizeof(char*) * nStrands);
-    seqlength = (int*) malloc(sizeof(int) * nStrands);
+    seqs[i] = (char*) malloc(sizeof(char) * (seqlength[i]+1));
+    strcpy(seqs[i], line);
+  }
 
-    maxLength = 0;
-
-    /* read sequences
-     */
-    for(int i=0 ; i<=(nStrands-1) ; ++i) {
-      printf("Enter Sequence %d:\n", i+1);
-      scanf("%s", line);
-      seqlength[i] = strlen(line);
-
-      if(seqlength[i] > maxLength){
-        maxLength = seqlength[i];
-      }
-
-      seqs[i] = (char*) malloc(sizeof(char) * (seqlength[i]+1));
-      strcpy(seqs[i], line);
-    }
-
-    /* read max complex size
-     */
-    char *q, r[MAXLINE];
-    while (fgets(r, MAXLINE, stdin)){
-        maxComplexSize = strtol(r, &q, 10);
-        if (q == r || *q != '\n') {
-          printf("Enter max complex size to completely enumerate: ");
-        } else break;
-    }
+  /* read max complex size
+   */
+  char *q, r[MAXLINE];
+  while (fgets(r, MAXLINE, stdin)){
+      maxComplexSize = strtol(r, &q, 10);
+      if (q == r || *q != '\n') {
+        printf("Enter max complex size to completely enumerate: ");
+      } else break;
   }
 
 
@@ -197,7 +162,6 @@ int main( int argc, char **argv) {
 
 
   totalSets = nSets + nNewComplexes;
-
 
 
   /* generate all necklaces for each length with order nStrands starts
@@ -253,9 +217,8 @@ int main( int argc, char **argv) {
    * generate all necklaces for each length with order nStrands ends */
 
 
-  /* echo provenance header
+  /* echo provenance header starts
    */
-
   // allocate provenance block
   char *header = malloc(sizeof(char) * len_header);
   if(!header){
@@ -274,11 +237,12 @@ int main( int argc, char **argv) {
   // free provenance block
   free(header);
   header = NULL;
+  /*
+   * echo provenance header ends */
 
 
-  /* echo provenance parameters
+  /* echo provenance parameters starts
    */
-
   // allocate provenance block
   char *parameters = malloc(sizeof(char) * len_parameters);
   if(!parameters){
@@ -298,8 +262,12 @@ int main( int argc, char **argv) {
   // free provenance block
   free(parameters);
   parameters = NULL;
+  /*
+   * echo provenance parameters ends */
 
 
+  /* complexes calculation starts
+   */
   totalOrders2 = offset;
   qsort(allPermutations, totalOrders2, sizeof(permutation),
         &comparePermutations);
@@ -375,25 +343,28 @@ int main( int argc, char **argv) {
             currentPerm->symmetryFactor, globalArgs.sodiumconc,
             globalArgs.magnesiumconc, globalArgs.uselongsalt);
 
-      // print permutation info
-      if(pf <= 0.0) fprintf(F_ocx, "%% ");
-      fprintf(F_ocx, "%d\t%d\t", lastCxId, permId);
-
-      for(int j=0 ; j<=(nStrands-1) ; ++j){
-        fprintf(F_ocx, "%d\t", allSets[i].code[j]); // strand composition
+      /* echo provenance complexes starts
+       */
+      // allocate provenance block
+      char *complexes = malloc(sizeof(char) * len_complexes);
+      if(!complexes){
+        exit(1);
+      }
+      for(int y=0 ; y<len_complexes ; ++y){
+        complexes[y] = 0;
       }
 
-      if(pf > 0.0){
-        if(!NUPACK_VALIDATE){
-          fprintf(F_ocx, "%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
-        }
-        else{
-          fprintf(F_ocx, "%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
-        }
+      // fill provenance block
+      len_provenance = complexes_results(complexes, lastCxId, permId, nStrands, allSets, i, pf, TEMP_K);
+      for(int y=0 ; y<len_provenance ; ++y){
+        printf("%c", parameters[y]);
       }
-      else{
-        fprintf(F_ocx, "No legal secondary structures!\n");
-      }
+
+      // free provenance block
+      free(complexes);
+      complexes = NULL;
+      /*
+       * echo provenance complexes ends */
 
       permId++;
 
@@ -401,7 +372,6 @@ int main( int argc, char **argv) {
       allSets[i].pf += pf;
 
       currentPerm = currentPerm->next;
-
     }
 
     // keep complex Ids consecutive
@@ -412,12 +382,11 @@ int main( int argc, char **argv) {
   }
 
   for(int j=0 ; j<nStrands ; ++j){ // free
-    free( permPr[j]);
+    free(permPr[j]);
     permPr[j] = NULL;
   }
-  free( permPr);
+  free(permPr);
   permPr = NULL;
-  fclose( F_ocx);
 
   free( nicks); nicks = NULL;
 
@@ -452,6 +421,8 @@ int main( int argc, char **argv) {
   free(allSets); allSets = NULL;
 
   free(pfSeq); pfSeq = NULL;
+  /*
+   * complexes calculation ends */
 
   return 0;
 }

@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "complexesStructs.h"
+
 int ReadCommandLine(int, char**);
 
 int ReadInputFileComplexes(char *filePrefix, int *nStrands,
@@ -11,4 +13,6 @@ void printHeader(int nStrands, char **seqs, int maxComplexSize,
                  FILE *F_cx, int nargs, char **argv, int isPairs);
 int complexes_header(char*, int, char**);
 int complexes_parameters(char*, int, char**, int);
+int complexes_results(char*, int, int, int, multiset*, int, long double,
+        long double);
 void print_deprecation_info(FILE *out);

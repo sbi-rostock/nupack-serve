@@ -777,3 +777,31 @@ int complexes_parameters(char* provenance, int nStrands, char **seqs,
   return len_provenance;
 }
 
+
+
+/* create a string containing all provenance's complexes informations:
+ * - complex ID
+ * - permutation ID
+ * - strand code (one per provided strand)
+ * - temperature
+ * return the length of the generated string
+ */
+int complexes_results(char* provenance, int complex_id, int permutation_id,
+    int num_strands, multiset* all_sets, int set_number, long double pf,
+    long double TEMP_K){
+  printf("%d\t%d\t", complex_id, permutation_id);
+
+  for(int j=0 ; j<=(num_strands-1) ; ++j){
+    printf("%d\t", all_sets[set_number].code[j]); // strand composition
+  }
+
+  if(pf > 0.0){
+    if(!NUPACK_VALIDATE){
+      printf("%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
+    }
+    else{
+      printf("%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
+    }
+  }
+  return 0;
+}
