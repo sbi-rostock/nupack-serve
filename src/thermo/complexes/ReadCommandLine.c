@@ -710,7 +710,7 @@ int complexes_parameters(char* provenance, int nStrands, char **seqs,
 
     // strand's value b
     int len_nupack_strand_b = strlen(QUOTE) + strlen(seqs[j]) + strlen(QUOTE);
-    char *nupack_strand_b = malloc(sizeof(char) * len_nupack_strand_b);
+    char *nupack_strand_b = malloc(sizeof(char) * (len_nupack_strand_b + 1));
     if(!nupack_strand_b){
       exit(1);
     }
