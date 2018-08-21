@@ -28,73 +28,56 @@
 #include "permBG.h"
 #include "ReadCommandLine.h"
 
-//Global variables
 extern int nStrands;
-
 globalArgs_t globalArgs;
 
+
+
 int main( int argc, char **argv) {
-  //generate subsets for given sequences
 
-  int i, j, k;  // Counters
-
-  char **seqs; //list of all seqs
-  int *seqlength; //list of all seqlengths
+  char **seqs; // list of all seqs
+  int *seqlength; // list of all seqlengths
 
   multiset *allSets;
 
-  char firstChar[2];
-
   int nSets;
   int totalSets; // including sets in the input list
-  int setStart=0;  // index of set to start with, for use with -listonly
+  int setStart=0; // index of set to start with, for use with -listonly
 
   int maxLength;
 
-  int maxComplexSize=0;
-  int maxListComplexSize=0;
-  int complexSize;
-  int nMonomer;
+  int maxListComplexSize = 0;
+  int maxComplexSize = 0;
+  int nNewComplexes = 0;
+  int nNewPerms = 0;
 
-  int nNewComplexes;
-  int nNewPerms;
-
-  char *pfSeq;
-  int tmpLength; // Stores current sequence length
-  int seqNum[ MAXSEQLENGTH+1]; // Stores current sequence as ints
   long double pf;
-  int *nicks;
-
 
   double totalOrders;
-  int nTotalOrders;
-
+  int nTotalOrders = 0;
   int totalOrders2 = 0;
-  int status;
 
-  int seqCode;
   FILE *F_ocx = NULL;
-  FILE *F_list = NULL;
-  FILE *F_perm = NULL;
-  char filePrefix[100], ocxName[110], listName[110], permName[110];
+  char filePrefix[100], ocxName[110];
 
-  char *token;
 
   long double TEMP_K;
 
+  // permutations
   permutation *currentPerm=NULL;
-  permutation *tmpPerm;
-
-  char line[ MAXLINE];
+  int permId;
+  char line[MAXLINE];
   char line2[MAXLINE];
+  char *token;
+
   int fileRead;
   int inputFileSpecified;
 
-  int permId;
   long double **permPr = NULL;
 
-  int lastCxId = 1; //used to index complex id#,
-  //in case some are not used due to no possible secondary structures
+  int lastCxId = 1; // index complex id numbers
+                    // (in case some are not used due to no possible secondary
+                    // structures)
 
 
   // provenance blocks
@@ -103,29 +86,28 @@ int main( int argc, char **argv) {
   int len_provenance;
 
 
-  // Set defaults of global args
+  // global argument defaults
   globalArgs.T = 37.0;
   globalArgs.dangles = 1;
   globalArgs.dopairs = 0;
   globalArgs.parameters = RNA;
   globalArgs.listonly = 0;
-  globalArgs.cutoff = 0.001; // Cutoff bp probability to report
+  globalArgs.cutoff = 0.001; // cutoff bp probability to report
   globalArgs.onlyOneMFE = 1;
   globalArgs.sodiumconc = 1.0;
   globalArgs.magnesiumconc = 0.0;
   globalArgs.uselongsalt = 0;
-  strcpy( globalArgs.inputFilePrefix, "NoInputFile");
+  strcpy(globalArgs.inputFilePrefix, "NoInputFile");
 
-  inputFileSpecified = ReadCommandLine( argc, argv);
+  inputFileSpecified = ReadCommandLine(argc, argv);
 
   if (!inputFileSpecified) {
     printf("No input file specified.\n");
     fileRead = 0;
   }
   else {
-    fileRead = ReadInputFileComplexes( filePrefix, &nStrands,
-                                      &seqs, &seqlength, &maxLength,
-                                      &maxComplexSize);
+    fileRead = ReadInputFileComplexes(filePrefix, &nStrands,
+                &seqs, &seqlength, &maxLength, &maxComplexSize);
     if (fileRead == 2) {
       printf("Input file %s.in not found.\n",filePrefix);
       fileRead = 0;
@@ -141,116 +123,134 @@ int main( int argc, char **argv) {
   TEMP_K = globalArgs.T + ZERO_C_IN_KELVIN;
 
   sprintf( ocxName, "%s.ocx", filePrefix);
-  sprintf( listName, "%s.list", filePrefix);
-  sprintf( permName, "%s.ocx-key", filePrefix);
-
-
-  F_list = fopen( listName, "r");
-
-  if(F_list == NULL) {  // check if file exists
-    printf("There is no input list %s.\n", listName);
-  }
-
-  F_perm = fopen( permName, "w");
-  if( !F_perm) printf("Error: Unable to create %s\n", permName);
 
   F_ocx = fopen( ocxName, "w");
   if( !F_ocx) printf("Error: Unable to create %s\n", ocxName);
 
 
-  if( !fileRead) { //if error in reading input file, get manual input
-    printf("Enter Number of Different Sequences: ");
-    scanf("%d", &nStrands);
+  if( !fileRead) { // if error in reading input file, get manual input
 
-    //allocate function variables
-    seqs = (char **) malloc( nStrands*sizeof( char*));
-    seqlength = (int *) malloc( nStrands*sizeof( int));
+    /* read number of sequences
+     */
+    char *p, s[MAXLINE];
+    while (fgets(s, MAXLINE, stdin)) {
+        nStrands = strtol(s, &p, 10);
+        if (p == s || *p != '\n') {
+          printf("Enter number of different sequences: ");
+        } else break;
+    }
+
+    // allocate function variables
+    seqs = (char**) malloc(sizeof(char*) * nStrands);
+    seqlength = (int*) malloc(sizeof(int) * nStrands);
 
     maxLength = 0;
-    for( i = 0; i<=nStrands-1; i++) {
+
+    /* read sequences
+     */
+    for(int i=0 ; i<=(nStrands-1) ; ++i) {
       printf("Enter Sequence %d:\n", i+1);
       scanf("%s", line);
-      seqlength[i] = strlen( line);
-      if( seqlength[i] > maxLength) maxLength = seqlength[i];
+      seqlength[i] = strlen(line);
 
-      seqs[i] = (char*) malloc( (seqlength[i]+1)*sizeof( char));
-      strcpy( seqs[i], line);
+      if(seqlength[i] > maxLength){
+        maxLength = seqlength[i];
+      }
+
+      seqs[i] = (char*) malloc(sizeof(char) * (seqlength[i]+1));
+      strcpy(seqs[i], line);
     }
 
-    printf("Enter max complex size to completely enumerate: ");
-    scanf("%d", &maxComplexSize);
+    /* read max complex size
+     */
+    char *q, r[MAXLINE];
+    while (fgets(r, MAXLINE, stdin)){
+        maxComplexSize = strtol(r, &q, 10);
+        if (q == r || *q != '\n') {
+          printf("Enter max complex size to completely enumerate: ");
+        } else break;
+    }
   }
 
 
-  // Read information from .list file
+  // read information from .list file
   maxListComplexSize = maxComplexSize;
-  //printf("maxComplexSize=%d\n",maxComplexSize);
-  nNewComplexes = nNewPerms = 0;
-  int CLastLine = 0;
-  int * lastCLine = malloc(nStrands * sizeof(int));
-  if( F_list != NULL) {
-    while( fgets( line, MAXLINE, F_list)) {
-      sscanf(line, "%1s", firstChar);
 
-      if( firstChar[0] == '%') {
-        continue;
-      }
-      if( firstChar[0] == 'C') {
-        if(CLastLine) {
-          nNewPerms += makeFCPermutations(NULL,lastCLine,complexSize,nStrands);
-        }
-        nNewComplexes++;
-        complexSize = 0;
-        token = strtok( line, " ");
-        CLastLine = 1;
-        for( i = 0; i < nStrands; i++) {
-          token = strtok( NULL, " ");
-          if( !token ||  sscanf( token, "%d", &nMonomer) != 1) {
-            printf("Error in list file, line: %s\n", line);
-            exit(1);
-          }
-          lastCLine[i] = nMonomer;
+  nNewPerms = nStrands;
 
-          complexSize += nMonomer;
-        }
-
-        // Check to make sure input complex size is greater than max complex size
-        if (complexSize <= maxComplexSize) {
-          printf("Error in list file.  All complexes in list file must be\n");
-          printf("greater than maximum complex size specified in input file.\n");
-          exit(1);
-        }
-        if( complexSize > maxListComplexSize)
-          maxListComplexSize = complexSize;
-      }
-      else if( isdigit( firstChar[0]) ) {
-        CLastLine = 0;
-        nNewPerms++;
-      }
-    }
-    if(CLastLine && complexSize > maxComplexSize) {
-      nNewPerms += makeFCPermutations(NULL,lastCLine,complexSize,nStrands);
-    }
-  }
-
-  //determine total # of distinct strand orders (lovasz, 3.23b)
+  // determine total # of distinct strand orders (lovasz, 3.23b)
   totalOrders = nNewPerms;
-  for( i = 1; i <= maxComplexSize; i++) {
-    for( j = 1; j <= i; j++) {
 
-      totalOrders += pow( nStrands, gcd( j, i))/i;
+  for(int i=1; i<=maxComplexSize ; ++i){
+    for(int j=1 ; j<=i ; ++j){
+      totalOrders += pow(nStrands, gcd(j, i))/i;
     }
   }
   nTotalOrders = totalOrders + 0.1;
 
-  //Next, generate all multisets
+  // generate all multisets
   nSets = binomial_coefficient(maxComplexSize + nStrands,maxComplexSize) - 1;
   if(nSets < 1) {
     fprintf(stderr,"Integer overflow occurred while counting permutations!\n");
     exit(1);
   }
 
+
   totalSets = nSets + nNewComplexes;
+
+
+
+  /* generate all necklaces for each length with order nStrands starts
+   */
+  int cursize = 1;
+  permutation * allPermutations = (permutation*)
+                    malloc(nTotalOrders * sizeof(permutation));
+  int added = 0;
+  int offset = 0;
+  for(cursize = 1; cursize <= maxComplexSize ; cursize++) {
+    added = makePermutations(allPermutations + offset,cursize,nStrands);
+    offset += added;
+  }
+  totalOrders2 = offset;
+
+  /* read permutations
+   */
+  for(int x=1 ; x<=nNewPerms ; ++x){
+    printf("Enter permutation %d: ", x);
+    fgets(line, MAXLINE, stdin);
+
+    int curStrand;
+    int curStrandIndex;
+    int curNumStrands;
+
+    strncpy(line2,line,MAXLINE);
+    token = strtok(line," ,\t\n");
+    curNumStrands = 0;
+    while(NULL != token) {
+      curNumStrands++;
+      token = strtok(NULL, " ,\t\n");
+    }
+    allPermutations[offset].nSeqs = curNumStrands;
+    allPermutations[offset].code = (int *) malloc(curNumStrands * sizeof(int));
+    allPermutations[offset].strand_sums = (int *) malloc(nStrands * sizeof(int));
+    allPermutations[offset].symmetryFactor = 1;
+    for(curStrand = 0; curStrand < nStrands ; curStrand++) {
+      allPermutations[offset].strand_sums[curStrand] = 0;
+    }
+    token = strtok(line2," ,\t\n");
+
+    curStrandIndex = 0;
+    while(NULL != token) {
+      sscanf(token, "%d", &curStrand);
+      allPermutations[offset].code[curStrandIndex] = curStrand;
+      allPermutations[offset].strand_sums[curStrand - 1] ++;
+      curStrandIndex ++;
+      token = strtok(NULL, " ,\t\n");
+    }
+    ++offset;
+  }
+  /*
+   * generate all necklaces for each length with order nStrands ends */
 
 
   /* echo provenance header
@@ -276,7 +276,7 @@ int main( int argc, char **argv) {
   header = NULL;
 
 
-  /* echo provenance parameters starts
+  /* echo provenance parameters
    */
 
   // allocate provenance block
@@ -300,229 +300,99 @@ int main( int argc, char **argv) {
   parameters = NULL;
 
 
-  // Generate all necklaces for each length with order nStrands
-
-  int cursize = 1;
-  permutation * allPermutations = (permutation*)
-                    malloc(nTotalOrders * sizeof(permutation));
-  int added = 0;
-  int offset = 0;
-  for(cursize = 1; cursize <= maxComplexSize ; cursize++) {
-    added = makePermutations(allPermutations + offset,cursize,nStrands);
-    offset += added;
-  }
   totalOrders2 = offset;
-
-  if( F_list != NULL) {
-    rewind( F_list); //go to beginning of prefix.list
-
-    //Get extra sets and perms from prefix.list
-    offset = totalOrders2;
-    int curStrand;
-    int curStrandIndex;
-    int curNumStrands;
-    int list_file_line = 0;
-    int warning_printed = 0;
-    CLastLine = 0;
-
-    while(NULL != fgets(line,MAXLINE,F_list)) {
-      list_file_line ++;
-      strncpy(line2,line,MAXLINE);
-      token = strtok(line," ,\t\n");
-      if(token == NULL) {
-        continue;
-      }
-      if(token[0] == '%') {
-        continue;
-      }
-      if(token[0] == 'C') {
-        if(!warning_printed) {
-          printf("Warning: 'C' lines in the list file are deprecated please specify ordered complexes directly\n");
-          warning_printed = 1;
-        }
-
-        if(CLastLine) {
-          curNumStrands = 0;
-          for(curStrand = 0 ; curStrand < nStrands ; curStrand++) {
-            curNumStrands += lastCLine[curStrand];
-          }
-          offset += makeFCPermutations(allPermutations + offset, lastCLine, curNumStrands, nStrands);
-        }
-
-        curStrand = 0;
-        token = strtok(NULL," ,\t\n");
-        while(NULL != token && curStrand < nStrands) {
-          if(! sscanf(token, "%d", &curNumStrands)) {
-            fprintf(stderr,"Error on line %d: encountered %s\n",list_file_line,token);
-            exit(1);
-          }
-          lastCLine[curStrand] = curNumStrands;
-          token = strtok(NULL," ,\t\n");
-          curStrand++;
-        }
-
-        CLastLine = 1;
-        continue;
-      }
-      
-      if(0 == sscanf(token, "%d", &curStrand)) {
-        fprintf(stderr,"Error on line %d: encountered %s\n",list_file_line,token);
-        exit(1);
-      }
-      
-      curNumStrands = 0;
-      while(NULL != token) {
-        if(0 == sscanf(token, "%d", &curStrand)) {
-          fprintf(stderr,"Error on line %d: encountered %s\n",list_file_line,token);
-          exit(1);
-        }
-        curNumStrands++;
-        token = strtok(NULL, " ,\t\n");
-      }
-      
-      allPermutations[offset].nSeqs = curNumStrands;
-      allPermutations[offset].code = (int *) malloc(curNumStrands * sizeof(int));
-      allPermutations[offset].strand_sums = (int *) malloc(nStrands * sizeof(int));
-      allPermutations[offset].symmetryFactor = 1;
-      for(curStrand = 0; curStrand < nStrands ; curStrand++) {
-        allPermutations[offset].strand_sums[curStrand] = 0;
-      }
-      token = strtok(line2," ,\t\n");
-
-      curStrandIndex = 0;
-      CLastLine = 0;
-      while(NULL != token) {
-        sscanf(token, "%d", &curStrand);
-        if(curStrand > nStrands) {
-          fprintf(stderr,"Error on line %d: %i > number of strands\n",list_file_line,curStrand);
-          exit(1);
-        }
-        allPermutations[offset].code[curStrandIndex] = curStrand;
-        allPermutations[offset].strand_sums[curStrand - 1] ++;
-        curStrandIndex ++;
-        token = strtok(NULL, " ,\t\n");
-      }
-      offset++;
-    }
-    if(CLastLine ) {
-      curNumStrands = 0;
-      for(curStrand = 0; curStrand < nStrands ; curStrand++) {
-        curNumStrands += lastCLine[curStrand];
-      }
-      offset += makeFCPermutations(allPermutations+offset,lastCLine,curNumStrands,nStrands);
-    }
-    free(lastCLine); lastCLine=NULL;
-  }
-
-  totalOrders2 = offset;
-  qsort( allPermutations, totalOrders2, sizeof(permutation), &comparePermutations);
+  qsort(allPermutations, totalOrders2, sizeof(permutation),
+        &comparePermutations);
 
   totalSets = CountSets(allPermutations, totalOrders2, nStrands);
 
-  allSets = (multiset*) malloc( (totalSets)*sizeof( multiset));
+  allSets = (multiset*) malloc(sizeof(multiset) * totalSets);
 
   int maxSeqLength = FillSets(allSets, allPermutations,
                           totalSets, totalOrders2,
                           nStrands, seqlength) ;
 
   maxListComplexSize = GetMaxComplexSize(allSets,totalSets);
-  nicks = (int*) malloc( maxListComplexSize*sizeof(int) );
 
-  if( nTotalOrders != totalOrders2) {
-    printf("Internal error! Total number of permutations is incorrect! %d != %d\n",
-           nTotalOrders, totalOrders2);
-    exit(1);
+  int* nicks = (int*) malloc(sizeof(int) * maxListComplexSize);
+
+  // allocate memory for pfSeq;
+  char* pfSeq = (char*) malloc(sizeof(char) * (maxSeqLength + 1));
+
+  permPr = (long double**) malloc(sizeof(long double*) * nStrands);
+
+  for(int j=0; j<nStrands ; ++j) { // calloc initialize to zero
+    permPr[j] = (long double*) calloc(seqlength[j], sizeof(long double));
   }
 
-  if( F_list != NULL) {
-    fclose( F_list);
-  }
-
-  // 2006/03/08, Add in a sorting subroutine, to order sets by total # of strands
-  // Don't sort with -listonly so we can skip all i < nSets
-  if (!globalArgs.listonly) qsort( allSets, nSets, sizeof( multiset), &compareMultisets);
-
-  //allocate memory for pfSeq;
-  pfSeq = (char*) malloc( (maxSeqLength + 1) *sizeof(char) );
-
-  permPr = (long double **)
-    malloc( nStrands*sizeof( long double*));
-  for( j = 0; j < nStrands; j++) { //calloc initialize to zero
-    permPr[j] = (long double*)
-      calloc( seqlength[j], sizeof( long double));
-  }
-
-  for( i = setStart; i <= totalSets-1; i++) {
+  for(int i=setStart ; i<=(totalSets-1) ; ++i){
     allSets[i].nMfePerms = 0;
-    allSets[i].mfePerms = (int *) calloc( 10, sizeof(int));
+    allSets[i].mfePerms = (int*) calloc(10, sizeof(int));
   }
 
 
-  status = setStart;
-  for( i = setStart; i <= totalSets-1; i++) {
+  int status = setStart;
+  for(int i=setStart ; i<=(totalSets-1) ; ++i){
 
     status += allSets[i].nPerms;
-
-    allSets[i].pf = 0; //initialize pf
+    allSets[i].pf = 0; // initialize pf
 
 
     currentPerm = allSets[i].perms;
     permId = 1;
-    while( currentPerm != NULL) {
-      resetNicks( maxListComplexSize, nicks);
+    while( currentPerm != NULL){
+      resetNicks(maxListComplexSize, nicks);
 
-      seqCode = (currentPerm->code)[0] - 1;
-      strcpy(pfSeq, seqs[ seqCode]);
+      int seqCode = (currentPerm->code)[0] - 1;
+      strcpy(pfSeq, seqs[seqCode]);
 
-      //set sequences and nicks
-      if( allSets[i].nSeqs >= 2) nicks[0] = seqlength[ seqCode] - 1;
+      // set sequences and nicks
+      if(allSets[i].nSeqs >= 2){
+        nicks[0] = seqlength[seqCode] - 1;
+      }
 
-      for( k = 0; k <= allSets[i].nSeqs-2; k++) {
-
+      for(int k=0 ; k<=(allSets[i].nSeqs-2) ; ++k){
         seqCode = (currentPerm->code)[k+1] - 1;
 
-        strcat( pfSeq, "+");
-        strcat( pfSeq, seqs[ seqCode]);
+        strcat(pfSeq, "+");
+        strcat(pfSeq, seqs[seqCode]);
 
-        if( k != allSets[i].nSeqs-2)
-          nicks[k+1] = nicks[k]+
-          seqlength[ seqCode];
+        if(k != (allSets[i].nSeqs-2)){
+          nicks[k+1] = nicks[k] + seqlength[seqCode];
+        }
 
       }
 
-      strncpy( currentPerm->seq, pfSeq,
-              allSets[i].totalLength + allSets[i].nSeqs);
+      strncpy(currentPerm->seq, pfSeq,
+            allSets[i].totalLength + allSets[i].nSeqs);
 
-
-      //call library function to compute pseudoknot-free partition function
-      tmpLength = strlen( pfSeq);
+      // call library function to compute pseudoknot-free partition function
+      int tmpLength = strlen(pfSeq); // store current sequence length
+      int seqNum[MAXSEQLENGTH + 1];  // store current sequence as ints
       convertSeq(pfSeq, seqNum, tmpLength);
-      pf =  pfuncFullWithSym( seqNum, 3, globalArgs.parameters,
-                              globalArgs.dangles,
-                              globalArgs.T,
-                              globalArgs.dopairs,
-                              currentPerm->symmetryFactor,
-                              globalArgs.sodiumconc,
-                              globalArgs.magnesiumconc,
-                              globalArgs.uselongsalt);
+      pf = pfuncFullWithSym(seqNum, 3, globalArgs.parameters,
+            globalArgs.dangles, globalArgs.T, globalArgs.dopairs,
+            currentPerm->symmetryFactor, globalArgs.sodiumconc,
+            globalArgs.magnesiumconc, globalArgs.uselongsalt);
 
-
-      //print permutation info
-      if( pf <= 0.0) fprintf(F_ocx, "%% ");
+      // print permutation info
+      if(pf <= 0.0) fprintf(F_ocx, "%% ");
       fprintf(F_ocx, "%d\t%d\t", lastCxId, permId);
 
-      for( j = 0; j <= nStrands - 1; j++) {
-        fprintf( F_ocx, "%d\t", allSets[i].code[j]); //strand composition
+      for(int j=0 ; j<=(nStrands-1) ; ++j){
+        fprintf(F_ocx, "%d\t", allSets[i].code[j]); // strand composition
       }
 
-      if( pf > 0.0) {
-        if(!NUPACK_VALIDATE) {
-          fprintf( F_ocx, "%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
-        } else {
-          fprintf( F_ocx, "%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC( pf) );
+      if(pf > 0.0){
+        if(!NUPACK_VALIDATE){
+          fprintf(F_ocx, "%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
         }
-      } else {
-        fprintf( F_ocx, "No legal secondary structures!\n");
+        else{
+          fprintf(F_ocx, "%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
+        }
+      }
+      else{
+        fprintf(F_ocx, "No legal secondary structures!\n");
       }
 
       permId++;
@@ -534,57 +404,54 @@ int main( int argc, char **argv) {
 
     }
 
-
-    if(allSets[i].pf > 0.0) {
-      printPerms( F_perm, lastCxId, nStrands, &(allSets[i]));
+    // keep complex Ids consecutive
+    if(allSets[i].pf > 0.0){
+      lastCxId++;
     }
-
-    if( allSets[i].pf > 0.0) lastCxId++; //this will keep complex Ids consecutive
 
   }
 
-  for( j = 0; j < nStrands; j++) { //free
+  for(int j=0 ; j<nStrands ; ++j){ // free
     free( permPr[j]);
     permPr[j] = NULL;
   }
   free( permPr);
   permPr = NULL;
-
-  fclose( F_perm);
   fclose( F_ocx);
 
   free( nicks); nicks = NULL;
 
-  for( i = 0; i<=nStrands-1; i++) {
-    free( seqs[i]); seqs[i] = NULL;
+  for(int i=0 ; i<=(nStrands-1) ; ++i){
+    free(seqs[i]);
+    seqs[i] = NULL;
   }
 
-  free( seqlength); seqlength = NULL;
-  free( seqs); seqs = NULL;
+  free(seqlength);
+  seqlength = NULL;
 
+  free(seqs);
+  seqs = NULL;
 
-  for( i = setStart; i <= totalSets-1; i++) {
+  for(int i=setStart ; i<=(totalSets-1) ; ++i){
+    free(allSets[i].code);
+    allSets[i].code = NULL;
 
-    free( allSets[i].code); allSets[i].code = NULL;
-
-    free( allSets[i].mfePerms);
+    free(allSets[i].mfePerms);
     allSets[i].mfePerms = NULL;
 
     currentPerm = allSets[i].perms;
-    while( currentPerm != NULL) {
-      free( currentPerm->code); currentPerm->code = NULL;
-      free( currentPerm->baseCode); currentPerm->code = NULL;
-      free( currentPerm->seq); currentPerm->seq = NULL;
-      free( currentPerm->strand_sums); currentPerm->strand_sums = NULL;
-      tmpPerm = currentPerm;
+    while( currentPerm != NULL){
+      free(currentPerm->code); currentPerm->code = NULL;
+      free(currentPerm->baseCode); currentPerm->code = NULL;
+      free(currentPerm->seq); currentPerm->seq = NULL;
+      free(currentPerm->strand_sums); currentPerm->strand_sums = NULL;
       currentPerm = currentPerm->next;
     }
   }
-  free( allPermutations); allPermutations = NULL;
-  free( allSets); allSets = NULL;
+  free(allPermutations); allPermutations = NULL;
+  free(allSets); allSets = NULL;
 
-  //free( seqlength); seqlength = NULL;
-  free( pfSeq); pfSeq = NULL;
+  free(pfSeq); pfSeq = NULL;
 
   return 0;
 }
