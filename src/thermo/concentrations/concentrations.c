@@ -77,15 +77,11 @@ int main(int argc, char *argv[]) {
   FILE *fplog; // The logFile, which contains information about the run.
   FILE *fpeq; // The .eq file, which contains the output of the file.
   FILE *fpfpairs; // file handle for fpairs file
-  
-  /* version 3 output */
-  int v3;
 
   // Read command line arguments
   ReadCommandLine(argc,argv,cxFile,conFile,logFile,eqFile,pairsFile,fpairsFile,
 		  &SortOutput,&MaxIters,&tol,&kT,&MaxNoStep,&MaxTrial,&PerturbScale,
-		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&DoBPfracs,&seed,&cutoff,&NUPACK_VALIDATE,
-      &v3);
+		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&DoBPfracs,&seed,&cutoff,&NUPACK_VALIDATE);
 
 
   // Pull eta and deltaBar from global variables

@@ -88,7 +88,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 		     int *SortOutput, int *MaxIters, double *tol, double *kT,
 		     int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
 		     int *WriteLogFile, int *Toverride, int *NoPermID, 
-		     int *DoBPfracs, unsigned long *seed, double *cutoff,int * NUPACK_VALIDATE, int *v3) {
+		     int *DoBPfracs, unsigned long *seed, double *cutoff,int * NUPACK_VALIDATE) {
 
   int options;  // Counters used in getting flags
   int ShowHelp; // ShowHelp = 1 if help option flag is selected
@@ -121,11 +121,9 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   *cutoff = 0.001; // Default cutoff
   *NUPACK_VALIDATE = 0;
   ShowHelp = 0;
-  
-  /* version 3 output */
-  *v3 = 0;
-  int prev_ordered = 1; // used to keep -ordered off if not specified before -v3
-  
+
+  int prev_ordered = 1; // used to keep -ordered off
+
   SetExecutionPath(nargs, args);
   
   // Get the option flags
@@ -148,7 +146,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	        {"seed",          required_argument,  0, 'm'},
 	        {"cutoff",        required_argument,  0, 'n'},
           {"validate",      no_argument,        0, 'o'},
-          {"v3.0",          no_argument,        0, 'z'},
           {0, 0, 0, 0}
         };
       /* getopt_long stores the option index here. */
@@ -241,11 +238,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
           *cutoff = 0;
           break;
 
-        case 'z':
-          *v3 = 1;
-          *NoPermID = prev_ordered;
-          break;
-
         case '?':
           // getopt_long already printed an error message.
           break;
@@ -254,11 +246,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
           abort();
         }
     }
-
-  /* version 3 output */
-  if (!*quiet) {
-    print_deprecation_info(stdout);
-  }
 
   if (ShowHelp) {
     DisplayHelpConc();
@@ -352,8 +339,7 @@ void DisplayHelpConc() {
 void print_deprecation_info(FILE *out) {
   char *dep_mess = 
   "Relative to NUPACK 3.0, the following change was introduced to the\n"
-  "concentrations executable: the -ordered option is on by default.\n"
-  "Use the -v3.0 option to revert to NUPACK 3.0 behavior.\n\n";
+  "concentrations executable: the -ordered option is on by default.\n";
 
   fprintf(out, "%s", dep_mess);
   
