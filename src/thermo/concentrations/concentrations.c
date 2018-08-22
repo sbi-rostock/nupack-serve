@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
   double *G; // Free energies of complexes
   double *x; // The mole fractions
   double *x0; // Total concentrations of single-species
-  double cutoff; // Cutoff value for reporting pair fractions
   int NUPACK_VALIDATE; // 1 if validation mode (14 digit printout)
   int *numPermsArray; // Number of permutations of each species
   int *CompIDArray; // The complex ID's
@@ -79,7 +78,7 @@ int main(int argc, char *argv[]) {
   // Read command line arguments
   ReadCommandLine(argc,argv,cxFile,conFile,logFile,eqFile,fpairsFile,
 		  &SortOutput,&MaxIters,&tol,&kT,&MaxNoStep,&MaxTrial,&PerturbScale,
-		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&seed,&cutoff,&NUPACK_VALIDATE);
+		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&seed,&NUPACK_VALIDATE);
 
 
   // Pull eta and deltaBar from global variables

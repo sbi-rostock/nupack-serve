@@ -32,9 +32,6 @@
      37.
   -quiet [no argument]
      Selecting this flag will supress output to the screen.
-  -cutoff [required argument]
-     The cutoff value for reporting ensemble pair fractions (if -pairs is selected).
-     Default is 0.001.
   -maxiters [required argument]
      The maximum number of iterations allowed in the trust region
      minimization algorithm.  Default is maxiters = 10000.
@@ -86,7 +83,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 		     int *SortOutput, int *MaxIters, double *tol, double *kT,
 		     int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
 		     int *WriteLogFile, int *Toverride, int *NoPermID, 
-		     unsigned long *seed, double *cutoff,int * NUPACK_VALIDATE) {
+		     unsigned long *seed, int * NUPACK_VALIDATE) {
 
   int options;  // Counters used in getting flags
   int ShowHelp; // ShowHelp = 1 if help option flag is selected
@@ -115,7 +112,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   *Toverride = 0; // Default is to either use T = 37 or that specified in input file
   *NoPermID = 0; // Default is to use .ocx file => permutation IDs in file
   *seed = 0; // Default is to seed off the clock.
-  *cutoff = 0.001; // Default cutoff
+  double cutoff = 0.001; // Default cutoff
   *NUPACK_VALIDATE = 0;
   ShowHelp = 0;
 
@@ -140,7 +137,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	        {"writelogfile",  no_argument,        0, 'j'},
 	        {"ordered",       no_argument,        0, 'k'},
 	        {"seed",          required_argument,  0, 'm'},
-	        {"cutoff",        required_argument,  0, 'n'},
           {"validate",      no_argument,        0, 'o'},
           {0, 0, 0, 0}
         };
@@ -149,7 +145,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
 
       options = getopt_long_only (nargs, args, 
-				  "a:b:c:d:ef:g:hi:jklm:n:o", long_options, 
+				  "a:b:c:d:ef:g:hi:jklm:o", long_options, 
 				  &option_index);
 
       // Detect the end of the options.
@@ -217,17 +213,12 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	        (*seed) = (unsigned long)atol(InputStr);
 	        break;
 
-	      case 'n':
-	        strcpy(InputStr,optarg);
-	        (*cutoff) = str2double(InputStr);
-	        break;
-
         case 'o':
           *NUPACK_VALIDATE = 1;
           *tol = 0.0000000000001;
 	        *SortOutput = 3;
 	        // NoSortOutputOption = 0; // Record that we've selected a sorting option
-          *cutoff = 0;
+          cutoff = 0;
           break;
 
         case '?':
@@ -306,7 +297,6 @@ void DisplayHelpConc() {
   printf("Calculate concentrations for each complex specified\n");
   printf("Options:\n");
   printf(" -ordered             perform the calculation on ordered complexes\n");
-  printf(" -cutoff CUTOFFVALUE  only store ensemble pair fractions above CUTOFFVALUE\n");
   printf(" -sort METHOD         change the sort method for the .eq output file\n");
   printf("                      0: same as input\n");
   printf("                      1: sort by concentration of complex; if -ordered\n");

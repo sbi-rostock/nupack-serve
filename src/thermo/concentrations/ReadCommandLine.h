@@ -12,7 +12,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
          int *SortOutput, int *MaxIters, double *tol, double *kT,
          int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
          int *WriteLogFile, int *Toverride, int *NoPermID, 
-         unsigned long *seed, double *cutoff, int * NUPACK_VALIDATE);
+         unsigned long *seed, int * NUPACK_VALIDATE);
 
 void DisplayHelpConc(void);
 
