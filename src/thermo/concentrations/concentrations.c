@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
   char logFile[MAXLINE]; // File containing data about the calculation
   char eqFile[MAXLINE];  // Name of file for equilibrium concentrations
   char fpairsFile[MAXLINE];  // Name of file for fraction base pair concentrations
-  char pairsFile[MAXLINE]; // Name of file containing epairs
   int numSS; // Number of single-strand (monomer) types. 
   int numSS0; // Number of monomer types including those with zero concentration
   int numTotal; // Total number of complexes
@@ -76,12 +75,11 @@ int main(int argc, char *argv[]) {
   int *PermIDArray; // Permutation ID's
   FILE *fplog; // The logFile, which contains information about the run.
   FILE *fpeq; // The .eq file, which contains the output of the file.
-  FILE *fpfpairs; // file handle for fpairs file
 
   // Read command line arguments
-  ReadCommandLine(argc,argv,cxFile,conFile,logFile,eqFile,pairsFile,fpairsFile,
+  ReadCommandLine(argc,argv,cxFile,conFile,logFile,eqFile,fpairsFile,
 		  &SortOutput,&MaxIters,&tol,&kT,&MaxNoStep,&MaxTrial,&PerturbScale,
-		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&DoBPfracs,&seed,&cutoff,&NUPACK_VALIDATE);
+		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&seed,&cutoff,&NUPACK_VALIDATE);
 
 
   // Pull eta and deltaBar from global variables
@@ -143,33 +141,6 @@ int main(int argc, char *argv[]) {
   fprintf(fpeq,"%% Initial monomer concentrations:\n");
   fclose(fpeq);
   
-  // Write information to .fpairs file
-  if (DoBPfracs) {
-    if ((fpfpairs = fopen(fpairsFile,"w")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",fpairsFile);
-      }
-      exit(ERR_FPAIRS);
-    }
-    fprintf(fpfpairs,"%% NUPACK %s\n", CMAKE_NUPACK_VERSION);
-    fprintf(fpfpairs,"%% This is %s, an output file generated for a ",fpairsFile);
-    fprintf(fpfpairs,"\"concentrations\"\n");
-    fprintf(fpfpairs,"%% calculation of base pair fractions.\n");
-    fprintf(fpfpairs,"%% For information on contents, see NUPACK manual.\n");
-    fprintf(fpfpairs,"%% Program: concentrations \n");
-    fprintf(fpfpairs,"%% Start time: %s PST\n",StartTimeStr);
-    fprintf(fpfpairs,"%% Command: ");
-    for (i = 0; i < argc; i++) {
-      fprintf(fpfpairs,"%s ",argv[i]);
-    }
-    fprintf(fpfpairs,"\n");
-    if (cutoff > 0.0) {
-      fprintf(fpfpairs,"%% Minimum output pair fraction: %g\n",cutoff);
-    }
-    fprintf(fpfpairs,"%% Initial monomer concentrations:\n");
-    fclose(fpfpairs);
-  }
-    
   // Get the size of the system.
   getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray,cxFile,conFile,
 	  quiet);
@@ -230,11 +201,6 @@ int main(int argc, char *argv[]) {
 
   WriteOutput(x,G,CompIDArray,LargestCompID,numSS0,numTotal,nTotal,kT,cxFile,
 	      SortOutput,eqFile,MolesWaterPerLiter,quiet,NoPermID,NUPACK_VALIDATE);
-
-  if (DoBPfracs) {
-    FracPair(numSS0,nTotal,quiet,NoPermID,LargestCompID,numPermsArray,eqFile,conFile,
-	     pairsFile,fpairsFile,cutoff,NUPACK_VALIDATE);
-  }
 
   EndTime = time(NULL);
   if (quiet == 0) {

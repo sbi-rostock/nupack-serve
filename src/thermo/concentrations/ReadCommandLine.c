@@ -67,8 +67,6 @@
      When this flag is selected, a log file is written which contains
      information about the trust region steps and convergence.  Default
      is not to write a log file.
-  -pairs [no argument]
-     Computes pair probabilities as well.
   -seed [required argument]
      Give a seed to the random number generator
   -help [no argument]
@@ -84,11 +82,11 @@
 
 /* ******************************************************************************** */
 void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile, 
-		     char *logFile, char *eqFile, char *pairsFile, char *fpairsFile,
+		     char *logFile, char *eqFile, char *fpairsFile,
 		     int *SortOutput, int *MaxIters, double *tol, double *kT,
 		     int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
 		     int *WriteLogFile, int *Toverride, int *NoPermID, 
-		     int *DoBPfracs, unsigned long *seed, double *cutoff,int * NUPACK_VALIDATE) {
+		     unsigned long *seed, double *cutoff,int * NUPACK_VALIDATE) {
 
   int options;  // Counters used in getting flags
   int ShowHelp; // ShowHelp = 1 if help option flag is selected
@@ -116,7 +114,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   *WriteLogFile = 0; // Default is not to write a log file
   *Toverride = 0; // Default is to either use T = 37 or that specified in input file
   *NoPermID = 0; // Default is to use .ocx file => permutation IDs in file
-  *DoBPfracs = 0; // Default is not to generate fpairs file.
   *seed = 0; // Default is to seed off the clock.
   *cutoff = 0.001; // Default cutoff
   *NUPACK_VALIDATE = 0;
@@ -142,7 +139,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	        {"perturbscale",  required_argument,  0, 'i'},
 	        {"writelogfile",  no_argument,        0, 'j'},
 	        {"ordered",       no_argument,        0, 'k'},
-	        {"pairs",         no_argument,        0, 'l'},
 	        {"seed",          required_argument,  0, 'm'},
 	        {"cutoff",        required_argument,  0, 'n'},
           {"validate",      no_argument,        0, 'o'},
@@ -216,10 +212,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
           prev_ordered = 0;
 	        break;
 
-	      case 'l':
-	        *DoBPfracs = 1;
-	        break;
-
 	      case 'm':
 	        strcpy(InputStr,optarg);
 	        (*seed) = (unsigned long)atol(InputStr);
@@ -278,15 +270,12 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   strcpy(conFile,prefix);
   strcpy(logFile,prefix);
   strcpy(eqFile,prefix);
-  strcpy(pairsFile,prefix);
   strcpy(fpairsFile,prefix);
   if (*NoPermID) {
     strcat(cxFile,".cx");
-    strcat(pairsFile,".cx-epairs");
   }
   else {
     strcat(cxFile,".ocx");
-    strcat(pairsFile,".ocx-epairs");
   }
   strcat(conFile,".con");
   strcat(logFile,".log");
@@ -317,7 +306,6 @@ void DisplayHelpConc() {
   printf("Calculate concentrations for each complex specified\n");
   printf("Options:\n");
   printf(" -ordered             perform the calculation on ordered complexes\n");
-  printf(" -pairs               compute base-pairing information for the solution\n");
   printf(" -cutoff CUTOFFVALUE  only store ensemble pair fractions above CUTOFFVALUE\n");
   printf(" -sort METHOD         change the sort method for the .eq output file\n");
   printf("                      0: same as input\n");
