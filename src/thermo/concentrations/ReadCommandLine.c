@@ -113,8 +113,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   *NUPACK_VALIDATE = 0;
   ShowHelp = 0;
 
-  int prev_ordered = 1; // used to keep -ordered off
-
   SetExecutionPath(nargs, args);
   
   // Get the option flags
@@ -194,11 +192,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	        *WriteLogFile = 1;
 	        break;
 
-	      case 'k':
-	        *NoPermID = 0;
-          prev_ordered = 0;
-	        break;
-
 	      case 'm':
 	        strcpy(InputStr,optarg);
 	        (*seed) = (unsigned long)atol(InputStr);
@@ -252,12 +245,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   strcpy(conFile,prefix);
   strcpy(logFile,prefix);
   strcpy(eqFile,prefix);
-  if (*NoPermID) {
-    strcat(cxFile,".cx");
-  }
-  else {
-    strcat(cxFile,".ocx");
-  }
+  strcat(cxFile,".ocx");
   strcat(conFile,".con");
   strcat(logFile,".log");
   strcat(eqFile,".eq");
