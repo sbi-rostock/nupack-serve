@@ -14,5 +14,5 @@ void printHeader(int nStrands, char **seqs, int maxComplexSize,
 int complexes_header(char*, int, char**);
 int complexes_parameters(char*, int, char**, int);
 int complexes_results(char*, int, int, int, multiset*, int, long double,
-        long double);
+        long double, char*);
 void print_deprecation_info(FILE *out);

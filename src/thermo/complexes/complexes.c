@@ -72,6 +72,10 @@ int main( int argc, char **argv) {
                     // (in case some are not used due to no possible secondary
                     // structures)
 
+  char LIST_STARTS[] = "[";
+  char LIST_ENDS[] = "]";
+  char COMMA[] = ",";
+
 
   // provenance blocks
   int len_header = 1000;
@@ -355,9 +359,15 @@ int main( int argc, char **argv) {
       }
 
       // fill provenance block
-      len_provenance = complexes_results(complexes, lastCxId, permId, nStrands, allSets, i, pf, TEMP_K);
+      if(i == setStart){
+        len_provenance = complexes_results(complexes, lastCxId, permId, nStrands, allSets, i, pf, TEMP_K, LIST_STARTS);
+      } else if ((i > setStart) && (i < (totalSets-1))){
+        len_provenance = complexes_results(complexes, lastCxId, permId, nStrands, allSets, i, pf, TEMP_K, COMMA);
+      } else{
+        len_provenance = complexes_results(complexes, lastCxId, permId, nStrands, allSets, i, pf, TEMP_K, LIST_ENDS);
+      }
       for(int y=0 ; y<len_provenance ; ++y){
-        printf("%c", parameters[y]);
+        printf("%c", complexes[y]);
       }
 
       // free provenance block
@@ -420,7 +430,8 @@ int main( int argc, char **argv) {
   free(allPermutations); allPermutations = NULL;
   free(allSets); allSets = NULL;
 
-  free(pfSeq); pfSeq = NULL;
+  free(pfSeq);
+  pfSeq = NULL;
   /*
    * complexes calculation ends */
 

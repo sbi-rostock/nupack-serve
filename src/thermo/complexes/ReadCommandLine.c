@@ -543,7 +543,6 @@ int complexes_header(char *provenance, int argc, char **argv) {
 int complexes_parameters(char* provenance, int nStrands, char **seqs,
         int nTotalOrders) {
 
-  char PROVENANCE_ENDS[] = " }\n";
   char FIELD_TEMPERATURE[] = "\"temperature (C)\": ";
   char FIELD_DANGLES[] = "\"dangles\": \"";
   char FIELD_CONC_NA[] = "\"concentration Na (M)\": ";
@@ -686,7 +685,8 @@ int complexes_parameters(char* provenance, int nStrands, char **seqs,
   }
   len_nupack_strands += strlen(LIST_ENDS);
 
-  len_entry_strands = (strlen(FIELD_STRANDS) + len_nupack_strands);
+  len_entry_strands = strlen(FIELD_STRANDS) + len_nupack_strands +
+        strlen(FIELD_NEXT);
 
   len_provenance += len_entry_strands;
 
@@ -767,7 +767,7 @@ int complexes_parameters(char* provenance, int nStrands, char **seqs,
                 strcat(
                   strcat(provenance, FIELD_STRANDS),
                   nupack_strands),
-                PROVENANCE_ENDS);
+                FIELD_NEXT);
 
 
   // free all memory objects
@@ -788,20 +788,130 @@ int complexes_parameters(char* provenance, int nStrands, char **seqs,
  */
 int complexes_results(char* provenance, int complex_id, int permutation_id,
     int num_strands, multiset* all_sets, int set_number, long double pf,
-    long double TEMP_K){
-  printf("%d\t%d\t", complex_id, permutation_id);
+    long double TEMP_K, char* position){
 
+  char FIELD_COMPLEXES[] = "\"complexes\": ";
+  char PROVENANCE_ENDS[] = " }\n";
+  char LIST_STARTS[] = "[";
+  char LIST_ENDS[]   = "]";
+  char PAIR_STARTS[] = "(";
+  char PAIR_ENDS[]   = ")";
+  char COMMA[] = ",";
+
+
+  int len_entry_complexes = 0;
+  int len_provenance = 0;
+
+
+  /* retrieve each complexes' entry values, and store it as provenance
+   */
+
+  provenance = strcpy(provenance, "");
+
+  // retrieve the complexes' length, and add it to the provenance
+  if(strcmp(position, LIST_STARTS) == 0){
+    len_entry_complexes += (strlen(FIELD_COMPLEXES) + strlen(LIST_STARTS)
+        + strlen(PAIR_STARTS));
+  }
+  int len_nupack_complex_id = snprintf(NULL, 0, "%d", complex_id) + 1;
+  len_entry_complexes += len_nupack_complex_id;
+  len_entry_complexes += strlen(COMMA);
+
+  int len_nupack_permutation_id = snprintf(NULL, 0, "%d", permutation_id) + 1;
+  len_entry_complexes += len_nupack_permutation_id;
+  len_entry_complexes += strlen(COMMA);
+
+  int len_nupack_set_numbers[num_strands];
   for(int j=0 ; j<=(num_strands-1) ; ++j){
-    printf("%d\t", all_sets[set_number].code[j]); // strand composition
+    len_nupack_set_numbers[j] = (
+        snprintf(NULL, 0, "%d", all_sets[set_number].code[j]) + 1);
+        len_entry_complexes += len_nupack_set_numbers[j];
+        len_entry_complexes += strlen(COMMA);
   }
 
+  int len_nupack_energy = 0;
   if(pf > 0.0){
     if(!NUPACK_VALIDATE){
-      printf("%.8Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
+      len_nupack_energy += (snprintf(NULL, 0, "%.8Le",
+            (-1 * (kB * TEMP_K ) * LOG_FUNC(pf))) + 1);
+      len_entry_complexes += len_nupack_energy;
     }
     else{
-      printf("%.14Le\n",-1*(kB*TEMP_K)*LOG_FUNC(pf));
+      len_nupack_energy += (snprintf(NULL, 0, "%.14Le",
+            (-1 * (kB * TEMP_K ) * LOG_FUNC(pf))) + 1);
+      len_entry_complexes += len_nupack_energy;
     }
   }
-  return 0;
+
+  len_entry_complexes += strlen(PAIR_ENDS);
+
+  if(strcmp(position, COMMA) == 0){
+    len_entry_complexes += strlen(COMMA);
+  } else if(strcmp(position, LIST_ENDS) == 0){
+    len_entry_complexes += (strlen(LIST_ENDS) + strlen(PROVENANCE_ENDS));
+  }
+
+  len_provenance += len_entry_complexes;
+
+  // retrieve the complexes' value
+  char nupack_complex_id[len_nupack_complex_id];
+  snprintf(nupack_complex_id, len_nupack_complex_id, "%d",
+        complex_id);
+  char nupack_permutation_id[len_nupack_permutation_id];
+  snprintf(nupack_permutation_id, len_nupack_permutation_id, "%d",
+        permutation_id);
+  char* nupack_set_numbers[num_strands];
+  char* nupack_set_number;
+  for(int j=0 ; j<=(num_strands-1) ; ++j){
+    nupack_set_number = (char*) malloc(sizeof(char) * len_nupack_set_numbers[j]);
+    if(!nupack_set_number){
+      exit(1);
+    }
+    for(size_t x=0 ; x < len_nupack_set_numbers[j] ; ++x){
+      nupack_set_number[x] = 0;
+    }
+    snprintf(nupack_set_number, len_nupack_set_numbers[j], "%d",
+            all_sets[set_number].code[j]);
+    nupack_set_numbers[j] = nupack_set_number;
+  }
+  char nupack_energy[len_nupack_energy];
+  if(pf > 0.0){
+    if(!NUPACK_VALIDATE){
+      snprintf(nupack_energy, len_nupack_energy, "%.8Le",
+            (-1 * (kB * TEMP_K ) * LOG_FUNC(pf)));
+    }
+    else{
+      snprintf(nupack_energy, len_nupack_energy, "%.14Le",
+            (-1 * (kB * TEMP_K ) * LOG_FUNC(pf)));
+    }
+  }
+
+  // store the complexes
+  if(strcmp(position, LIST_STARTS) == 0){
+    provenance = strcat(
+                    strcat(provenance, FIELD_COMPLEXES),
+                    LIST_STARTS);
+  }
+  if(strcmp(position, COMMA) == 0){
+    provenance = strcat(provenance, COMMA);
+  }
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, PAIR_STARTS),
+                  nupack_complex_id),
+                COMMA);
+  provenance = strcat(strcat(provenance, nupack_permutation_id), COMMA);
+  for(int j=0 ; j<=(num_strands-1) ; ++j){
+    provenance = strcat(strcat(provenance, nupack_set_numbers[j]), COMMA);
+  }
+  provenance = strcat(strcat(provenance, nupack_energy), PAIR_ENDS);
+  if(strcmp(position, LIST_ENDS) == 0){
+    provenance = strcat(strcat(provenance, LIST_ENDS), PROVENANCE_ENDS);
+  }
+
+  for(int j=0 ; j<=(num_strands-1) ; ++j){
+    free(nupack_set_numbers[j]);
+  }
+
+  return len_provenance;
 }
