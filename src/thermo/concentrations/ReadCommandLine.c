@@ -76,7 +76,7 @@
 
 /* ******************************************************************************** */
 void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile, 
-		     char *logFile, char *eqFile, char *fpairsFile,
+		     char *logFile, char *eqFile,
 		     int *SortOutput, int *MaxIters, double *tol, double *kT,
 		     int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
 		     int *WriteLogFile, int *Toverride, int *NoPermID, 
@@ -252,7 +252,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   strcpy(conFile,prefix);
   strcpy(logFile,prefix);
   strcpy(eqFile,prefix);
-  strcpy(fpairsFile,prefix);
   if (*NoPermID) {
     strcat(cxFile,".cx");
   }
@@ -262,7 +261,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   strcat(conFile,".con");
   strcat(logFile,".log");
   strcat(eqFile,".eq");
-  strcat(fpairsFile,".fpairs");
 
   // Do a quick check to make sure the cx file exists before we proceed
   if ((fp = fopen(cxFile,"r")) == NULL) {

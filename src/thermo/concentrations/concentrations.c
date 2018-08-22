@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
   FILE *fpeq; // The .eq file, which contains the output of the file.
 
   // Read command line arguments
-  ReadCommandLine(argc,argv,cxFile,conFile,logFile,eqFile,fpairsFile,
+  ReadCommandLine(argc,argv,cxFile,conFile,logFile,eqFile,
 		  &SortOutput,&MaxIters,&tol,&kT,&MaxNoStep,&MaxTrial,&PerturbScale,
 		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&seed,&NUPACK_VALIDATE);
 
