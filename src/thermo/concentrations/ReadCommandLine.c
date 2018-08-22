@@ -32,9 +32,6 @@
      37.
   -quiet [no argument]
      Selecting this flag will supress output to the screen.
-  -maxiters [required argument]
-     The maximum number of iterations allowed in the trust region
-     minimization algorithm.  Default is maxiters = 10000.
   -tol [required argument]
      The tolerance for converging to the equilibrium concentrations.
      This is entered as a fraction of the input concentration of the 
@@ -126,7 +123,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
       static struct option long_options [] =
 	      {
           {"sort",          required_argument,  0, 'a'},
-	        {"maxiters",      required_argument,  0, 'b'},
 	        {"tol",           required_argument,  0, 'c'},
 	        {"T",             required_argument,  0, 'd'},
 	        {"quiet",         no_argument,        0, 'e'},
@@ -159,11 +155,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	        *SortOutput = atoi(InputStr);
 	        // NoSortOutputOption = 0; // Record that we've selected a sorting option
           break;
-
-	      case 'b':
-	        strcpy(InputStr,optarg);
-	        *MaxIters = atoi(InputStr);
-	        break;
 
 	      case 'c':
 	        strcpy(InputStr,optarg);
