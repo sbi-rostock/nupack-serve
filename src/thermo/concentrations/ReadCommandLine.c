@@ -60,7 +60,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
         {"T",             required_argument,  0, 'd'},
         {"quiet",         no_argument,        0, 'e'},
         {"help",          no_argument,        0, 'h'},
-        {"seed",          required_argument,  0, 'm'},
         {"validate",      no_argument,        0, 'o'},
         {0, 0, 0, 0}
     };
@@ -68,7 +67,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
     int option_index = 0;
 
 
-    options = getopt_long_only (nargs, args, "d:ehm:o", long_options,
+    options = getopt_long_only (nargs, args, "d:eho", long_options,
         &option_index);
 
     // Detect the end of the options.
@@ -89,11 +88,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
       case 'h':
         ShowHelp = 1;
-        break;
-
-      case 'm':
-        strcpy(InputStr,optarg);
-        (*seed) = (unsigned long)atol(InputStr);
         break;
 
       case 'o':
