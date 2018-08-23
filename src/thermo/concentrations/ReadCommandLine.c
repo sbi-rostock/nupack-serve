@@ -18,7 +18,7 @@
 
 /* ******************************************************************************** */
 void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
-        char *logFile, char *eqFile, int *SortOutput, int *MaxIters,
+        char *eqFile, int *SortOutput, int *MaxIters,
         double *tol, double *kT, int *MaxNoStep, int *MaxTrial,
         double *PerturbScale, int *quiet, int *WriteLogFile, int *Toverride,
         int *NoPermID, unsigned long *seed, int * NUPACK_VALIDATE){
@@ -137,11 +137,9 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   // Name the files
   strcpy(cxFile,prefix);
   strcpy(conFile,prefix);
-  strcpy(logFile,prefix);
   strcpy(eqFile,prefix);
   strcat(cxFile,".ocx");
   strcat(conFile,".con");
-  strcat(logFile,".log");
   strcat(eqFile,".eq");
 
   // Do a quick check to make sure the cx file exists before we proceed

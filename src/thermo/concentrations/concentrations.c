@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
   FILE *fpeq; // The .eq file, which contains the output of the file.
 
   // Read command line arguments
-  ReadCommandLine(argc,argv,cxFile,conFile,logFile,eqFile,
+  ReadCommandLine(argc,argv,cxFile,conFile,eqFile,
 		  &SortOutput,&MaxIters,&tol,&kT,&MaxNoStep,&MaxTrial,&PerturbScale,
 		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&seed,&NUPACK_VALIDATE);
 
@@ -90,33 +90,6 @@ int main(int argc, char *argv[]) {
   loctime = localtime(&StartTime);
   strncpy(StartTimeStr,asctime(loctime),24);
   StartTimeStr[24] = '\0';
-
-  // Print run information to log file (.out file) and output file (.eq file)
-  if (WriteLogFile) {
-    if ((fplog = fopen(logFile,"w")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
-      exit(ERR_LOG);
-    }
-    fprintf(fplog,"*NUPACK %s\n", CMAKE_NUPACK_VERSION);
-    fprintf(fplog,"*This is %s, a log file generated for a \"concentrations\"\n",
-	    logFile);
-    fprintf(fplog," calculation using input files %s and %s.\n",cxFile,conFile);
-    fprintf(fplog,"*Command used: ");
-    for (i = 0; i < argc; i++) {
-      fprintf(fplog,"%s ",argv[i]);
-    }
-    fprintf(fplog,"\n");
-    fprintf(fplog,"*Time calculation was begun: %s PST\n",StartTimeStr);
-    fprintf(fplog,"*Pertinent run data:\n");
-    // First write out information about the run to log file
-    fprintf(fplog,"   --Input files: %s\n",cxFile);
-    fprintf(fplog,"                  %s\n",conFile);
-    fprintf(fplog,"   --Output file: %s\n",eqFile);
-    fprintf(fplog,"   --Initial monomer concs. (molar): \n");
-    fclose(fplog);
-  }
 
   // Write information to .eq file
   if ((fpeq = fopen(eqFile,"w")) == NULL) {
@@ -151,29 +124,6 @@ int main(int argc, char *argv[]) {
 				      &kT,Toverride,logFile,eqFile,
 				      fpairsFile,quiet,WriteLogFile,DoBPfracs,
 				      NoPermID);
-  
-  // Do the calculations and write out results
-  // First write out information about the run
-  if (WriteLogFile){
-    if ((fplog = fopen(logFile,"a")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
-      exit(ERR_LOG);
-    }
-    fprintf(fplog,"   --Number of single-stranded species considered: %d\n",numSS);
-    fprintf(fplog,"   --Total number of complexes considered: %d\n",numTotal);
-    fprintf(fplog,"   --Temperature (in deg. C): %g\n",kT/kB - ZERO_C_IN_KELVIN);
-    fprintf(fplog,"   --Trust region parameters:\n");
-    fprintf(fplog,"       deltaBar: %g\n",deltaBar);
-    fprintf(fplog,"       eta: %g\n",eta);
-    fprintf(fplog,"       Maximum allowed iterations per trial: %d\n",MaxIters);
-    fprintf(fplog,"       Maximum allowed iterations without a step: %d\n",MaxNoStep);
-    fprintf(fplog,"       Maximum allowed trials: %d\n",MaxTrial);
-    fprintf(fplog,"       Tolerance (as fraction of single-strand conc):");
-    fprintf(fplog," %g\n",tol);
-    fclose(fplog);
-  }
 
   // Allocate memory for mole fractions
   x = (double *) malloc (numTotal * sizeof(double));
@@ -204,18 +154,6 @@ int main(int argc, char *argv[]) {
   EndTime = time(NULL);
   if (quiet == 0) {
     printf("Elapsed time: %g seconds.\n",difftime(EndTime,StartTime));
-  }
-
-  if (WriteLogFile) {
-    if ((fplog = fopen(logFile,"a")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
-      exit(ERR_LOG);
-    }
-    fprintf(fplog,"   --Elapsed time of calculation: %g seconds\n",
-	    difftime(EndTime,StartTime));
-    fclose(fplog);
   }
 
   // Free memory
