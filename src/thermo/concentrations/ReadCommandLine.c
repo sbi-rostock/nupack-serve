@@ -60,7 +60,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
     {
       static struct option long_options [] =
 	      {
-	        {"tol",           required_argument,  0, 'c'},
 	        {"T",             required_argument,  0, 'd'},
 	        {"quiet",         no_argument,        0, 'e'},
 	        {"maxtrial",      required_argument,  0, 'f'},
@@ -77,7 +76,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
 
       options = getopt_long_only (nargs, args, 
-				  "c:d:ef:g:hi:jm:o", long_options, 
+				  "d:ef:g:hi:jm:o", long_options, 
 				  &option_index);
 
       // Detect the end of the options.
@@ -86,11 +85,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
       switch (options)
         {
-	      case 'c':
-	        strcpy(InputStr,optarg);
-	        *tol = str2double(InputStr);
-	        break;
-
 	      case 'd':
 	        strcpy(InputStr,optarg);
 	        *kT = kB*(str2double(InputStr) + ZERO_C_IN_KELVIN);
