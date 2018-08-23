@@ -63,7 +63,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	        {"T",             required_argument,  0, 'd'},
 	        {"quiet",         no_argument,        0, 'e'},
 	        {"help",          no_argument,        0, 'h'},
-	        {"perturbscale",  required_argument,  0, 'i'},
 	        {"writelogfile",  no_argument,        0, 'j'},
 	        {"seed",          required_argument,  0, 'm'},
           {"validate",      no_argument,        0, 'o'},
@@ -74,7 +73,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
 
       options = getopt_long_only (nargs, args, 
-				  "d:ehi:jm:o", long_options, 
+				  "d:ehjm:o", long_options, 
 				  &option_index);
 
       // Detect the end of the options.
@@ -83,48 +82,38 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
       switch (options)
         {
-	      case 'd':
-	        strcpy(InputStr,optarg);
-	        *kT = kB*(str2double(InputStr) + ZERO_C_IN_KELVIN);
-	        *Toverride = 1;
-	        break;
+          case 'd':
+            strcpy(InputStr,optarg);
+            *kT = kB*(str2double(InputStr) + ZERO_C_IN_KELVIN);
+            *Toverride = 1;
+            break;
 
-	      case 'e':
-	        *quiet = 1;
-	        break;
+          case 'e':
+            *quiet = 1;
+            break;
 
-        case 'h':
-	        ShowHelp = 1;
-          break;
+          case 'h':
+            ShowHelp = 1;
+            break;
 
-        case 'i':
-	        strcpy(InputStr,optarg);
-	        (*PerturbScale) = str2double(InputStr);
-          break;
+          case 'j':
+            *WriteLogFile = 1;
+            break;
 
-	      case 'j':
-	        *WriteLogFile = 1;
-	        break;
+          case 'm':
+            strcpy(InputStr,optarg);
+            (*seed) = (unsigned long)atol(InputStr);
+            break;
 
-	      case 'm':
-	        strcpy(InputStr,optarg);
-	        (*seed) = (unsigned long)atol(InputStr);
-	        break;
+          case 'o':
+            *NUPACK_VALIDATE = 1;
+            *tol = 0.0000000000001;
+            *SortOutput = 3;
+            cutoff = 0;
+            break;
 
-        case 'o':
-          *NUPACK_VALIDATE = 1;
-          *tol = 0.0000000000001;
-	        *SortOutput = 3;
-	        // NoSortOutputOption = 0; // Record that we've selected a sorting option
-          cutoff = 0;
-          break;
-
-        case '?':
-          // getopt_long already printed an error message.
-          break;
-        
-        default:
-          abort();
+          default:
+            abort();
         }
     }
 
