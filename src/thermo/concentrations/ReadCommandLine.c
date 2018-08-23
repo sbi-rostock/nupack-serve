@@ -40,7 +40,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   *tol = 0.0000001; // Default tolerance is 0.00001% of minimum of the
                     // minimum count among the single-strands
   *kT = kB*(37.0 + ZERO_C_IN_KELVIN); // Default temperature is 37 deg. C
-  *quiet = 0; // Default is to show messages on the screen
+  *quiet = 1; // Default is not to show messages on the screen
   *MaxNoStep = 50; // Default is 50 iterations with no step
   *MaxTrial = 100000; // Default is maximum of 100,000 trials
   *PerturbScale = 100; // Default is a scale of 100 on the perturb scale
@@ -58,7 +58,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   while (1){
     static struct option long_options[] = {
         {"T",             required_argument,  0, 'd'},
-        {"quiet",         no_argument,        0, 'e'},
         {"help",          no_argument,        0, 'h'},
         {"validate",      no_argument,        0, 'o'},
         {0, 0, 0, 0}
@@ -67,7 +66,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
     int option_index = 0;
 
 
-    options = getopt_long_only (nargs, args, "d:eho", long_options,
+    options = getopt_long_only (nargs, args, "d:ho", long_options,
         &option_index);
 
     // Detect the end of the options.
@@ -80,10 +79,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
         strcpy(InputStr,optarg);
         *kT = kB*(str2double(InputStr) + ZERO_C_IN_KELVIN);
         *Toverride = 1;
-        break;
-
-      case 'e':
-        *quiet = 1;
         break;
 
       case 'h':
@@ -108,20 +103,11 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   }
 
   if(*SortOutput > 4){
-    if(*quiet == 0){
-      printf("Sorting option is an integer from 0 to 4.  Output will be sorted by\n");
-      printf("concentration.\n\n");
-    }
     *SortOutput = 1;
   }
 
   // Get the the input file
   if(optind == nargs){ // There's no input from the user
-    if(*quiet == 0){
-      printf("You must have a prefix or an input file on the command line.\n");
-      printf("For instructions on running this program, run it with the ");
-      printf("-help flag.\n\nExiting....\n\n");
-    }
     exit(ERR_NOINPUT);
   }
   else{
@@ -140,9 +126,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
   // Do a quick check to make sure the cx file exists before we proceed
   if((fp = fopen(cxFile,"r")) == NULL){
-    if(*quiet == 0){
-      printf("Error opening %s!\n\nExiting....\n",cxFile);
-    }
     exit(ERR_CX);
   }
   fclose(fp);
@@ -159,10 +142,6 @@ void DisplayHelpConc(){
 
   printf("Please read the NUPACK User Guide for detailed instructions.\n");
   printf("Usage: concentrations [OPTIONS] PREFIX\n");
-  printf("Calculate concentrations for each complex specified\n");
-  printf("Options:\n");
-  printf(" -quiet               suppress output to the screen\n");
-  printf("\n");
 
 }
 

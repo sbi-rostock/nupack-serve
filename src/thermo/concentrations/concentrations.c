@@ -33,11 +33,7 @@
 int main(int argc, char *argv[]) {
 
   int i; // Counter
-  time_t StartTime; // Time calculation started
-  time_t EndTime; // Time calculation ended
   unsigned long seed; // Seed for random number generation
-  struct tm *loctime; // Local time
-  char StartTimeStr[25]; // The string representing the start time
   char cxFile[MAXLINE]; // File containing complex ID's and free energies
   char conFile[MAXLINE]; // File containing initiatial monomer concentrations
   char logFile[MAXLINE]; // File containing data about the calculation
@@ -85,18 +81,9 @@ int main(int argc, char *argv[]) {
   eta = TRUST_REGION_ETA;
   deltaBar = TRUST_REGION_DELTABAR;
 
-  // Get the strart time of the calculation
-  StartTime = time(NULL);
-  loctime = localtime(&StartTime);
-  strncpy(StartTimeStr,asctime(loctime),24);
-  StartTimeStr[24] = '\0';
-
   // Print run information to log file (.out file) and output file (.eq file)
   if (WriteLogFile) {
     if ((fplog = fopen(logFile,"w")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
       exit(ERR_LOG);
     }
     fprintf(fplog,"*NUPACK %s\n", CMAKE_NUPACK_VERSION);
@@ -108,7 +95,6 @@ int main(int argc, char *argv[]) {
       fprintf(fplog,"%s ",argv[i]);
     }
     fprintf(fplog,"\n");
-    fprintf(fplog,"*Time calculation was begun: %s PST\n",StartTimeStr);
     fprintf(fplog,"*Pertinent run data:\n");
     // First write out information about the run to log file
     fprintf(fplog,"   --Input files: %s\n",cxFile);
@@ -120,9 +106,6 @@ int main(int argc, char *argv[]) {
 
   // Write information to .eq file
   if ((fpeq = fopen(eqFile,"w")) == NULL) {
-    if (quiet == 0) {
-      printf("Error opening %s.\n\nExiting....\n",eqFile);
-    }
     exit(ERR_EQ);
   }
   fprintf(fpeq,"%% NUPACK %s\n", CMAKE_NUPACK_VERSION);
@@ -131,7 +114,6 @@ int main(int argc, char *argv[]) {
   fprintf(fpeq,"%% calculation of equilibrium concentrations.\n");
   fprintf(fpeq,"%% For information on contents, see NUPACK manual.\n");
   fprintf(fpeq,"%% Program: concentrations\n");
-  fprintf(fpeq,"%% Start time: %s PST\n",StartTimeStr);
   fprintf(fpeq,"%% Command: ");
   for (i = 0; i < argc; i++) {
     fprintf(fpeq,"%s ",argv[i]);
@@ -156,9 +138,6 @@ int main(int argc, char *argv[]) {
   // First write out information about the run
   if (WriteLogFile){
     if ((fplog = fopen(logFile,"a")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
       exit(ERR_LOG);
     }
     fprintf(fplog,"   --Number of single-stranded species considered: %d\n",numSS);
@@ -185,9 +164,6 @@ int main(int argc, char *argv[]) {
   // Show warning in eq file if we failed to converge
   if (CalcConcConverge == 0) {
     if ((fpeq = fopen(eqFile,"a")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",eqFile);
-      }
       exit(ERR_EQ);
     }
     fprintf(fpeq,"%%\n");
@@ -201,20 +177,10 @@ int main(int argc, char *argv[]) {
   WriteOutput(x,G,CompIDArray,LargestCompID,numSS0,numTotal,nTotal,kT,cxFile,
 	      SortOutput,eqFile,MolesWaterPerLiter,quiet,NoPermID,NUPACK_VALIDATE);
 
-  EndTime = time(NULL);
-  if (quiet == 0) {
-    printf("Elapsed time: %g seconds.\n",difftime(EndTime,StartTime));
-  }
-
   if (WriteLogFile) {
     if ((fplog = fopen(logFile,"a")) == NULL) {
-      if (quiet == 0) {
-	printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
       exit(ERR_LOG);
     }
-    fprintf(fplog,"   --Elapsed time of calculation: %g seconds\n",
-	    difftime(EndTime,StartTime));
     fclose(fplog);
   }
 
