@@ -17,12 +17,11 @@
 #include "constants.h"
 
 /* ******************************************************************************** */
-void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile, 
-		     char *logFile, char *eqFile,
-		     int *SortOutput, int *MaxIters, double *tol, double *kT,
-		     int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
-		     int *WriteLogFile, int *Toverride, int *NoPermID, 
-		     unsigned long *seed, int * NUPACK_VALIDATE) {
+void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
+        char *logFile, char *eqFile, int *SortOutput, int *MaxIters,
+        double *tol, double *kT, int *MaxNoStep, int *MaxTrial,
+        double *PerturbScale, int *quiet, int *WriteLogFile, int *Toverride,
+        int *NoPermID, unsigned long *seed, int * NUPACK_VALIDATE){
 
   int options;  // Counters used in getting flags
   int ShowHelp; // ShowHelp = 1 if help option flag is selected
@@ -56,74 +55,71 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   SetExecutionPath(nargs, args);
   
   // Get the option flags
-  while (1)
-    {
-      static struct option long_options [] =
-	      {
-	        {"T",             required_argument,  0, 'd'},
-	        {"quiet",         no_argument,        0, 'e'},
-	        {"help",          no_argument,        0, 'h'},
-	        {"writelogfile",  no_argument,        0, 'j'},
-	        {"seed",          required_argument,  0, 'm'},
-          {"validate",      no_argument,        0, 'o'},
-          {0, 0, 0, 0}
-        };
-      /* getopt_long stores the option index here. */
-      int option_index = 0;
+  while (1){
+    static struct option long_options[] = {
+        {"T",             required_argument,  0, 'd'},
+        {"quiet",         no_argument,        0, 'e'},
+        {"help",          no_argument,        0, 'h'},
+        {"writelogfile",  no_argument,        0, 'j'},
+        {"seed",          required_argument,  0, 'm'},
+        {"validate",      no_argument,        0, 'o'},
+        {0, 0, 0, 0}
+    };
+    /* getopt_long stores the option index here. */
+    int option_index = 0;
 
 
-      options = getopt_long_only (nargs, args, 
-				  "d:ehjm:o", long_options, 
-				  &option_index);
+    options = getopt_long_only (nargs, args, "d:ehjm:o", long_options,
+        &option_index);
 
-      // Detect the end of the options.
-      if (options == -1)
-        break;
-
-      switch (options)
-        {
-          case 'd':
-            strcpy(InputStr,optarg);
-            *kT = kB*(str2double(InputStr) + ZERO_C_IN_KELVIN);
-            *Toverride = 1;
-            break;
-
-          case 'e':
-            *quiet = 1;
-            break;
-
-          case 'h':
-            ShowHelp = 1;
-            break;
-
-          case 'j':
-            *WriteLogFile = 1;
-            break;
-
-          case 'm':
-            strcpy(InputStr,optarg);
-            (*seed) = (unsigned long)atol(InputStr);
-            break;
-
-          case 'o':
-            *NUPACK_VALIDATE = 1;
-            *tol = 0.0000000000001;
-            *SortOutput = 3;
-            cutoff = 0;
-            break;
-
-          default:
-            abort();
-        }
+    // Detect the end of the options.
+    if (options == -1){
+      break;
     }
 
-  if (ShowHelp) {
+    switch(options){
+      case 'd':
+        strcpy(InputStr,optarg);
+        *kT = kB*(str2double(InputStr) + ZERO_C_IN_KELVIN);
+        *Toverride = 1;
+        break;
+
+      case 'e':
+        *quiet = 1;
+        break;
+
+      case 'h':
+        ShowHelp = 1;
+        break;
+
+      case 'j':
+        *WriteLogFile = 1;
+        break;
+
+      case 'm':
+        strcpy(InputStr,optarg);
+        (*seed) = (unsigned long)atol(InputStr);
+        break;
+
+      case 'o':
+        *NUPACK_VALIDATE = 1;
+        *tol = 0.0000000000001;
+        *SortOutput = 3;
+        cutoff = 0;
+        break;
+
+      default:
+        abort();
+    }
+  }
+
+  if(ShowHelp){
     DisplayHelpConc();
     exit(ERR_HELP);
   }
 
-  if (*SortOutput > 4) {
-    if (*quiet == 0) {
+  if(*SortOutput > 4){
+    if(*quiet == 0){
       printf("Sorting option is an integer from 0 to 4.  Output will be sorted by\n");
       printf("concentration.\n\n");
     }
@@ -131,15 +127,15 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   }
 
   // Get the the input file
-  if (optind == nargs) { // There's no input from the user
-    if (*quiet == 0) {
+  if(optind == nargs){ // There's no input from the user
+    if(*quiet == 0){
       printf("You must have a prefix or an input file on the command line.\n");
       printf("For instructions on running this program, run it with the ");
       printf("-help flag.\n\nExiting....\n\n");
     }
     exit(ERR_NOINPUT);
   }
-  else {
+  else{
     strcpy(prefix,args[optind]);
   }
 
@@ -154,20 +150,20 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
   strcat(eqFile,".eq");
 
   // Do a quick check to make sure the cx file exists before we proceed
-  if ((fp = fopen(cxFile,"r")) == NULL) {
-    if (*quiet == 0) {
+  if((fp = fopen(cxFile,"r")) == NULL){
+    if(*quiet == 0){
       printf("Error opening %s!\n\nExiting....\n",cxFile);
     }
     exit(ERR_CX);
   }
   fclose(fp);
 
-} 
+}
 /* ******************************************************************************** */
 
 
 /* ******************************************************************************** */
-void DisplayHelpConc() {
+void DisplayHelpConc(){
   /*
     Displays the contents of the Concentrations help file.
   */
