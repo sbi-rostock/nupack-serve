@@ -62,7 +62,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	      {
 	        {"T",             required_argument,  0, 'd'},
 	        {"quiet",         no_argument,        0, 'e'},
-	        {"maxnostep",     required_argument,  0, 'g'},
 	        {"help",          no_argument,        0, 'h'},
 	        {"perturbscale",  required_argument,  0, 'i'},
 	        {"writelogfile",  no_argument,        0, 'j'},
@@ -75,7 +74,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
 
       options = getopt_long_only (nargs, args, 
-				  "d:ef:g:hi:jm:o", long_options, 
+				  "d:ehi:jm:o", long_options, 
 				  &option_index);
 
       // Detect the end of the options.
@@ -93,11 +92,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	      case 'e':
 	        *quiet = 1;
 	        break;
-
-        case 'g':
-	        strcpy(InputStr,optarg);
-	        (*MaxNoStep) = atoi(InputStr);
-          break;
 
         case 'h':
 	        ShowHelp = 1;
