@@ -62,7 +62,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 	      {
 	        {"T",             required_argument,  0, 'd'},
 	        {"quiet",         no_argument,        0, 'e'},
-	        {"maxtrial",      required_argument,  0, 'f'},
 	        {"maxnostep",     required_argument,  0, 'g'},
 	        {"help",          no_argument,        0, 'h'},
 	        {"perturbscale",  required_argument,  0, 'i'},
@@ -93,11 +92,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile,
 
 	      case 'e':
 	        *quiet = 1;
-	        break;
-
-	      case 'f':
-	        strcpy(InputStr,optarg);
-	        (*MaxTrial) = atoi(InputStr);
 	        break;
 
         case 'g':
