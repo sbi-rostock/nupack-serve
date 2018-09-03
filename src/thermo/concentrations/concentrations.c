@@ -99,8 +99,7 @@ int main(int argc, char *argv[]) {
   fclose(fpeq);
   
   // Get the size of the system.
-  getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray,cxFile,
-	  quiet);
+  getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray);
   
   // Read input files and sort if necessary.
   // Note: A, G, and either x0 or m0 are all allocated in ReadInput

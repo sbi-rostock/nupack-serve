@@ -47,19 +47,8 @@ struct CompStruct { // Struct for complexes (used for output)
 
 /* ******************************************************************************** */
 void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
-             int **numPermsArray, char *cxFile, int quiet) {
+             int **numPermsArray) {
 
-  /*
-    THE MEMORY FOR numPermsArray IS ALLOCATED IN THIS FUNCTION AND MUST
-    BE FREED OUTSIDE OF IT.
-  */
-
-  int j; // Counter
-  char line[MAXLINE]; // A junk buffer to dump the lines as we count them
-  char *tok; // Token
-  char tokseps[] = " \t\n"; // Token separators
-  int CompID; // Complex ID number
-  FILE *fp; // The file we're reading from
   char newline;
 
 
@@ -77,39 +66,15 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
   scanf("%d%c", numSS, &newline);
 
 
-  /* ******* Get the number of perumations for each complex **************** */
-  // Allocate memory and initialize array of number of permutations
-  (*numPermsArray) = (int *) malloc((*numTotal) * sizeof(int));
-  for (j = 0; j < (*numTotal); j++) {
-    (*numPermsArray)[j] = 0;
+  // Allocate memory and set array of number of permutations
+  *numPermsArray = malloc(sizeof(int) * (*numTotal));
+  for(int x=0 ; x<(*numTotal) ; ++x){
+    (*numPermsArray)[x] = 1;
   }
-
-  // Open the cx file
-  if ((fp = fopen(cxFile,"r")) == NULL) {
-    if (quiet == 0) {
-      printf("Error in opening file %s!\n",cxFile);
-      printf("\nExiting....\n\n");
-    }
-    exit(ERR_CX);
-  }
-
-  while (fgets(line,MAXLINE,fp) != NULL) {
-    if (line[0] != '\0' && line[0] != '\n' && line[0] != '%') {
-      tok = strtok(line,tokseps);   // Complex ID
-      CompID = atoi(tok) - 1;
-      ((*numPermsArray)[CompID])++;
-    }
-  }
-  fclose(fp);
 
   // Check to make sure the complex ID's are sequential
-  for (j = 0; j < *numTotal; j++) {
+  for (int j=0; j<(*numTotal); ++j) {
     if ((*numPermsArray)[j] == 0) {
-      if (quiet == 0) {
-        printf("Input file must contain all complex ID numbers between\n");
-        printf("1 and the total number of complexes!\n\n");
-        printf("Exiting....\n\n");
-      }
       exit(ERR_NONSEQUENTIAL);
     }
   }

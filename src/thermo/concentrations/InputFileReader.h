@@ -6,7 +6,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
-       int **numPermsArray, char *cxFile, int quiet);
+       int **numPermsArray);
 
 double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray, 
           double **x0, int *numSS, int *numSS0, int *numTotal, 
