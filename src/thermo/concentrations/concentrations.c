@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
   int *numPermsArray; // Number of permutations of each species
   int *CompIDArray; // The complex ID's
   int *PermIDArray; // Permutation ID's
-  FILE *fplog; // The logFile, which contains information about the run.
   FILE *fpeq; // The .eq file, which contains the output of the file.
 
   // Read command line arguments
@@ -100,7 +99,7 @@ int main(int argc, char *argv[]) {
   fclose(fpeq);
   
   // Get the size of the system.
-  getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray,cxFile,conFile,
+  getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray,cxFile,
 	  quiet);
   
   // Read input files and sort if necessary.

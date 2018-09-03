@@ -47,12 +47,9 @@ struct CompStruct { // Struct for complexes (used for output)
 
 /* ******************************************************************************** */
 void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
-             int **numPermsArray, char *cxFile, char *conFile, int quiet) {
+             int **numPermsArray, char *cxFile, int quiet) {
 
   /*
-    Finds the number of single-strands and the number of complexes
-    in the input file using the information in cxFile and conFile.
-
     THE MEMORY FOR numPermsArray IS ALLOCATED IN THIS FUNCTION AND MUST
     BE FREED OUTSIDE OF IT.
   */
@@ -64,25 +61,12 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
   int CompID; // Complex ID number  
   FILE *fp; // The file we're reading from
 
-  /* *************** Find the number of single species ********************* */
-  // Open the con file
-  if ((fp = fopen(conFile,"r")) == NULL) {
-    if (quiet == 0) {
-      printf("Error in opening file %s!\n",conFile);
-      printf("\nExiting....\n\n");
-    }
-    exit(ERR_CON);
-  }
 
-  // Count the lines in the con file to see how many ss species there are
-  *numSS = 0;  // We already read the first line of input
-  while (fgets(line,MAXLINE,fp) != NULL) {
-    if (line[0] != '\0' && line[0] != '\n' && line[0] != '%') {
-      (*numSS)++;
-    }
-  }
-  fclose(fp);
-  /* *********************************************************************** */
+  /* read number of concentrations
+   */
+  char newline;
+  printf("Enter number of different concentrations: ");
+  scanf("%d%c", numSS, &newline);
 
 
   /* *************** Find the maximum complex ID number. ******************* */
@@ -252,18 +236,10 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   }
 
 
-  /* read number of concentrations
-   */
-  char newline;
-  int num_concentrations;
-  printf("Enter number of different concentrations: ");
-  scanf("%d%c", &num_concentrations, &newline);
-
-
   /* read concentrations
    */
   char nupack_concentration[MAXLINE];
-  for(int x=0 ; x<num_concentrations ; ++x){
+  for(int x=0 ; x<nSS ; ++x){
     printf("Enter concentration %d: ", x+1);
     scanf("%s", nupack_concentration);
     tok = strtok(nupack_concentration, tokseps);
