@@ -58,43 +58,23 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
   char line[MAXLINE]; // A junk buffer to dump the lines as we count them
   char *tok; // Token
   char tokseps[] = " \t\n"; // Token separators
-  int CompID; // Complex ID number  
+  int CompID; // Complex ID number
   FILE *fp; // The file we're reading from
+  char newline;
+
+
+  /* read number of complex IDs
+   */
+  printf("Enter number of complex IDs: ");
+  scanf("%d%c", numTotal, &newline);
+  *nTotal = *numTotal;
+  *LargestCompID = *numTotal;
 
 
   /* read number of concentrations
    */
-  char newline;
   printf("Enter number of different concentrations: ");
   scanf("%d%c", numSS, &newline);
-
-
-  /* *************** Find the maximum complex ID number. ******************* */
-  // Open the cx file
-  if ((fp = fopen(cxFile,"r")) == NULL) {
-    if (quiet == 0) {
-      printf("Error in opening file %s!\n",cxFile);
-      printf("\nExiting....\n\n");
-    }
-    exit(ERR_CX);
-  }
-
-  *nTotal = 0; // Initialize count of total number of permutations counter
-  *numTotal = 1;  // This is the total number of complexes (initialize to one --
-                  // assuming .cx file is nonempty).
-  while (fgets(line,MAXLINE,fp) != NULL) {
-    // skip commented out lines and blank lines
-    if (line[0] != '%' && line[0] != '\n' && line[0] != '\0') {
-      CompID = atoi(strtok(line,tokseps));
-      if (CompID > *numTotal) {
-        *numTotal = CompID;
-      }
-      (*nTotal)++; // Advance total number of permuations counter
-    }
-  }
-  fclose(fp);   
-  *LargestCompID = *numTotal;
-  /* *********************************************************************** */
 
 
   /* ******* Get the number of perumations for each complex **************** */
