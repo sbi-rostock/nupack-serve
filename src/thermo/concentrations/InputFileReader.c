@@ -204,7 +204,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   int LineOK; // = 1 is the next line in the file is not NULL
   double MolesWaterPerLiter; // Moles of water per liter
   FILE *fp; // Handle for files we open
-  FILE *fpfpairs=0, *fplog=0, *fpeq=0; // file handles for fpairs, log and eq files
+  FILE *fpfpairs=0, *fpeq=0; // file handles for fpairs, log and eq files
 
   // Rename these just so we don't have to use cumbersome pointers
   nSS = *numSS;
@@ -270,25 +270,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
     (*x0)[x] = str2double(tok);
     printf("GOT %e\n", (*x0)[x]);
   }
-  /* *************************************************************** */
-
-
-  /* *********** Write information to log and eq files ************* */
-  // Write to log file
-  if (WriteLogFile) {
-    if ((fplog = fopen(logFile,"a")) == NULL) {
-      if (quiet == 0) {
-        printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
-      exit(ERR_LOG);
-    }
-    for (i = 0; i < nSS; i++) {
-      fprintf(fplog,"       %d: %8.6e Molar\n",i+1,(*x0)[i]);
-    }
-    fprintf(fplog,"%%\n");
-    fprintf(fplog,"%% Following is the header from the input file (%s):\n",cxFile);
-    fprintf(fplog,"%%\n"); // Extra blank comment line to separate comments
-  }
 
   // Write to eq file
   if ((fpeq = fopen(eqFile,"a")) == NULL) {
@@ -339,10 +320,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   while (fgets(line,MAXLINE,fp) != NULL && 
          (line[0] == '%' || line[0] == '\0' || line[0] == '\n')) {
 
-    // Print comment line to output files
-    if (WriteLogFile) {
-      fprintf(fplog,"%s",line); 
-    }
     fprintf(fpeq,"%s",line); 
     if (DoBPfracs) {
       fprintf(fpfpairs,"%s",line); 
@@ -361,9 +338,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   }
 
   // Close output files
-  if (WriteLogFile) {
-    fclose(fplog);
-  }
   if (DoBPfracs) {
     fclose(fpfpairs);
   }
