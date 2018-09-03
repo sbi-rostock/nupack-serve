@@ -204,7 +204,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   int LineOK; // = 1 is the next line in the file is not NULL
   double MolesWaterPerLiter; // Moles of water per liter
   FILE *fp; // Handle for files we open
-  FILE *fpfpairs=0, *fpeq=0; // file handles for fpairs, log and eq files
+  FILE *fpeq=0; // file handles for fpairs, log and eq files
 
   // Rename these just so we don't have to use cumbersome pointers
   nSS = *numSS;
@@ -289,22 +289,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   fprintf(fpeq,"%% Following is the header from the input file (%s):\n%%\n",cxFile);
   fprintf(fpeq,"%%\n"); // Extra blank line to separate comments
 
-  // Write to fpairs file
-  if (DoBPfracs) {
-    if ((fpfpairs = fopen(fpairsFile,"a")) == NULL) {
-      if (quiet == 0) {
-        printf("Error opening %s.\n\nExiting....\n",fpairsFile);
-      }
-      exit(ERR_FPAIRS);
-    }
-    for (i = 0; i < nSS; i++) {
-      fprintf(fpfpairs,"%%   %d: %8.6e Molar\n",i+1,(*x0)[i]);
-    }
-    fprintf(fpfpairs,"%%\n");
-    fprintf(fpfpairs,"%% Following is the header from the input file (%s):\n",cxFile);
-    fprintf(fpfpairs,"%%\n"); // Extra blank comment line to separate comments
-  }
-  /* *************************************************************** */
 
   /* ************** Read in A, free energy, and complex IDs ******** */
   // Open the cx file
@@ -321,9 +305,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
          (line[0] == '%' || line[0] == '\0' || line[0] == '\n')) {
 
     fprintf(fpeq,"%s",line); 
-    if (DoBPfracs) {
-      fprintf(fpfpairs,"%s",line); 
-    }
 
     if (Toverride == 0) {
       if (line[0] == '%' && line[1] == ' ' && line[2] == 'T' && line[3] == ' '
@@ -335,11 +316,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
         *kT = kB*(str2double(tok) +  ZERO_C_IN_KELVIN);
       }
     }
-  }
-
-  // Close output files
-  if (DoBPfracs) {
-    fclose(fpfpairs);
   }
 
   // Build A and Free Energy.
