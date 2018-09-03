@@ -234,7 +234,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   for (j = 0; j < cTotal; j++) {
     (*PermIDArray)[j] = 0;
   }
-  
+
   *x0 = (double *) malloc(nSS * sizeof(double));
 
   // Allocate memory for the struct
@@ -242,7 +242,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   for (j = 0; j < cTotal; j++) {
     InputStruct[j].Aj = (int *) malloc (nSS * sizeof(int));
   }
-  
+
   // Allocate memory for the partition functions and initialize
   // We do this even if noPerms == 1 so the compiler doesn't give a warning when
   // optimization if turned on.
@@ -251,27 +251,25 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
     Q[j] = 0.0;
   }
 
-  /* ************ Read in intial concentrations ********************* */
-  // Open the con file
-  if ((fp = fopen(conFile,"r")) == NULL) {
-    if (quiet == 0) {
-      printf("Error in opening file %s!\n",conFile);
-      printf("\nExiting....\n\n");
-    }
-    exit(ERR_CON);
+
+  /* read number of concentrations
+   */
+  char newline;
+  int num_concentrations;
+  printf("Enter number of different concentrations: ");
+  scanf("%d%c", &num_concentrations, &newline);
+
+
+  /* read concentrations
+   */
+  char nupack_concentration[MAXLINE];
+  for(int x=0 ; x<num_concentrations ; ++x){
+    printf("Enter concentration %d: ", x+1);
+    scanf("%s", nupack_concentration);
+    tok = strtok(nupack_concentration, tokseps);
+    (*x0)[x] = str2double(tok);
+    printf("GOT %e\n", (*x0)[x]);
   }
-
-  i = 0;
-  while (fgets(line,MAXLINE,fp) != NULL) {
-    if (line[0] != '%' && line[0] != '\0' && line[0] != '\n') {
-      // Read in the initial concentration
-      tok = strtok(line,tokseps);
-      (*x0)[i] = str2double(tok);
-      i++;
-    }
-  } 
-
-  fclose(fp);
   /* *************************************************************** */
 
 
