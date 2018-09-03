@@ -45,7 +45,7 @@ struct CompStruct { // Struct for complexes (used for output)
 };
 
 
-/* ******************************************************************************** */
+
 void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
              int **numPermsArray) {
 
@@ -78,10 +78,8 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
       exit(ERR_NONSEQUENTIAL);
     }
   }
-  /* *********************************************************************** */
-
 }
-/* ******************************************************************************** */
+
 
 
 /* ******************************************************************************** */
@@ -189,7 +187,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
     scanf("%s", nupack_concentration);
     tok = strtok(nupack_concentration, tokseps);
     (*x0)[x] = str2double(tok);
-    printf("GOT %e\n", (*x0)[x]);
   }
 
   // Write to eq file
