@@ -143,9 +143,11 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   // Find out if we need to explicitly consider permutations
   if (sumint(numPermsArray,cTotal) > cTotal) {
     noPerms = 0;
+    printf("WE DO NOT CONSIDER PERMUTATIONS\n");
   }
   else {
     noPerms = 1;
+    printf("WE DO CONSIDER PERMUTATIONS\n");
   }
 
   // Allocate memory for A, G, and x0
@@ -245,8 +247,60 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   scanf("%s", nupack_temperature);
   tok = strtok(nupack_temperature, tokseps);
   *kT = kB*(str2double(tok) + ZERO_C_IN_KELVIN);
-  
 
+
+  /* HARDCODE OCX STARTS */
+  printf("cTotal %d\n", cTotal);
+  for(int x=0 ; x<cTotal ; ++x){
+    printf("PROVIDING NEW LINE:\n");
+    InputStruct[x].CompID = (x + 1);
+    switch(x){
+      case 0:
+        InputStruct[x].Aj[0] = 1;
+        InputStruct[x].Aj[1] = 0;
+        InputStruct[x].Aj[2] = 0;
+        Gperm = (-7.92078773e+00)/(*kT);
+        InputStruct[x].FreeEnergy = Gperm;
+        break;
+      case 1:
+        InputStruct[x].Aj[0] = 0;
+        InputStruct[x].Aj[1] = 1;
+        InputStruct[x].Aj[2] = 0;
+        Gperm = (-9.79502400e+00)/(*kT);
+        InputStruct[x].FreeEnergy = Gperm;
+        break;
+      case 2:
+        InputStruct[x].Aj[0] = 0;
+        InputStruct[x].Aj[1] = 0;
+        InputStruct[x].Aj[2] = 1;
+        Gperm = (-9.79502400e+00)/(*kT);
+        InputStruct[x].FreeEnergy = Gperm;
+        break;
+      case 3:
+        InputStruct[x].Aj[0] = 1;
+        InputStruct[x].Aj[1] = 1;
+        InputStruct[x].Aj[2] = 0;
+        Gperm = (-4.84277745e+01)/(*kT);
+        InputStruct[x].FreeEnergy = Gperm;
+        break;
+      case 4:
+        InputStruct[x].Aj[0] = 1;
+        InputStruct[x].Aj[1] = 0;
+        InputStruct[x].Aj[2] = 1;
+        Gperm = (-4.84277745e+01)/(*kT);
+        InputStruct[x].FreeEnergy = Gperm;
+        break;
+      case 5:
+        InputStruct[x].Aj[0] = 1;
+        InputStruct[x].Aj[1] = 1;
+        InputStruct[x].Aj[2] = 1;
+        Gperm = (-6.36285141e+01)/(*kT);
+        InputStruct[x].FreeEnergy = Gperm;
+        break;
+    }
+  }
+
+/*
   // Build A and Free Energy.
   LineOK = 1;
   while (LineOK == 1) {
@@ -316,6 +370,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
     
   }
   fclose(fp);
+*/
 
   // Close eq file
   fclose(fpeq);
