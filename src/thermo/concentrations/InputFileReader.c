@@ -210,6 +210,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
 
   /* ************** Read in A, free energy, and complex IDs ******** */
   // Open the cx file
+  /*
   if ((fp = fopen(cxFile,"r")) == NULL) {
     if (quiet == 0) {
       printf("Error in opening file %s!\n",cxFile);
@@ -234,7 +235,17 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
         *kT = kB*(str2double(tok) +  ZERO_C_IN_KELVIN);
       }
     }
-  }
+  }*/
+
+
+  /* read temperature
+   */
+  char nupack_temperature[MAXLINE];
+  printf("Enter temperature: ");
+  scanf("%s", nupack_temperature);
+  tok = strtok(nupack_temperature, tokseps);
+  *kT = kB*(str2double(tok) + ZERO_C_IN_KELVIN);
+  
 
   // Build A and Free Energy.
   LineOK = 1;
