@@ -119,7 +119,7 @@ int main( int argc, char **argv) {
   /* read sequences
    */
   for(int i=0 ; i<=(nStrands-1) ; ++i) {
-    printf("Enter Sequence %d:\n", i+1);
+    printf("Enter sequence %d:\n", i+1);
     scanf("%s", line);
     seqlength[i] = strlen(line);
 
