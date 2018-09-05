@@ -38,7 +38,6 @@ int main(int argc, char *argv[]) {
   char conFile[MAXLINE]; // File containing initiatial monomer concentrations
   char logFile[MAXLINE]; // File containing data about the calculation
   char eqFile[MAXLINE];  // Name of file for equilibrium concentrations
-  char fpairsFile[MAXLINE];  // Name of file for fraction base pair concentrations
   int numSS; // Number of single-strand (monomer) types. 
   int numSS0; // Number of monomer types including those with zero concentration
   int numTotal; // Total number of complexes
@@ -48,7 +47,6 @@ int main(int argc, char *argv[]) {
   int SortOutput; // Sorting options for output
   int quiet; // = 1 for no displays of results to screen
   int NoPermID; // = 1 if there are no perumtation IDs in 2nd column of input file
-  int DoBPfracs; // = 1 if we need to calculation fraction of strands that for pairs
   int WriteLogFile; // Whether or not to write a log file
   int CalcConcConverge; // 1 is CalcConc converged and 0 otherwise
   double tol; // The absolute tolerance is tol*(mininium monomer init. conc.)
@@ -91,21 +89,19 @@ int main(int argc, char *argv[]) {
   }
   fprintf(fpeq,"\n");
   fclose(fpeq);
-  
+
   // Get the size of the system.
   getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray);
-  
+
   // Read input files and sort if necessary.
   // Note: A, G, and either x0 or m0 are all allocated in ReadInput
-  MolesWaterPerLiter = ReadInputFiles(&A,&G,&CompIDArray,&PermIDArray,&x0,&numSS,
-				      &numSS0,&numTotal,numPermsArray,
-				      &kT,Toverride,eqFile,
-				      fpairsFile,quiet,WriteLogFile,DoBPfracs,
-				      NoPermID);
+  MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
+                &numSS, &numSS0, &numTotal, numPermsArray, &kT, Toverride,
+                eqFile, quiet);
 
   // Allocate memory for mole fractions
   x = (double *) malloc (numTotal * sizeof(double));
-  
+
   CalcConcConverge = CalcConc(x,A,G,x0,numSS,numTotal,MaxIters,tol,deltaBar,eta,kT,
 			      MaxNoStep,MaxTrial,PerturbScale,quiet,WriteLogFile,
 			      logFile,MolesWaterPerLiter,seed);

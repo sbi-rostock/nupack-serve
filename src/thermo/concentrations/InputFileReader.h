@@ -8,12 +8,10 @@ extern "C" {
 void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
        int **numPermsArray);
 
-double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray, 
-          double **x0, int *numSS, int *numSS0, int *numTotal, 
-          int *numPermsArray, double *kT, 
-          int Toverride, char  *eqFile, 
-          char *fpairsFile, int quiet, int WriteLogFile, int DoBPfrac,
-          int NoPermID);
+double ReadInputFiles(int ***A, double **G, int **CompIDArray,
+        int **PermIDArray, double **x0, int *numSS, int *numSS0,
+        int *numTotal, int *numPermsArray, double *kT, int Toverride,
+        char *eqFile, int quiet);
 
 #ifdef __cplusplus
 }

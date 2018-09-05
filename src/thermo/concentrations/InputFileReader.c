@@ -87,8 +87,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
                       double **x0, int *numSS, int *numSS0, int *numTotal, 
                       int *numPermsArray, double *kT, 
                       int Toverride, char  *eqFile, 
-                      char *fpairsFile, int quiet, int WriteLogFile, int DoBPfracs,
-                      int NoPermID) {
+                      int quiet) {
   /*
     If one of the entries in the con file is zero, the problem is
     reformulated as if that strand does not exist.
