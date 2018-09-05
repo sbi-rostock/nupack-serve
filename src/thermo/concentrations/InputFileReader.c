@@ -108,12 +108,10 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
 
   int i,j,k; // Counters
   struct CompStruct *InputStruct; // Struct we store the input in.
-  char line[MAXLINE]; // A line from a file
   char *tok; // Token
   char tokseps[] = " \t\n"; // Token separators
   int nSS; // Local number of single species
   int cTotal; // Local number of complexes
-  int ComplexID; // Complex ID for the line of imput file we are considering
   int *nonzerox0; // Identities of strands that are not zero in ccon
   int *zerox0; // The identities of strands that are set to zero in ccon
   int **newA; // The matrix A for the reformulated problem with zero ccon's taken out
@@ -122,15 +120,12 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   double *newG; // Free energies for reformulated prob. with zero ccon's taken out
   double *newx0; // Mole fractions of single species with zero ccon's taken out
   long double *Q; // Partition functions for complexes
-  long double addQ; // A summand in the sum representing Q.
   double Gperm; // free energy of a given permutation
   int newnumTotal; // New number of complexes after zero ccon's are removed
   int newnumSS; // New number of single strands after zero ccon's are removed
   int notOK; // Whether or not an entry in A can be kept if there are zero ccon's
   int noPerms; // noPerms = 1 if permutations are not explicitly considered
-  int LineOK; // = 1 is the next line in the file is not NULL
   double MolesWaterPerLiter; // Moles of water per liter
-  FILE *fp; // Handle for files we open
   FILE *fpeq=0; // file handles for fpairs, log and eq files
 
   // Rename these just so we don't have to use cumbersome pointers
@@ -143,11 +138,9 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   // Find out if we need to explicitly consider permutations
   if (sumint(numPermsArray,cTotal) > cTotal) {
     noPerms = 0;
-    printf("WE DO NOT CONSIDER PERMUTATIONS\n");
   }
   else {
     noPerms = 1;
-    printf("WE DO CONSIDER PERMUTATIONS\n");
   }
 
   // Allocate memory for A, G, and x0
@@ -210,36 +203,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   fprintf(fpeq,"%%\n"); // Extra blank line to separate comments
 
 
-  /* ************** Read in A, free energy, and complex IDs ******** */
-  // Open the cx file
-  /*
-  if ((fp = fopen(cxFile,"r")) == NULL) {
-    if (quiet == 0) {
-      printf("Error in opening file %s!\n",cxFile);
-      printf("\nExiting....\n\n");
-    }
-    exit(ERR_CX);
-  }
-
-  // Blow through comments and blank lines and pull out the new kT if necessary
-  while (fgets(line,MAXLINE,fp) != NULL && 
-         (line[0] == '%' || line[0] == '\0' || line[0] == '\n')) {
-
-    fprintf(fpeq,"%s",line); 
-
-    if (Toverride == 0) {
-      if (line[0] == '%' && line[1] == ' ' && line[2] == 'T' && line[3] == ' '
-          && line[4] == '=' && line[5] == ' ') { // This is line with temperature data
-        tok = strtok(line,tokseps); // tok = '%'
-        tok = strtok(NULL,tokseps); // tok = 'T'
-        tok = strtok(NULL,tokseps); // tok = '='
-        tok = strtok(NULL,tokseps); // This is the temperature
-        *kT = kB*(str2double(tok) +  ZERO_C_IN_KELVIN);
-      }
-    }
-  }*/
-
-
   /* read temperature
    */
   char nupack_temperature[MAXLINE];
@@ -250,127 +213,45 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
 
 
   /* HARDCODE OCX STARTS */
-  printf("cTotal %d\n", cTotal);
+  char* ocx = malloc(sizeof(char) * MAXLINE);
   for(int x=0 ; x<cTotal ; ++x){
-    printf("PROVIDING NEW LINE:\n");
     InputStruct[x].CompID = (x + 1);
     switch(x){
       case 0:
-        InputStruct[x].Aj[0] = 1;
-        InputStruct[x].Aj[1] = 0;
-        InputStruct[x].Aj[2] = 0;
-        Gperm = (-7.92078773e+00)/(*kT);
-        InputStruct[x].FreeEnergy = Gperm;
+        strcpy(ocx, "1\t0\t0\t-7.92078773e+00");
         break;
       case 1:
-        InputStruct[x].Aj[0] = 0;
-        InputStruct[x].Aj[1] = 1;
-        InputStruct[x].Aj[2] = 0;
-        Gperm = (-9.79502400e+00)/(*kT);
-        InputStruct[x].FreeEnergy = Gperm;
+        strcpy(ocx, "0\t1\t0\t-9.79502400e+00");
         break;
       case 2:
-        InputStruct[x].Aj[0] = 0;
-        InputStruct[x].Aj[1] = 0;
-        InputStruct[x].Aj[2] = 1;
-        Gperm = (-9.79502400e+00)/(*kT);
-        InputStruct[x].FreeEnergy = Gperm;
+        strcpy(ocx, "0\t0\t1\t-9.79502400e+00");
         break;
       case 3:
-        InputStruct[x].Aj[0] = 1;
-        InputStruct[x].Aj[1] = 1;
-        InputStruct[x].Aj[2] = 0;
-        Gperm = (-4.84277745e+01)/(*kT);
-        InputStruct[x].FreeEnergy = Gperm;
+        strcpy(ocx, "1\t1\t0\t-4.84277745e+01");
         break;
       case 4:
-        InputStruct[x].Aj[0] = 1;
-        InputStruct[x].Aj[1] = 0;
-        InputStruct[x].Aj[2] = 1;
-        Gperm = (-4.84277745e+01)/(*kT);
-        InputStruct[x].FreeEnergy = Gperm;
+        strcpy(ocx, "1\t0\t1\t-4.84277745e+01");
         break;
       case 5:
-        InputStruct[x].Aj[0] = 1;
-        InputStruct[x].Aj[1] = 1;
-        InputStruct[x].Aj[2] = 1;
-        Gperm = (-6.36285141e+01)/(*kT);
-        InputStruct[x].FreeEnergy = Gperm;
+        strcpy(ocx, "1\t1\t1\t-6.36285141e+01");
         break;
     }
+    for(int y=0 ; y<nSS ; ++y){
+      if(y < 1){
+        InputStruct[x].Aj[y] = atoi(strtok(ocx, tokseps));
+      }
+      else{
+        InputStruct[x].Aj[y] = atoi(strtok(NULL, tokseps));
+      }
+    }
+    Gperm = str2double(strtok(NULL, tokseps))/(*kT);
+    InputStruct[x].FreeEnergy = Gperm;
+    InputStruct[x].numSS = nSS;
   }
 
-/*
-  // Build A and Free Energy.
-  LineOK = 1;
-  while (LineOK == 1) {
-    if (line[0] == '%') { // If it's a comment, print it to output file
-      fprintf(fpeq,"%s",line); 
-    }
-    else if (line[0] != '%' && line[0] != '\0' && line[0] != '\n') {
-      // Get the complex ID
-      tok = strtok(line,tokseps);  // Complex ID
-      ComplexID = atoi(tok) - 1;
-      InputStruct[ComplexID].CompID = ComplexID + 1;
-      
-      // Permutation number
-      if (NoPermID == 0) {
-        tok = strtok(NULL,tokseps);
-      }
-      
-      // Pull out column of A corresponding to complex (this is done redundantly)
-      for (i = 0; i < nSS; i++) {
-        if ((tok = strtok(NULL,tokseps)) != NULL) {
-          InputStruct[ComplexID].Aj[i] = atoi(tok);
-        }
-        else {
-          if (quiet == 0) {
-            printf("Error in input file!\n\nExiting....\n");
-          }
-          exit(ERR_BADROWINP);
-        }
-      }
-      
-      // Enter the free energy
-      if ((tok = strtok(NULL,tokseps)) != NULL) {
-        Gperm = str2double(tok)/(*kT);
-        if (noPerms) {
-          InputStruct[ComplexID].FreeEnergy = Gperm;
-        }
-        else {
-          if ((addQ = expl(-((long double) Gperm))) >= HUGE_VAL){
-            if (quiet == 0) {
-              printf("Free energies of complexes are too high for calculation\n");
-              printf("including permutations.  Reformat the problem such that each\n");
-              printf("complex has its own free energy (no permutations).\n\n");
-              printf("Exiting.....\n");
-            }
-            exit(ERR_NOPERMS);
-          }
-          else {
-            Q[ComplexID] += addQ;
-          }
-        }
-        
-      }
-      else {
-        if (quiet == 0) {
-          printf("Error in input file!\n\nExiting....\n");
-        }
-        exit(ERR_BADROWINP);
-      }
-      
-      // Put numSS in just because we have to for qsort
-      InputStruct[ComplexID].numSS = nSS;
-    }  
-    // Read in the next line
-    if (fgets(line,MAXLINE,fp) == NULL) {
-      LineOK = 0;
-    }
-    
-  }
-  fclose(fp);
-*/
+  free(ocx);
+  /* HARDCODE OCX ENDS */
+
 
   // Close eq file
   fclose(fpeq);
