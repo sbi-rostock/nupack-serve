@@ -85,17 +85,11 @@ int main(int argc, char *argv[]) {
     exit(ERR_EQ);
   }
   fprintf(fpeq,"%% NUPACK %s\n", CMAKE_NUPACK_VERSION);
-  fprintf(fpeq,"%% This is %s, an output file generated for a \"concentrations\"\n",
-	  eqFile);
-  fprintf(fpeq,"%% calculation of equilibrium concentrations.\n");
-  fprintf(fpeq,"%% For information on contents, see NUPACK manual.\n");
-  fprintf(fpeq,"%% Program: concentrations\n");
   fprintf(fpeq,"%% Command: ");
   for (i = 0; i < argc; i++) {
     fprintf(fpeq,"%s ",argv[i]);
   }
   fprintf(fpeq,"\n");
-  fprintf(fpeq,"%% Initial monomer concentrations:\n");
   fclose(fpeq);
   
   // Get the size of the system.
@@ -104,8 +98,8 @@ int main(int argc, char *argv[]) {
   // Read input files and sort if necessary.
   // Note: A, G, and either x0 or m0 are all allocated in ReadInput
   MolesWaterPerLiter = ReadInputFiles(&A,&G,&CompIDArray,&PermIDArray,&x0,&numSS,
-				      &numSS0,&numTotal,numPermsArray,cxFile,conFile,
-				      &kT,Toverride,logFile,eqFile,
+				      &numSS0,&numTotal,numPermsArray,
+				      &kT,Toverride,eqFile,
 				      fpairsFile,quiet,WriteLogFile,DoBPfracs,
 				      NoPermID);
 

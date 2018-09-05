@@ -85,8 +85,8 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
 /* ******************************************************************************** */
 double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray, 
                       double **x0, int *numSS, int *numSS0, int *numTotal, 
-                      int *numPermsArray, char *cxFile, char *conFile, double *kT, 
-                      int Toverride, char  *logFile, char  *eqFile, 
+                      int *numPermsArray, double *kT, 
+                      int Toverride, char  *eqFile, 
                       char *fpairsFile, int quiet, int WriteLogFile, int DoBPfracs,
                       int NoPermID) {
   /*
@@ -191,16 +191,10 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
     }
     exit(ERR_EQ);
   }
-  for (i = 0; i < nSS; i++) {
-    fprintf(fpeq,"%%   %d: %8.6e Molar\n",i+1,(*x0)[i]);
-  }
 
   if (Toverride == 1) {
     fprintf(fpeq,"%% User supplied temperature of %g\n",(*kT)/kB - ZERO_C_IN_KELVIN);
   }
-  fprintf(fpeq,"%%\n");
-  fprintf(fpeq,"%% Following is the header from the input file (%s):\n%%\n",cxFile);
-  fprintf(fpeq,"%%\n"); // Extra blank line to separate comments
 
 
   /* read temperature

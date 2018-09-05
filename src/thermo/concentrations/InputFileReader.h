@@ -10,8 +10,8 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
 
 double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray, 
           double **x0, int *numSS, int *numSS0, int *numTotal, 
-          int *numPermsArray, char *cxFile, char *conFile, double *kT, 
-          int Toverride, char  *logFile, char  *eqFile, 
+          int *numPermsArray, double *kT, 
+          int Toverride, char  *eqFile, 
           char *fpairsFile, int quiet, int WriteLogFile, int DoBPfrac,
           int NoPermID);
 
