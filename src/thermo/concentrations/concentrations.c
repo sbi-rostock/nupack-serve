@@ -32,10 +32,8 @@
 
 int main(int argc, char *argv[]) {
 
-  int i; // Counter
   unsigned long seed; // Seed for random number generation
   char cxFile[MAXLINE]; // File containing complex ID's and free energies
-  char logFile[MAXLINE]; // File containing data about the calculation
   char eqFile[MAXLINE];  // Name of file for equilibrium concentrations
   int numSS; // Number of single-strand (monomer) types. 
   int numSS0; // Number of monomer types including those with zero concentration
@@ -46,7 +44,6 @@ int main(int argc, char *argv[]) {
   int SortOutput; // Sorting options for output
   int quiet; // = 1 for no displays of results to screen
   int NoPermID; // = 1 if there are no perumtation IDs in 2nd column of input file
-  int WriteLogFile; // Whether or not to write a log file
   int CalcConcConverge; // 1 is CalcConc converged and 0 otherwise
   double tol; // The absolute tolerance is tol*(mininium monomer init. conc.)
   double deltaBar; // Maximum allowed step size in trust region method
@@ -68,9 +65,9 @@ int main(int argc, char *argv[]) {
   FILE *fpeq; // The .eq file, which contains the output of the file.
 
   // Read command line arguments
-  ReadCommandLine(argc,argv,cxFile,eqFile,
-		  &SortOutput,&MaxIters,&tol,&kT,&MaxNoStep,&MaxTrial,&PerturbScale,
-		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&seed,&NUPACK_VALIDATE);
+  ReadCommandLine(argc, argv, cxFile, eqFile, &SortOutput, &MaxIters, &tol,
+        &kT, &MaxNoStep, &MaxTrial, &PerturbScale, &quiet, &Toverride,
+        &NoPermID, &seed, &NUPACK_VALIDATE);
 
 
   // Pull eta and deltaBar from global variables
@@ -83,8 +80,8 @@ int main(int argc, char *argv[]) {
   }
   fprintf(fpeq,"%% NUPACK %s\n", CMAKE_NUPACK_VERSION);
   fprintf(fpeq,"%% Command: ");
-  for (i = 0; i < argc; i++) {
-    fprintf(fpeq,"%s ",argv[i]);
+  for(int i=0 ; i<argc ; ++i){
+    fprintf(fpeq,"%s ", argv[i]);
   }
   fprintf(fpeq,"\n");
   fclose(fpeq);
@@ -95,15 +92,15 @@ int main(int argc, char *argv[]) {
   // Read input files and sort if necessary.
   // Note: A, G, and either x0 or m0 are all allocated in ReadInput
   MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
-                &numSS, &numSS0, &numTotal, numPermsArray, &kT, Toverride,
-                eqFile, quiet);
+        &numSS, &numSS0, &numTotal, numPermsArray, &kT, Toverride, eqFile,
+        quiet);
 
   // Allocate memory for mole fractions
   x = (double *) malloc (numTotal * sizeof(double));
 
-  CalcConcConverge = CalcConc(x,A,G,x0,numSS,numTotal,MaxIters,tol,deltaBar,eta,kT,
-			      MaxNoStep,MaxTrial,PerturbScale,quiet,WriteLogFile,
-			      logFile,MolesWaterPerLiter,seed);
+  CalcConcConverge = CalcConc(x, A, G, x0, numSS, numTotal, MaxIters, tol,
+        deltaBar, eta, kT, MaxNoStep, MaxTrial, PerturbScale, quiet,
+        MolesWaterPerLiter, seed);
 
   // Show warning in eq file if we failed to converge
   if (CalcConcConverge == 0) {
@@ -122,7 +119,7 @@ int main(int argc, char *argv[]) {
 	      SortOutput,eqFile,MolesWaterPerLiter,quiet,NoPermID,NUPACK_VALIDATE);
 
   // Free memory
-  for (i = 0; i < numSS; i++) {
+  for(int i=0 ; i<numSS ; ++i){
     free(A[i]); // Allocated in ReadInput
   }
   free(A); // Allocated in ReadInput

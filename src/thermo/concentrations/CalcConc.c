@@ -67,11 +67,10 @@
 /* ******************************************************************************** */
 /*                              BEGIN CALCCONC FUNCTION                             */
 /* ******************************************************************************** */
-int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal, 
-         int MaxIters, double tol, double deltaBar, double eta, double kT, 
-         int MaxNoStep, int MaxTrial, double PerturbScale, int quiet, 
-         int WriteLogFile, char *logFile, double MolesWaterPerLiter,
-         unsigned long seed) {
+int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
+         int MaxIters, double tol, double deltaBar, double eta, double kT,
+         int MaxNoStep, int MaxTrial, double PerturbScale, int quiet,
+         double MolesWaterPerLiter, unsigned long seed) {
   /*
     Computes the equilbrium mole fractions of species in dilute
     solution using a trust region algorithm on the dual problem.
@@ -251,40 +250,6 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
     // Print out the free energy of the solution
     printf("Free energy = %8.6e kcal/litre of solution\n",FreeEnergy);
    }
-
-  // Write out details of calculation to outfile
-  if (WriteLogFile) {
-    if ((fplog = fopen(logFile,"a")) == NULL) {
-      if (quiet == 0) {
-        printf("Error opening %s.\n\nExiting....\n",logFile);
-      }
-      exit(ERR_LOG);
-    }
-    if (nTrial == MaxTrial) {
-      fprintf(fplog,"TRUST REGION DID NOT CONVERGE DUE TO PRECISION ISSUES\n\n");
-    }
-    fprintf(fplog,"   --Trust region results:\n");
-    fprintf(fplog,"       No. of initial conditions tried: %d\n",nTrial);
-    fprintf(fplog,"       Results from succesful trial:\n");
-    fprintf(fplog,"         No. of iterations: %d\n",iters);
-    fprintf(fplog,"         No. of Newton steps: %d\n",RunStats[0]);
-    fprintf(fplog,"         No. of Cauchy steps: %d\n",RunStats[1]);
-    fprintf(fplog,"         No. of dogleg steps: %d\n",RunStats[2]);
-    fprintf(fplog,"         No. of Cholesky failures resulting in Cauchy steps: %d\n"
-      ,RunStats[3]);
-    fprintf(fplog,"         No. of inconsequential Cholesky failures: %d\n",
-      RunStats[4]);
-    fprintf(fplog,"         No. of dogleg failures: %d\n",RunStats[5]);
-    fprintf(fplog,"         Error in conservation of mass (units of molarity):\n");
-    fprintf(fplog,"              Error\tTolerance\n");
-    for (i = 0; i < numSS; i++) {
-      fprintf(fplog, "           %.14e\t%.14e\n",Grad[i]*MolesWaterPerLiter,
-          AbsTol[i]*MolesWaterPerLiter);
-    }
-    fprintf(fplog,"   --Free energy of solution = %.14e kcal/litre of solution\n",
-        FreeEnergy);
-    fclose(fplog);
-  }
   /* **************** END OF WRITING OUT RESULTS **************************** */
 
    // Free memory

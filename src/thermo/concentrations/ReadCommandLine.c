@@ -17,11 +17,11 @@
 #include "constants.h"
 
 /* ******************************************************************************** */
-void ReadCommandLine(int nargs, char **args, char *cxFile,
-        char *eqFile, int *SortOutput, int *MaxIters,
-        double *tol, double *kT, int *MaxNoStep, int *MaxTrial,
-        double *PerturbScale, int *quiet, int *WriteLogFile, int *Toverride,
-        int *NoPermID, unsigned long *seed, int * NUPACK_VALIDATE){
+void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
+        int *SortOutput, int *MaxIters, double *tol, double *kT,
+        int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
+        int *Toverride, int *NoPermID, unsigned long *seed,
+        int *NUPACK_VALIDATE){
 
   int options;  // Counters used in getting flags
   int ShowHelp; // ShowHelp = 1 if help option flag is selected
@@ -44,7 +44,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile,
   *MaxNoStep = 50; // Default is 50 iterations with no step
   *MaxTrial = 100000; // Default is maximum of 100,000 trials
   *PerturbScale = 100; // Default is a scale of 100 on the perturb scale
-  *WriteLogFile = 0; // Default is not to write a log file
   *Toverride = 0; // Default is to either use T = 37 or that specified in input file
   *NoPermID = 0; // Default is to use .ocx file => permutation IDs in file
   *seed = 0; // Default is to seed off the clock.
