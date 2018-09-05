@@ -213,38 +213,39 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
 
 
   /* HARDCODE OCX STARTS */
+  char ocx_sep[] = ",";
   char* ocx = malloc(sizeof(char) * MAXLINE);
   for(int x=0 ; x<cTotal ; ++x){
     InputStruct[x].CompID = (x + 1);
     switch(x){
       case 0:
-        strcpy(ocx, "1\t0\t0\t-7.92078773e+00");
+        strcpy(ocx, "1,0,0,-7.92078773e+00");
         break;
       case 1:
-        strcpy(ocx, "0\t1\t0\t-9.79502400e+00");
+        strcpy(ocx, "0,1,0,-9.79502400e+00");
         break;
       case 2:
-        strcpy(ocx, "0\t0\t1\t-9.79502400e+00");
+        strcpy(ocx, "0,0,1,-9.79502400e+00");
         break;
       case 3:
-        strcpy(ocx, "1\t1\t0\t-4.84277745e+01");
+        strcpy(ocx, "1,1,0,-4.84277745e+01");
         break;
       case 4:
-        strcpy(ocx, "1\t0\t1\t-4.84277745e+01");
+        strcpy(ocx, "1,0,1,-4.84277745e+01");
         break;
       case 5:
-        strcpy(ocx, "1\t1\t1\t-6.36285141e+01");
+        strcpy(ocx, "1,1,1,-6.36285141e+01");
         break;
     }
     for(int y=0 ; y<nSS ; ++y){
       if(y < 1){
-        InputStruct[x].Aj[y] = atoi(strtok(ocx, tokseps));
+        InputStruct[x].Aj[y] = atoi(strtok(ocx, ocx_sep));
       }
       else{
-        InputStruct[x].Aj[y] = atoi(strtok(NULL, tokseps));
+        InputStruct[x].Aj[y] = atoi(strtok(NULL, ocx_sep));
       }
     }
-    Gperm = str2double(strtok(NULL, tokseps))/(*kT);
+    Gperm = str2double(strtok(NULL, ocx_sep))/(*kT);
     InputStruct[x].FreeEnergy = Gperm;
     InputStruct[x].numSS = nSS;
   }
