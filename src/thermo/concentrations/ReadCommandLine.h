@@ -7,7 +7,7 @@ extern "C" {
 
 #include <stdio.h>
 
-void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile, 
+void ReadCommandLine(int nargs, char **args, char *cxFile,
          char *eqFile,
          int *SortOutput, int *MaxIters, double *tol, double *kT,
          int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,

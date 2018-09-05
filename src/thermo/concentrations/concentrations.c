@@ -35,7 +35,6 @@ int main(int argc, char *argv[]) {
   int i; // Counter
   unsigned long seed; // Seed for random number generation
   char cxFile[MAXLINE]; // File containing complex ID's and free energies
-  char conFile[MAXLINE]; // File containing initiatial monomer concentrations
   char logFile[MAXLINE]; // File containing data about the calculation
   char eqFile[MAXLINE];  // Name of file for equilibrium concentrations
   int numSS; // Number of single-strand (monomer) types. 
@@ -69,7 +68,7 @@ int main(int argc, char *argv[]) {
   FILE *fpeq; // The .eq file, which contains the output of the file.
 
   // Read command line arguments
-  ReadCommandLine(argc,argv,cxFile,conFile,eqFile,
+  ReadCommandLine(argc,argv,cxFile,eqFile,
 		  &SortOutput,&MaxIters,&tol,&kT,&MaxNoStep,&MaxTrial,&PerturbScale,
 		  &quiet,&WriteLogFile,&Toverride,&NoPermID,&seed,&NUPACK_VALIDATE);
 
