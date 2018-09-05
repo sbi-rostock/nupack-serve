@@ -98,9 +98,6 @@ int main( int argc, char **argv) {
   strcpy(globalArgs.inputFilePrefix, "NoInputFile");
 
 
-  printf("No input file specified.\n");
-  printf("Requesting input manually.\n");
-
   TEMP_K = globalArgs.T + ZERO_C_IN_KELVIN;
 
 
