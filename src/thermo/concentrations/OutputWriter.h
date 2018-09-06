@@ -5,6 +5,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+int concentrations_header(char*, int, char**);
+
 void WriteOutput(double *x, double *G, int *CompIDArray, int LargestCompID, 
      int numSS, int numTotal, int nTotal, double kT, char *cxFile, 
      int SortOutput, char  *eqFile, double MolesWaterPerLiter, int quiet, 

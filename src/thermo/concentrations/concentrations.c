@@ -61,6 +61,11 @@ int main(int argc, char *argv[]) {
   int *PermIDArray;   // permutation IDs
   FILE *fpeq;
 
+  // provenance blocks
+  int len_header = 1000;
+  int len_provenance;
+
+
   eta = TRUST_REGION_ETA;
   deltaBar = TRUST_REGION_DELTABAR;
 
@@ -72,17 +77,27 @@ int main(int argc, char *argv[]) {
         &NoPermID, &seed, &NUPACK_VALIDATE);
 
 
-  // write information to .eq file
-  if ((fpeq = fopen(eqFile,"w")) == NULL) {
-    exit(ERR_EQ);
+  /* echo provenance header starts
+   */
+  char *header = malloc(sizeof(char) * len_header);
+  if(!header){
+    exit(1);
   }
-  fprintf(fpeq,"%% NUPACK %s\n", CMAKE_NUPACK_VERSION);
-  fprintf(fpeq,"%% Command: ");
-  for(int i=0 ; i<argc ; ++i){
-    fprintf(fpeq,"%s ", argv[i]);
+  for(int y=0 ; y<len_header ; ++y){
+    header[y] = 0;
   }
-  fprintf(fpeq,"\n");
-  fclose(fpeq);
+
+  // fill provenance block
+  len_provenance = concentrations_header(header, argc, argv);
+  for(int y=0 ; y<len_provenance ; ++y){
+    printf("%c", header[y]);
+  }
+
+  // free provenance block
+  free(header);
+  header = NULL;
+  /*
+   * echo provenance header ends */
 
 
   /* get the system's size
