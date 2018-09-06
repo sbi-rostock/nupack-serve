@@ -16,10 +16,10 @@
   problem is that in Nocedal and Wright, Numerical Optimization, 1999,
   page 68, with the dogleg method on page 71.  The subroutine used to
   do this calculation is CalcConc.c.
-  
+
   For usage instructions, input and output formats, etc., see the
   associated manual.
-  
+
   Justin Bois, Caltech, 2 September 2006
 */
 
@@ -30,51 +30,53 @@
 #include "ReadCommandLine.h"
 #include "constants.h"
 
+
 int main(int argc, char *argv[]) {
 
-  unsigned long seed; // Seed for random number generation
-  char cxFile[MAXLINE]; // File containing complex ID's and free energies
-  char eqFile[MAXLINE];  // Name of file for equilibrium concentrations
-  int numSS; // Number of single-strand (monomer) types. 
-  int numSS0; // Number of monomer types including those with zero concentration
-  int numTotal; // Total number of complexes
-  int nTotal; // Total number of permutations
-  int LargestCompID; // Largest complex ID
-  int MaxIters; // Maximum number of iterations in trust region method
-  int SortOutput; // Sorting options for output
-  int quiet; // = 1 for no displays of results to screen
-  int NoPermID; // = 1 if there are no perumtation IDs in 2nd column of input file
-  int CalcConcConverge; // 1 is CalcConc converged and 0 otherwise
-  double tol; // The absolute tolerance is tol*(mininium monomer init. conc.)
-  double deltaBar; // Maximum allowed step size in trust region method
-  double eta; // eta parameter in trust region method, 0 < eta < 0.25
-  double kT; // The thermal energy in kcal/mol.
-  double MolesWaterPerLiter; // Moles of water per liter
-  int Toverride; // = 1 if the user has enforced a temperature in the command line
-  int MaxNoStep; // The maximum number of iterations allowed without taking a step
-  int MaxTrial; //  The maximum number ot perturbations allowed in a calculation
-  double PerturbScale; // The multiplier on the random number for perturbations
-  int **A; // A[i][j] is the number of monomers of type i in complex j
-  double *G; // Free energies of complexes
-  double *x; // The mole fractions
-  double *x0; // Total concentrations of single-species
+  unsigned long seed; // seed for random number generation
+  char cxFile[MAXLINE];
+  char eqFile[MAXLINE];
+  int numSS;    // number of single-strand (monomer) types
+  int numSS0;   // number of monomer types including those with zero concentration
+  int numTotal; // total number of complexes
+  int nTotal;   // total number of permutations
+  int LargestCompID; // largest complex ID
+  int MaxIters;   // maximum number of iterations in trust region method
+  int SortOutput; // sorting options for output
+  int quiet;      // 1 for no displays of results to screen
+  int NoPermID;   // 1 if there are no perumtation IDs in 2nd column of input file
+  int CalcConcConverge; // 1 for convergence, 0 otherwise
+  double tol;      // absolute tolerance is tol*(mininium monomer init. conc.)
+  double deltaBar; // maximum allowed step size in trust region method
+  double eta;      // eta parameter in trust region method, 0 < eta < 0.25
+  double kT;       // thermal energy in kcal/mol
+  double MolesWaterPerLiter; // moles of water per liter
+  int Toverride; // 1 if the user has enforced a temperature in the command line
+  int MaxNoStep; // maximum number of iterations allowed without taking a step
+  int MaxTrial;  // maximum number ot perturbations allowed in a calculation
+  double PerturbScale; // multiplier on the random number for perturbations
+  int **A;    // number of monomers of type i in complex j
+  double *G;  // free energies of complexes
+  double *x;  // the mole fractions
+  double *x0; // total concentrations of single-species
   int NUPACK_VALIDATE; // 1 if validation mode (14 digit printout)
-  int *numPermsArray; // Number of permutations of each species
-  int *CompIDArray; // The complex ID's
-  int *PermIDArray; // Permutation ID's
-  FILE *fpeq; // The .eq file, which contains the output of the file.
+  int *numPermsArray; // number of permutations of each species
+  int *CompIDArray;   // complex IDs
+  int *PermIDArray;   // permutation IDs
+  FILE *fpeq;
 
-  // Read command line arguments
+  eta = TRUST_REGION_ETA;
+  deltaBar = TRUST_REGION_DELTABAR;
+
+
+  /* read command line arguments
+   */
   ReadCommandLine(argc, argv, cxFile, eqFile, &SortOutput, &MaxIters, &tol,
         &kT, &MaxNoStep, &MaxTrial, &PerturbScale, &quiet, &Toverride,
         &NoPermID, &seed, &NUPACK_VALIDATE);
 
 
-  // Pull eta and deltaBar from global variables
-  eta = TRUST_REGION_ETA;
-  deltaBar = TRUST_REGION_DELTABAR;
-
-  // Write information to .eq file
+  // write information to .eq file
   if ((fpeq = fopen(eqFile,"w")) == NULL) {
     exit(ERR_EQ);
   }
@@ -86,23 +88,28 @@ int main(int argc, char *argv[]) {
   fprintf(fpeq,"\n");
   fclose(fpeq);
 
-  // Get the size of the system.
+
+  /* get the system's size
+   */
   getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray);
 
-  // Read input files and sort if necessary.
-  // Note: A, G, and either x0 or m0 are all allocated in ReadInput
+
+  /* read input files
+   */
   MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
         &numSS, &numSS0, &numTotal, numPermsArray, &kT, Toverride, eqFile,
         quiet);
 
-  // Allocate memory for mole fractions
-  x = (double *) malloc (numTotal * sizeof(double));
 
+  /* compute convergence
+   */
+  x = malloc (sizeof(double) * numTotal);
   CalcConcConverge = CalcConc(x, A, G, x0, numSS, numTotal, MaxIters, tol,
         deltaBar, eta, kT, MaxNoStep, MaxTrial, PerturbScale, quiet,
         MolesWaterPerLiter, seed);
 
-  // Show warning in eq file if we failed to converge
+
+  // show warning in eq file if we failed to converge
   if (CalcConcConverge == 0) {
     if ((fpeq = fopen(eqFile,"a")) == NULL) {
       exit(ERR_EQ);
@@ -115,26 +122,27 @@ int main(int argc, char *argv[]) {
     fclose(fpeq);
   }
 
-  WriteOutput(x,G,CompIDArray,LargestCompID,numSS0,numTotal,nTotal,kT,cxFile,
-	      SortOutput,eqFile,MolesWaterPerLiter,quiet,NoPermID,NUPACK_VALIDATE);
+  WriteOutput(x, G, CompIDArray, LargestCompID, numSS0, numTotal, nTotal, kT,
+        cxFile, SortOutput, eqFile, MolesWaterPerLiter, quiet, NoPermID,
+        NUPACK_VALIDATE);
 
-  // Free memory
+  // free memory allocations
   for(int i=0 ; i<numSS ; ++i){
-    free(A[i]); // Allocated in ReadInput
+    free(A[i]); // allocated in ReadInput
   }
-  free(A); // Allocated in ReadInput
-  free(G); // Allocated in ReadInput
-  free(numPermsArray); // Allocated in getSize
-  free(CompIDArray); // Allocated in ReadInput
-  free(PermIDArray); // Allocated in ReadInput
-  free(x0); // Allocated in ReadInput
-  free(x);  // Allocated in main
+  free(A); // allocated in ReadInput
+  free(G); // allocated in ReadInput
+  free(numPermsArray); // allocated in getSize
+  free(CompIDArray);   // allocated in ReadInput
+  free(PermIDArray);   // allocated in ReadInput
+  free(x0); // allocated in ReadInput
+  free(x);
 
   // If didn't converge, give error message
   if (CalcConcConverge == 0) {
     exit(ERR_NOCONVERGE);
   }
 
-  return 0; // Return
-
+  return 0;
 }
+
