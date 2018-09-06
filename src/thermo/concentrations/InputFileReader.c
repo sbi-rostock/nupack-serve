@@ -81,6 +81,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray,
   double MolesWaterPerLiter; // moles of water per liter
   char *tok;
   char separators[] = " \t\n";
+  char separators_ocx[] = ",\n";
   int nSS;     // number of single species
   int cTotal;  // number of complexes
   int noPerms; // 1 if permutations are not explicitly considered
@@ -156,44 +157,22 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray,
   *kT = kB*((*temperature) + ZERO_C_IN_KELVIN);
 
 
-  /* HARDCODE OCX STARTS
+  /* read ocx
    */
-  char ocx_sep[] = ",";
-  char* ocx = malloc(sizeof(char) * MAXLINE);
+  char nupack_ocx[MAXLINE];
   for(int x=0 ; x<cTotal ; ++x){
-    InputStruct[x].CompID = (x + 1);
-    switch(x){
-      case 0:
-        strcpy(ocx, "1,1,0,0,-7.92078773e+00");
-        break;
-      case 1:
-        strcpy(ocx, "1,0,1,0,-9.79502400e+00");
-        break;
-      case 2:
-        strcpy(ocx, "1,0,0,1,-9.79502400e+00");
-        break;
-      case 3:
-        strcpy(ocx, "1,1,1,0,-4.84277745e+01");
-        break;
-      case 4:
-        strcpy(ocx, "1,1,0,1,-4.84277745e+01");
-        break;
-      case 5:
-        strcpy(ocx, "1,1,1,1,-6.36285141e+01");
-        break;
-    }
-    InputStruct[x].PermID = atoi(strtok(ocx, ocx_sep));
+    printf("Enter complex ocx %d: ", x+1);
+    scanf("%s", nupack_ocx);
+    InputStruct[x].numSS  = nSS;
+    InputStruct[x].CompID = atoi(strtok(nupack_ocx, separators_ocx));
+    InputStruct[x].PermID = atoi(strtok(NULL, separators_ocx));
     for(int y=0 ; y<nSS ; ++y){
-      InputStruct[x].Aj[y] = atoi(strtok(NULL, ocx_sep));
+      InputStruct[x].Aj[y] = atoi(strtok(NULL, separators_ocx));
     }
-    double energy_of_permutation = str2double(strtok(NULL, ocx_sep))/(*kT);
+    double energy_of_permutation =
+        str2double(strtok(NULL, separators_ocx))/(*kT);
     InputStruct[x].FreeEnergy = energy_of_permutation;
-    InputStruct[x].numSS = nSS;
   }
-
-  free(ocx);
-  /*
-   * HARDCODE OCX ENDS */
 
 
   // compute and enter free energies
@@ -206,7 +185,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray,
 
   // make the matrix A and free energy G and the complex ID list
   for(int j=0 ; j<cTotal ; ++j){
-    for (int i=0 ; i<nSS ; ++i){
+    for(int i=0 ; i<nSS ; ++i){
       (*A)[i][j] = InputStruct[j].Aj[i];
     }
     (*G)[j] = InputStruct[j].FreeEnergy;
