@@ -83,10 +83,10 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
 
 
 /* ******************************************************************************** */
-double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray,
-        double **x0, double** concentrations, int *numSS, int *numSS0, int *numTotal,
-        int *numPermsArray, double *kT, double* temperature, int Toverride,
-        char *eqFile, int quiet){
+double ReadInputFiles(int ***A, double **G, int **CompIDArray,
+        int **PermIDArray, double **x0, double** concentrations, int *numSS,
+        int *numSS0, int *numTotal, int *numPermsArray, double *kT,
+        double* temperature, int Toverride, int quiet){
   /*
     If one of the entries in the con file is zero, the problem is
     reformulated as if that strand does not exist.
@@ -124,7 +124,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   int notOK; // Whether or not an entry in A can be kept if there are zero ccon's
   int noPerms; // noPerms = 1 if permutations are not explicitly considered
   double MolesWaterPerLiter; // Moles of water per liter
-  FILE *fpeq=0; // file handles for fpairs, log and eq files
 
   // Rename these just so we don't have to use cumbersome pointers
   nSS = *numSS;
@@ -184,18 +183,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
     (*concentrations)[x] = (*x0)[x];
   }
 
-  // Write to eq file
-  if ((fpeq = fopen(eqFile,"a")) == NULL) {
-    if (quiet == 0) {
-      printf("Error opening %s.\n\nExiting....\n",eqFile);
-    }
-    exit(ERR_EQ);
-  }
-
-  if (Toverride == 1) {
-    fprintf(fpeq,"%% User supplied temperature of %g\n",(*kT)/kB - ZERO_C_IN_KELVIN);
-  }
-
 
   /* read temperature
    */
@@ -248,9 +235,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   free(ocx);
   /* HARDCODE OCX ENDS */
 
-
-  // Close eq file
-  fclose(fpeq);
 
   // Compute and enter free energies
   if (noPerms == 0) {

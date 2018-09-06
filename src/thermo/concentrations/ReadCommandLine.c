@@ -8,11 +8,10 @@
 #include "constants.h"
 
 
-void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
-        int *SortOutput, int *MaxIters, double *tol, double *kT,
-        int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
-        int *Toverride, int *NoPermID, unsigned long *seed,
-        int *NUPACK_VALIDATE){
+void ReadCommandLine(int nargs, char **args, int *SortOutput, int *MaxIters,
+        double *tol, double *kT, int *MaxNoStep, int *MaxTrial,
+        double *PerturbScale, int *quiet, int *Toverride, int *NoPermID,
+        unsigned long *seed, int *NUPACK_VALIDATE){
 
   int options;
   int ShowHelp; // 1 if help option flag is selected
@@ -102,12 +101,6 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
   else{
     strcpy(prefix,args[optind]);
   }
-
-  // Name the files
-  strcpy(cxFile,prefix);
-  strcpy(eqFile,prefix);
-  strcat(cxFile,".ocx");
-  strcat(eqFile,".eq");
 }
 
 

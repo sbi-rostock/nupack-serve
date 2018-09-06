@@ -9,9 +9,9 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
        int **numPermsArray);
 
 double ReadInputFiles(int ***A, double **G, int **CompIDArray,
-        int **PermIDArray, double **x0, double** concentrations, int *numSS, int *numSS0,
-        int *numTotal, int *numPermsArray, double *kT, double* temperature, int Toverride,
-        char *eqFile, int quiet);
+        int **PermIDArray, double **x0, double** concentrations, int *numSS,
+        int *numSS0, int *numTotal, int *numPermsArray, double *kT,
+        double* temperature, int Toverride, int quiet);
 
 #ifdef __cplusplus
 }

@@ -30,8 +30,6 @@
 int main(int argc, char *argv[]) {
 
   unsigned long seed; // seed for random number generation
-  char cxFile[MAXLINE];
-  char eqFile[MAXLINE];
   int numSS;    // number of single-strand (monomer) types
   int numSS0;   // number of monomer types including those with zero concentration
   int numTotal; // total number of complexes
@@ -73,7 +71,7 @@ int main(int argc, char *argv[]) {
 
 
   // read command line arguments
-  ReadCommandLine(argc, argv, cxFile, eqFile, &SortOutput, &MaxIters, &tol,
+  ReadCommandLine(argc, argv, &SortOutput, &MaxIters, &tol,
         &kT, &MaxNoStep, &MaxTrial, &PerturbScale, &quiet, &Toverride,
         &NoPermID, &seed, &NUPACK_VALIDATE);
 
@@ -108,7 +106,7 @@ int main(int argc, char *argv[]) {
   // read input files
   MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
         &concentrations, &numSS, &numSS0, &numTotal, numPermsArray, &kT,
-        &temperature, Toverride, eqFile, quiet);
+        &temperature, Toverride, quiet);
 
 
   /* echo provenance parameters starts
