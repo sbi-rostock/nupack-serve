@@ -7,22 +7,22 @@
  */
 
 
+#include "constants.h" // Concentrations header file
 #include "OutputWriter.h" // Concentrations header file
 #include <shared.h> // Concentrations header file
-#include "constants.h" // Concentrations header file
 
 
-// Structure for sorting output that includes permutations
+// structure for sorting output that includes permutations
 struct PermSortStruct {
-  int CompID; // The ID tag associated with a complex
+  int CompID; // ID tag associated with a complex
   int PermID; // ID number for permutation
-  int *Aj; // Array representing column j of A
-  double FreeEnergy; // Free energy for permutation
-  double xj; // The concentration of the permutation
-  double xjc; // The complex concentration
-  int numSS; // Number of entries in Aj (needed for sorting routine)
-  char *AuxStr; // String containing auxillary information from input file
+  int *Aj; // array representing column j of A
+  double FreeEnergy; // free energy for permutation
+  double xj; // concentration of the permutation
+  double xjc; // complex concentration
+  int numSS; // number of entries in Aj (needed for sorting routine)
 };
+
 
 
 /* create a string containing the provenance's header informations:
@@ -209,7 +209,7 @@ int concentrations_parameters(char* provenance, int numSS,
                 FIELD_NEXT);
 
 
-  // free all memory objects
+  // free allocated memory
   free(nupack_concentrations);
   nupack_concentrations = NULL;
 
@@ -224,149 +224,85 @@ int concentrations_parameters(char* provenance, int numSS,
  */
 void WriteOutput(double *X, double *G, int *CompIDArray, int LargestCompID,
         int numSS, int numTotal, int nTotal, double kT, int SortOutput,
-        double MolesWaterPerLiter, int NoPermID, int NUPACK_VALIDATE){
+        double MolesWaterPerLiter, int NoPermID, int NUPACK_VALIDATE,
+        struct InStruct* InputStruct){
 
   int *CompLookup;
-  struct PermSortStruct *PermOutStruct; // output structure for sorting
 
 
-  // Allocate memory for lookup table for complexes (to check if conc. is nonzero)
-  CompLookup = (int *) malloc (LargestCompID * sizeof(int));
-  // Initialize it to -1
-  for (int j=0 ; j<LargestCompID ; ++j) {
+  // allocate memory for lookup table for complexes (to check if conc. is nonzero)
+  CompLookup = malloc (sizeof(int) * LargestCompID);
+  for(int j=0 ; j<LargestCompID ; ++j){ // initialize it to -1
     CompLookup[j] = -1;
   }
-  // If included in problem change entry
-  for (int j=0; j<numTotal ; ++j) {
+  // if included in problem change entry
+  for(int j=0; j<numTotal ; ++j){
     CompLookup[CompIDArray[j]-1] = j;
   }
 
-  // Allocate memory for the output structure
-  PermOutStruct = malloc(sizeof(struct PermSortStruct) * nTotal);
+
   for(int x=0 ; x<nTotal ; ++x){
-    PermOutStruct[x].Aj = malloc(sizeof(struct PermSortStruct) * numSS);
-  }
-
-
-  /* HARDCODE OCX STARTS */
-  char ocx_sep[] = ",";
-  char* ocx = malloc(sizeof(char) * MAXLINE);
-  for(int x=0 ; x<nTotal ; ++x){
-    PermOutStruct[x].CompID = (x + 1);
-    switch(x){
-      case 0:
-        strcpy(ocx, "1,0,0,-7.92078773e+00");
-        break;
-      case 1:
-        strcpy(ocx, "0,1,0,-9.79502400e+00");
-        break;
-      case 2:
-        strcpy(ocx, "0,0,1,-9.79502400e+00");
-        break;
-      case 3:
-        strcpy(ocx, "1,1,0,-4.84277745e+01");
-        break;
-      case 4:
-        strcpy(ocx, "1,0,1,-4.84277745e+01");
-        break;
-      case 5:
-        strcpy(ocx, "1,1,1,-6.36285141e+01");
-        break;
+    if(CompLookup[x] == -1){
+      InputStruct[x].xj = 0;
+      InputStruct[x].xjc = 0;
     }
-    for(int y=0 ; y<numSS ; ++y){
-      if(y < 1){
-        PermOutStruct[x].Aj[y] = atoi(strtok(ocx, ocx_sep));
-      }
-      else{
-        PermOutStruct[x].Aj[y] = atoi(strtok(NULL, ocx_sep));
-      }
-    }
-    double Gperm = str2double(strtok(NULL, ocx_sep))/kT;
-    PermOutStruct[x].FreeEnergy = Gperm;
-    PermOutStruct[x].AuxStr = malloc(sizeof(char) * 1);
-    PermOutStruct[x].AuxStr[0] = '\0';
-    PermOutStruct[x].numSS = numSS;
-
-    if (CompLookup[x] == -1) {
-      PermOutStruct[x].xj = 0;
-      PermOutStruct[x].xjc = 0;
-    }
-    else {
-      PermOutStruct[x].xjc = X[CompLookup[x]];
-      PermOutStruct[x].xj = (
-          X[CompLookup[x]]
-          * exp(
-              G[CompLookup[x]] - PermOutStruct[x].FreeEnergy));
+    else{
+      InputStruct[x].xjc = X[CompLookup[x]];
+      InputStruct[x].xj = (X[CompLookup[x]]
+        * exp(G[CompLookup[x]] - InputStruct[x].FreeEnergy));
     }
   }
 
-  free(ocx);
-  /* HARDCODE OCX ENDS */
 
-
-  // Sort the results (no sorting necessary for SortOutput == 0)
-  if (SortOutput == 1) {
-    qsort(PermOutStruct,nTotal,sizeof(struct PermSortStruct),Compare11);
+  // sort the results
+  if(SortOutput == 1){
+    qsort(InputStruct, nTotal, sizeof(struct InStruct), Compare11);
   }
-  else if (SortOutput == 2) {
-    qsort(PermOutStruct,nTotal,sizeof(struct PermSortStruct),Compare12);
+  else if(SortOutput == 2){
+    qsort(InputStruct, nTotal, sizeof(struct InStruct), Compare12);
   }
-  else if (SortOutput == 3) {
-    qsort(PermOutStruct,nTotal,sizeof(struct PermSortStruct),Compare13);
+  else if(SortOutput == 3){
+    qsort(InputStruct, nTotal, sizeof(struct InStruct), Compare13);
   }
-  else if (SortOutput == 4) {
-    qsort(PermOutStruct,nTotal,sizeof(struct PermSortStruct),Compare14);
+  else if(SortOutput == 4){
+    qsort(InputStruct, nTotal, sizeof(struct InStruct), Compare14);
   }
 
-  for (int k=0 ; k<nTotal ; ++k){
-    // ComplexID
-    printf("%d\t", PermOutStruct[k].CompID);
-    if (NoPermID == 0) {
-      printf("%d\t", PermOutStruct[k].PermID);
+  for(int k=0 ; k<nTotal ; ++k){
+    printf("%d\t", InputStruct[k].CompID); // complex ID
+    if(NoPermID == 0){
+      printf("%d\t", InputStruct[k].PermID);
     }
-    // The corresponding column in A
-    for (int i=0 ; i<numSS ; ++i){
-      printf("%d\t", PermOutStruct[k].Aj[i]);
+    for(int i=0 ; i<numSS ; ++i){ // corresponding column in A
+      printf("%d\t", InputStruct[k].Aj[i]);
     }
-    // Free energy in kcal/mol
-    if(!NUPACK_VALIDATE) {
-      printf("%8.6e\t", PermOutStruct[k].FreeEnergy * kT);
-      // Concentration in MOLAR
-      printf("%8.6e\t", PermOutStruct[k].xj * MolesWaterPerLiter);
-    } else {
-      printf("%.14e\t", PermOutStruct[k].FreeEnergy * kT);
-      // Concentration in MOLAR
-      printf("%.14e\t", PermOutStruct[k].xj * MolesWaterPerLiter);
+    if(!NUPACK_VALIDATE){ // free energy (Kcal/mol)
+      printf("%8.6e\t", InputStruct[k].FreeEnergy * kT);
+      // concentration (M)
+      printf("%8.6e\t", InputStruct[k].xj * MolesWaterPerLiter);
+    }else{
+      printf("%.14e\t", InputStruct[k].FreeEnergy * kT);
+      // concentration in (M)
+      printf("%.14e\t", InputStruct[k].xj * MolesWaterPerLiter);
     }
-    printf("%s\n", PermOutStruct[k].AuxStr);
+    printf("\n");
   }
 
-  // Free the allocated memory
-  for (int k=0 ; k<nTotal ; ++k){
-    free(PermOutStruct[k].Aj);
-    free(PermOutStruct[k].AuxStr);
-  }
-  free(PermOutStruct);
-
-  // Free CompLookup
+  // free allocated memory
   free(CompLookup);
 }
 
 
 
-/* ******************************************************************************** */
+/* Comparison function (in mandatory form) to send to qsort. See Prata, C
+ * Primer Plus, 4th Ed. p. 654 for description.
+ * Whichever has highest concentration (xj) returns -1.
+ * If the concentrations are the same (usually only the case if they're both
+ * zero), they are sorted by complex ID and then permutation ID
+ */
 int Compare11(const void *p1, const void *p2) {
-  /* 
-     Comparison function (in mandatory form) to send to qsort.
-     See Prata, C Primer Plus, 4th Ed. p. 654 for description.
 
-     Whichever has highest concentration (xj) returns -1.
-
-     If the concentrations are the same (usually only the case if they're both zero),
-     they are sorted by complex ID and then permutation ID.
-  */
-
-  const struct PermSortStruct *ps1 = p1;  // Get the right type of pointer
+  const struct PermSortStruct *ps1 = p1;
   const struct PermSortStruct *ps2 = p2;
 
   if (ps1->xj < ps2->xj) {
@@ -375,97 +311,92 @@ int Compare11(const void *p1, const void *p2) {
   else if (ps1->xj > ps2->xj) {
     return -1;
   }
-  else { // Equal permutation concentration
+  else { // equal permutation concentration
     if (ps1->CompID < ps2->CompID) {
       return -1;
     }
     else if (ps1->CompID > ps2->CompID) {
       return 1;
     }
-    else {  // same complex ID
+    else { // same complex ID
       if (ps1->PermID < ps2->PermID) {
-	return -1;
+        return -1;
       }
       else if (ps1->PermID > ps2->PermID) {
-	return 1;
+        return 1;
       }
-      else { // Shouldn't ever get here
-	return 0;
+      else { // shouldn't ever get here
+        return 0;
       }
     }
   }
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Comparison function (in mandatory form) to send to qsort. See Prata, C
+ * Primer Plus, 4th Ed. p. 654 for description.
+ * Used for sorting first by complex concentration, then by permutation
+ * concentration
+ */
 int Compare12(const void *p1, const void *p2) {
-  /* 
-     Comparison function (in mandatory form) to send to qsort.
-     See Prata, C Primer Plus, 4th Ed. p. 654 for description.
 
-     Used for sorting first by complex concentration then permutation concentration
-  */
-
-  const struct PermSortStruct *ps1 = p1;  // Get the right type of pointer
+  const struct PermSortStruct *ps1 = p1;
   const struct PermSortStruct *ps2 = p2;
 
 
-  if (ps1->CompID == ps2->CompID) { // Same complex, sort by perm conc.
+  if (ps1->CompID == ps2->CompID) { // same complex, sort by perm conc
     if (ps1->xj < ps2->xj) {
       return 1;
     }
     else if (ps1->xj > ps2->xj) {
       return -1;
     }
-    else { // Same permutation concentration (sort by Perm ID)
+    else { // same permutation concentration (sort by Perm ID)
       if (ps1->PermID < ps2->PermID) {
-	return -1;
+        return -1;
       }
       else if (ps1-> PermID > ps2->PermID) {
-	return 1;
+        return 1;
       }
-      else { // Same PermID
-	return 0;
+      else { // same PermID
+        return 0;
       }
     }
   }
-  else { // Different complexes, sort by complex conc.
+  else { // different complexes, sort by complex conc
     if (ps1->xjc < ps2->xjc) {
       return 1;
     }
     else if (ps1->xjc > ps2->xjc) {
       return -1;
     }
-    else { // Same complex concentration (sort by complex ID)
+    else { // same complex concentration (sort by complex ID)
       if (ps1->CompID < ps2->CompID) {
-	return -1;
+        return -1;
       }
       else if (ps1-> CompID > ps2->CompID) {
-	return 1;
+        return 1;
       }
-      else { // Shouldn't ever get here
-	return 0;
+      else { // shouldn't ever get here
+        return 0;
       }
     }
   }
 
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Comparison function (in mandatory form) to send to qsort. See Prata, C
+ * Primer Plus, 4th Ed. p. 654 for description.
+ * They are sorted by complex ID, and then permutation ID
+ */
 int Compare13(const void *p1, const void *p2) {
-  /* 
-     Comparison function (in mandatory form) to send to qsort.
-     See Prata, C Primer Plus, 4th Ed. p. 654 for description.
 
-     They are sorted by complex ID and then permutation ID.
-  */
-
-  const struct PermSortStruct *ps1 = p1;  // Get the right type of pointer
+  const struct PermSortStruct *ps1 = p1;
   const struct PermSortStruct *ps2 = p2;
+
 
   if (ps1->CompID < ps2->CompID) {
     return -1;
@@ -473,53 +404,48 @@ int Compare13(const void *p1, const void *p2) {
   else if (ps1->CompID > ps2->CompID) {
     return 1;
   }
-  else {  // same complex ID
+  else { // same complex ID
     if (ps1->PermID < ps2->PermID) {
       return -1;
     }
     else if (ps1->PermID > ps2->PermID) {
       return 1;
     }
-    else { // Shouldn't ever get here
+    else { // shouldn't ever get here
       return 0;
     }
   }
 
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Comparison function (in mandatory form) to send to qsort. See Prata, C
+ * Primer Plus, 4th Ed. p. 654 for description.
+ * Used for sorting first by number of strands in complex, and then
+ * alphabetically, i.e., an order of complexes might be: A, B, AA, AB, BB
+ * later on sorted by permutation ID number
+ */
 int Compare14(const void *p1, const void *p2) {
-  /* 
-     Comparison function (in mandatory form) to send to qsort.
-     See Prata, C Primer Plus, 4th Ed. p. 654 for description.
 
-     Used for sorting first by number of strands in complex, and then
-     alphabetically.  I.e., an order of complexes might be:
-     A, B, AA, AB, BB
-
-     Then it's sorted by permutation ID number.
-  */
-
-  int i; // Counter
-  const struct PermSortStruct *ps1 = p1;  // Get the right type of pointer
+  const struct PermSortStruct *ps1 = p1;
   const struct PermSortStruct *ps2 = p2;
   int s1;
   int s2;
 
-  if (ps1->CompID == ps2->CompID) {  // Same complex
+
+  if (ps1->CompID == ps2->CompID) { // same complex
     if (ps1->PermID < ps2->PermID) {
       return -1;
     }
     if (ps1->PermID > ps2->PermID) {
       return 1;
     }
-    else { // Same Perm ID number
+    else { // same Perm ID number
       return 0;
     }
   }
-  else { // Different complexes
+  else { // sifferent complexes
     s1 = sumint(ps1->Aj,ps1->numSS);
     s2 = sumint(ps2->Aj,ps2->numSS);
     if (s1 > s2) {
@@ -528,20 +454,17 @@ int Compare14(const void *p1, const void *p2) {
     else if (s1 < s2) {
       return -1;
     }
-    else { // Have same number of strands
-      for (i = 0; i < ps1->numSS; i++) {
-	if (ps1->Aj[i] > ps2->Aj[i]) {
-	  return -1;
-	}
-	else if (ps1->Aj[i] < ps2->Aj[i]) {
-	  return 1;
-	}
+    else { // have same number of strands
+      for(int i=0 ; i<(ps1->numSS) ; ++i){
+        if (ps1->Aj[i] > ps2->Aj[i]) {
+          return -1;
+        }
+        else if (ps1->Aj[i] < ps2->Aj[i]) {
+          return 1;
+        }
       }
-      return 0; // Shouldn't ever get here
+      return 0; // shouldn't ever get here
     }
   }
-
 }
-/* ******************************************************************************** */
-
 

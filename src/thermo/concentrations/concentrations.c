@@ -19,12 +19,12 @@
  * manual.
  */
 
+#include "constants.h"
 #include "CalcConc.h"
 #include "FracPair.h"
 #include "InputFileReader.h"
 #include "OutputWriter.h"
 #include "ReadCommandLine.h"
-#include "constants.h"
 
 
 int main(int argc, char *argv[]) {
@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
 
   /* echo provenance header starts
    */
+  // allocate provenance block
   char *header = malloc(sizeof(char) * len_header);
   if(!header){
     exit(1);
@@ -102,10 +103,16 @@ int main(int argc, char *argv[]) {
   getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray);
 
 
+  // store input parameters
+  struct InStruct* InputStruct = malloc(sizeof(InStruct) * nTotal);
+  for(int j=0 ; j<nTotal; ++j){
+    InputStruct[j].Aj = malloc (sizeof(int) * numSS);
+  }
+
   // read input files
   MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
         &concentrations, &numSS, &numSS0, &numTotal, numPermsArray, &kT,
-        &temperature, Toverride);
+        &temperature, Toverride, InputStruct);
 
 
   /* echo provenance parameters starts
@@ -141,7 +148,8 @@ int main(int argc, char *argv[]) {
 
 
   WriteOutput(x, G, CompIDArray, LargestCompID, numSS0, numTotal, nTotal, kT,
-        SortOutput, MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE);
+        SortOutput, MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE, InputStruct);
+
 
   // free memory allocations
   for(int i=0 ; i<numSS ; ++i){
@@ -155,6 +163,12 @@ int main(int argc, char *argv[]) {
   free(x0); // allocated in ReadInput
   free(concentrations);
   free(x);
+
+  for(int i=0 ; i<nTotal ; ++i){
+    free(InputStruct[i].Aj);
+  }
+  free(InputStruct);
+
 
   // If didn't converge, give error message
   if (CalcConcConverge == 0) {

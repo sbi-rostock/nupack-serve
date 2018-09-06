@@ -11,7 +11,7 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
 double ReadInputFiles(int ***A, double **G, int **CompIDArray,
         int **PermIDArray, double **x0, double** concentrations, int *numSS,
         int *numSS0, int *numTotal, int *numPermsArray, double *kT,
-        double* temperature, int Toverride);
+        double* temperature, int Toverride, struct InStruct* InputStruct);
 
 #ifdef __cplusplus
 }

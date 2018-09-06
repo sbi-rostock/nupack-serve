@@ -48,4 +48,14 @@
 #define ERR_NOSEQEQ 15 // No sequence information in comments of eq file
 #define ERR_PAIRSFILE 16 // Error opening pairs file
 
+typedef struct InStruct {
+  int *Aj;   // array representing column j of A
+  int numSS; // number of entries in Aj
+  int CompID;
+  int PermID;
+  double FreeEnergy; // partition function for species
+  double xj;
+  double xjc;
+} InStruct;
+
 #endif // NUPACK_THERMO_CONCENTRATIONS_H
