@@ -1,27 +1,23 @@
 /*
-  concentrations.c is part of the NUPACK software suite
-  Copyright (c) 2007 Caltech. All rights reserved.
-  Coded by: Justin Bois 9/2006
-
-  This program does thermodynamic analysis of interacting nucleic acid
-  strands in a box where the partition functions for the complexes are
-  known.  The algorithm is described in Dirks, Bois, Schaeffer,
-  Winfree, and Pierce, "Thermodynamic Analysis of interacting nucleic
-  acid strands", SIAM Review, in press.  Variable names in the code
-  should be referenced with variable names in that paper.
-
-  The program calculates the equilibrium concentrations of possible
-  complexes in the thermodynamic limit, i.e., for a large system with
-  many strands.  The trust region algorithm for solving the dual
-  problem is that in Nocedal and Wright, Numerical Optimization, 1999,
-  page 68, with the dogleg method on page 71.  The subroutine used to
-  do this calculation is CalcConc.c.
-
-  For usage instructions, input and output formats, etc., see the
-  associated manual.
-
-  Justin Bois, Caltech, 2 September 2006
-*/
+ * concentrations.c is part of the NUPACK software suite
+ * Copyright (c) 2007 Caltech. All rights reserved.
+ * Coded by: Justin Bois 9/2006
+ *
+ * This program does thermodynamic analysis of interacting nucleic acid strands
+ * in a box where the partition functions for the complexes are known.
+ * The algorithm is described in Dirks, Bois, Schaeffer, Winfree, and Pierce,
+ * "Thermodynamic Analysis of interacting nucleic acid strands", SIAM Review.
+ * Variable names in the code should be referenced with variable names in that
+ * paper.
+ * The program calculates the equilibrium concentrations of possible complexes
+ * in the thermodynamic limit, i.e., for a large system with many strands. The
+ * trust region algorithm for solving the dual problem is that in Nocedal and
+ * Wright, Numerical Optimization, 1999, page 68, with the dogleg method on
+ * page 71. The subroutine used to do this calculation is CalcConc.c.
+ *
+ * For usage instructions, input and output formats, etc., see the associated
+ * manual.
+ */
 
 #include "CalcConc.h"
 #include "FracPair.h"
