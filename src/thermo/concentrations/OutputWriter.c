@@ -223,9 +223,8 @@ int concentrations_parameters(char* provenance, int numSS,
  * we avoid re-reading the input to check whether the problem has changed
  */
 void WriteOutput(double *X, double *G, int *CompIDArray, int LargestCompID,
-        int numSS, int numTotal, int nTotal, double kT,
-        int SortOutput, double MolesWaterPerLiter, int quiet,
-        int NoPermID, int NUPACK_VALIDATE){
+        int numSS, int numTotal, int nTotal, double kT, int SortOutput,
+        double MolesWaterPerLiter, int NoPermID, int NUPACK_VALIDATE){
 
   int *CompLookup;
   struct PermSortStruct *PermOutStruct; // output structure for sorting

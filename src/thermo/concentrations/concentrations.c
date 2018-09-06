@@ -37,7 +37,6 @@ int main(int argc, char *argv[]) {
   int LargestCompID; // largest complex ID
   int MaxIters;   // maximum number of iterations in trust region method
   int SortOutput; // sorting options for output
-  int quiet;      // 1 for no displays of results to screen
   int NoPermID;   // 1 if there are no perumtation IDs in 2nd column of input file
   int CalcConcConverge; // 1 for convergence, 0 otherwise
   double tol;      // absolute tolerance is tol*(mininium monomer init. conc.)
@@ -71,9 +70,9 @@ int main(int argc, char *argv[]) {
 
 
   // read command line arguments
-  ReadCommandLine(argc, argv, &SortOutput, &MaxIters, &tol,
-        &kT, &MaxNoStep, &MaxTrial, &PerturbScale, &quiet, &Toverride,
-        &NoPermID, &seed, &NUPACK_VALIDATE);
+  ReadCommandLine(argc, argv, &SortOutput, &MaxIters, &tol, &kT, &MaxNoStep,
+        &MaxTrial, &PerturbScale, &Toverride, &NoPermID, &seed,
+        &NUPACK_VALIDATE);
 
 
   /* echo provenance header starts
@@ -106,7 +105,7 @@ int main(int argc, char *argv[]) {
   // read input files
   MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
         &concentrations, &numSS, &numSS0, &numTotal, numPermsArray, &kT,
-        &temperature, Toverride, quiet);
+        &temperature, Toverride);
 
 
   /* echo provenance parameters starts
@@ -137,13 +136,12 @@ int main(int argc, char *argv[]) {
   // compute convergence
   x = malloc (sizeof(double) * numTotal);
   CalcConcConverge = CalcConc(x, A, G, x0, numSS, numTotal, MaxIters, tol,
-        deltaBar, eta, kT, MaxNoStep, MaxTrial, PerturbScale, quiet,
+        deltaBar, eta, kT, MaxNoStep, MaxTrial, PerturbScale,
         MolesWaterPerLiter, seed);
 
 
   WriteOutput(x, G, CompIDArray, LargestCompID, numSS0, numTotal, nTotal, kT,
-        SortOutput, MolesWaterPerLiter, quiet, NoPermID,
-        NUPACK_VALIDATE);
+        SortOutput, MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE);
 
   // free memory allocations
   for(int i=0 ; i<numSS ; ++i){

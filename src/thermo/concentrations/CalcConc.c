@@ -49,7 +49,6 @@
   MaxTrial: The maximum number of initial conditions to be tried.
   PerturbScale: The multiplier on the random perturbations to the initial
     conditions as new ones are generated.
-  quiet: = 1 for no printing of messages (except error messages) to screen.
   MolesWaterPerLiter: Number of moles of water per liter
 */
 
@@ -68,8 +67,8 @@
  */
 int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
     int MaxIters, double tol, double deltaBar, double eta, double kT,
-    int MaxNoStep, int MaxTrial, double PerturbScale, int quiet,
-     double MolesWaterPerLiter, unsigned long seed){
+    int MaxNoStep, int MaxTrial, double PerturbScale,
+    double MolesWaterPerLiter, unsigned long seed){
 
   int i,j; // Counters, i is over single-species and j is over all complexes
   int iters; // Number of iterations
@@ -130,10 +129,6 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
 
     // calculate the counts of the species based on lambda
     if (getx(x,lambda,G,AT,numSS,numTotal) == 0) {
-      if (quiet == 0) {
-    printf("Overflow error in calcution of mole fractions.\n\n");
-    printf("Exiting....\n");
-      }
       exit(ERR_OVERFLOW);
     }
 
@@ -185,10 +180,6 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
 
       // Calculate the mole fractions of the complexes based on lambda
       if (getx(x,lambda,G,AT,numSS,numTotal) == 0) {// Should be fine;checked prev.
-        if (quiet == 0) {
-          printf("Overflow error in calcution of mole fractions.\n\n");
-          printf("Exiting....\n");
-        }
         exit(ERR_OVERFLOW);
       }
 
@@ -218,24 +209,6 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
   // Convert to kcal/liter of solution
   FreeEnergy *= kT*MolesWaterPerLiter;
 
-  /* **************** WRITE OUT RESULTS ********************************* */
-  if ( nTrial == MaxTrial  && quiet == 0) {
-    printf("\n\n   TRUST REGION METHOD DID NOT CONVERGE DUE TO PRECISION ISSUES\n\n");
-  }
-
-  // Report errors in conservation of mass to screen
-  if (quiet == 0) {
-    // Print out values of the gradient, which is the error in cons. of mass
-    printf("Error in conservation of mass:\n");
-    for (i = 0; i < numSS; i++) {
-      printf("   %8.6e Molar\n",Grad[i]*MolesWaterPerLiter);
-    }
-    printf("\n");
-
-    // Print out the free energy of the solution
-    printf("Free energy = %8.6e kcal/litre of solution\n",FreeEnergy);
-   }
-  /* **************** END OF WRITING OUT RESULTS **************************** */
 
   // free memory
   for (j = 0; j < numTotal; j++) {

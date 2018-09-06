@@ -86,7 +86,7 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
 double ReadInputFiles(int ***A, double **G, int **CompIDArray,
         int **PermIDArray, double **x0, double** concentrations, int *numSS,
         int *numSS0, int *numTotal, int *numPermsArray, double *kT,
-        double* temperature, int Toverride, int quiet){
+        double* temperature, int Toverride){
   /*
     If one of the entries in the con file is zero, the problem is
     reformulated as if that strand does not exist.
@@ -262,24 +262,6 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray,
 
   // Free the partition functions
   free(Q);
-  
-  // Do a quick check of the free energies.  If any are > 0, it's likely there's
-  // an input error.  Let the user know if this is the case.
-  if (quiet == 0) {
-    j = 0;
-    while (j < cTotal && (*G)[j] <= 0.0001) {
-      j++;
-    }
-    if (j < cTotal) {
-      printf("\n\nWarning: At least one free energy is > 0. %lf\n", (*G)[j]);
-      printf("It is likely there is an input error.\n");
-      printf("If there is such an error, the the program will still run\n");
-      printf("normally and give results, which may be nonsensical.\n");
-      printf("If your input file suffix is .cx, .cx-epairs, or .cx-mfe,\n");
-      printf("there should be no ordered complex identifier in the input file.\n");
-      printf("\n\n");
-    }
-  }
 
 
   /* ************** BEGIN    REFORMATTING PROBLEM *********************** */

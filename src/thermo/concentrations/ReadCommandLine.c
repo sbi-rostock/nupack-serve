@@ -10,7 +10,7 @@
 
 void ReadCommandLine(int nargs, char **args, int *SortOutput, int *MaxIters,
         double *tol, double *kT, int *MaxNoStep, int *MaxTrial,
-        double *PerturbScale, int *quiet, int *Toverride, int *NoPermID,
+        double *PerturbScale, int *Toverride, int *NoPermID,
         unsigned long *seed, int *NUPACK_VALIDATE){
 
   int options;
@@ -29,7 +29,6 @@ void ReadCommandLine(int nargs, char **args, int *SortOutput, int *MaxIters,
   *tol = 0.0000001; // Default tolerance is 0.00001% of minimum of the
                     // minimum count among the single-strands
   *kT = kB*(37.0 + ZERO_C_IN_KELVIN); // Default temperature is 37 deg. C
-  *quiet = 1; // Default is not to show messages on the screen
   *MaxNoStep = 50; // Default is 50 iterations with no step
   *MaxTrial = 100000; // Default is maximum of 100,000 trials
   *PerturbScale = 100; // Default is a scale of 100 on the perturb scale

@@ -31,7 +31,7 @@ int CheckTol(double *Grad, double *AbsTol, int numSS);
 
 int CalcConc(double *x, int **A, double *G, double *x0, int numSS,
         int numTotal, int MaxIters, double tol, double deltaBar, double eta,
-        double kT, int MaxNoStep, int MaxTrial, double PerturbScale, int quiet,
+        double kT, int MaxNoStep, int MaxTrial, double PerturbScale,
         double MolesWaterPerLiter, unsigned long seed);
 
 
