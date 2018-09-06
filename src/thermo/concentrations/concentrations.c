@@ -61,7 +61,6 @@ int main(int argc, char *argv[]) {
   int *numPermsArray; // number of permutations of each species
   int *CompIDArray;   // complex IDs
   int *PermIDArray;   // permutation IDs
-  FILE *fpeq;
 
   // provenance blocks
   int len_header = 1000;
@@ -73,8 +72,7 @@ int main(int argc, char *argv[]) {
   deltaBar = TRUST_REGION_DELTABAR;
 
 
-  /* read command line arguments
-   */
+  // read command line arguments
   ReadCommandLine(argc, argv, cxFile, eqFile, &SortOutput, &MaxIters, &tol,
         &kT, &MaxNoStep, &MaxTrial, &PerturbScale, &quiet, &Toverride,
         &NoPermID, &seed, &NUPACK_VALIDATE);
@@ -138,29 +136,15 @@ int main(int argc, char *argv[]) {
    * echo provenance parameters ends */
 
 
-  /* compute convergence
-   */
+  // compute convergence
   x = malloc (sizeof(double) * numTotal);
   CalcConcConverge = CalcConc(x, A, G, x0, numSS, numTotal, MaxIters, tol,
         deltaBar, eta, kT, MaxNoStep, MaxTrial, PerturbScale, quiet,
         MolesWaterPerLiter, seed);
 
 
-  // show warning in eq file if we failed to converge
-  if (CalcConcConverge == 0) {
-    if ((fpeq = fopen(eqFile,"a")) == NULL) {
-      exit(ERR_EQ);
-    }
-    fprintf(fpeq,"%%\n");
-    fprintf(fpeq,"%% ***************************************************************\n");
-    fprintf(fpeq,"%%      TRUST REGION DID NOT CONVERGE DUE TO PRECISION ISSUES     \n");
-    fprintf(fpeq,"%% ***************************************************************\n");
-    fprintf(fpeq,"%%\n");
-    fclose(fpeq);
-  }
-
   WriteOutput(x, G, CompIDArray, LargestCompID, numSS0, numTotal, nTotal, kT,
-        cxFile, SortOutput, eqFile, MolesWaterPerLiter, quiet, NoPermID,
+        SortOutput, MolesWaterPerLiter, quiet, NoPermID,
         NUPACK_VALIDATE);
 
   // free memory allocations

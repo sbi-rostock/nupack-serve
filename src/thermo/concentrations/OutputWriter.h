@@ -9,9 +9,9 @@ int concentrations_header(char*, int, char**);
 
 int concentrations_parameters(char*, int, double*, double);
 
-void WriteOutput(double *x, double *G, int *CompIDArray, int LargestCompID, 
-     int numSS, int numTotal, int nTotal, double kT, char *cxFile, 
-     int SortOutput, char  *eqFile, double MolesWaterPerLiter, int quiet, 
+void WriteOutput(double *x, double *G, int *CompIDArray, int LargestCompID,
+     int numSS, int numTotal, int nTotal, double kT,
+     int SortOutput, double MolesWaterPerLiter, int quiet,
      int NoPermID,int NUPACK_VALIDATE);
 
 int Compare11(const void *p1, const void *p2);  // Comparison function for sorting
