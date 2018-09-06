@@ -11,50 +11,45 @@
   aggregation reactions in dilute solution, given the identity of the
   aggregates (called "complexes") and their repsective free energies.
 
-  This program solves the problem presented in Dirks, et al.,
-  "Thermodynamic analysis of interacting nucleic acid strands", SIAM
-  Review, in press.  All variable names are chosen to match those in
-  that paper.
+  This program solves the problem presented in Dirks, et al., "Thermodynamic
+  analysis of interacting nucleic acid strands", SIAM Review, in press. All
+  variable names are chosen to match those in that paper.
 
-  This file contains CalcConc, the main function that computes the
-  equilibrium mole fractions of the complexes, and the auxillary
-  functions it calls.  Some of the functions it calls are standard
-  utility functions, such as functions to sum entries in an array,
-  etc.  These are included in utils.c.
+  This file contains CalcConc, the main function that computes the equilibrium
+  mole fractions of the complexes, and the auxillary functions it calls. Some
+  of the functions it calls are standard utility functions, such as functions
+  to sum entries in an array, etc. These are included in utils.c.
 
-  The trust region algorithm for solving the dual problem is that in
-  Nocedal and Wright, Numerical Optimization, 1999, page 68, with the
-  dogleg method on page 71.  There are some inherent precision issues.
-  For most systems involving nucleic acids, this isn't a problem, but
-  for some problematic cases, adjustments are made.  For some initial
-  conditions, these precision issues cannot be overcome and a new
-  initial condition must be generated.  This is done by randomly
-  perturbing the standard initial condition (see comments in the
-  function getInitialCondition, below), and re-running the trust
-  region optimization.
+  The trust region algorithm for solving the dual problem is that in Nocedal
+  and Wright, Numerical Optimization, 1999, page 68, with the dogleg method on
+  page 71. There are some inherent precision issues. For most systems involving
+  nucleic acids, this isn't a problem, but for some problematic cases,
+  adjustments are made.  For some initial conditions, these precision issues
+  cannot be overcome and a new initial condition must be generated. This is
+  done by randomly perturbing the standard initial condition (see comments in
+  the function getInitialCondition, below), and re-running the trust region
+  optimization.
 
   The inputs are as follows:
   A: A 2-D array; A[i][j] is the number of monomers of type i in complex j
-  G: An array containing the corresponding complex free energies in units of kT.
-     G[j] corresponds to the entries A[..][j].
+  G: An array containing the corresponding complex free energies in units of
+    kT. G[j] corresponds to the entries A[..][j].
   x0: Initial mole fractions of the unit-size complexes as mole fractions.
   numSS: The number of single-species (monomers) in the system.
   numTotal: The total number of complexes.
   maxIters: Maximum number of interations allowed in trust region method.
-  tol: The tolerance for convergence.  The absolute tolerance is tol*(mininium 
-       single-species initial mole fraction)
+  tol: The tolerance for convergence.  The absolute tolerance is tol*(mininium
+    single-species initial mole fraction)
   deltaBar: The maximum step size allowed in the trust region method
   eta: The value for eta in the trust region method, 0 < eta < 1/4
   outputFile: The file to which the output is written.
   kT: kT in kcal/mol.
   MaxNoStep: The maximum number of iterations without a step being taken before
-             the initial conditions are regenerated.
+    the initial conditions are regenerated.
   MaxTrial: The maximum number of initial conditions to be tried.
-  PerturbScale: The multiplier on the random perturbations to the initial conditions
-                as new ones are generated.
-  quiet: = 1 for no printing of messages (except error messages) to screen.  
-  WriteLogFile: = 1 if log file is to be written
-  logFile: file for printing information about the run.
+  PerturbScale: The multiplier on the random perturbations to the initial
+    conditions as new ones are generated.
+  quiet: = 1 for no printing of messages (except error messages) to screen.
   MolesWaterPerLiter: Number of moles of water per liter
 */
 
@@ -62,26 +57,19 @@
 #include "CalcConc.h"
 #include "constants.h"
 
-/* ******************************************************************************** */
 
-/* ******************************************************************************** */
-/*                              BEGIN CALCCONC FUNCTION                             */
-/* ******************************************************************************** */
+/* Computes the equilbrium mole fractions of species in dilute solution using a
+ * trust region algorithm on the dual problem. Discussion of the method is in
+ * Dirks, et al., Thermodynamic analysis of interacting nucleic acid strands,
+ * SIAM Review, (2006). The trust region algorithm for solving the dual problem
+ * is that in Nocedal and Wright, Numerical Optimization, 1999, page 68, with
+ * the dogleg method on page 71.
+ * Returns 1 if converged and 0 otherwise
+ */
 int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
-         int MaxIters, double tol, double deltaBar, double eta, double kT,
-         int MaxNoStep, int MaxTrial, double PerturbScale, int quiet,
-         double MolesWaterPerLiter, unsigned long seed) {
-  /*
-    Computes the equilbrium mole fractions of species in dilute
-    solution using a trust region algorithm on the dual problem.
-    Discussion of the method is in Dirks, et al., Thermodynamic
-    analysis of interacting nucleic acid strands, SIAM Review, (2006),
-    in press.  The trust region algorithm for solving the dual problem
-    is that in Nocedal and Wright, Numerical Optimization, 1999, page
-    68, with the dogleg method on page 71.
-
-    Returns 1 if converged and 0 otherwise.
-  */
+    int MaxIters, double tol, double deltaBar, double eta, double kT,
+    int MaxNoStep, int MaxTrial, double PerturbScale, int quiet,
+     double MolesWaterPerLiter, unsigned long seed){
 
   int i,j; // Counters, i is over single-species and j is over all complexes
   int iters; // Number of iterations
@@ -99,51 +87,49 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
   int nTrial; // Number of times we've perturbed lambda
   int **AT; // Transpose of A
   int RunStats[6]; // Statistics on results from getSearchDir (see comments below)
-  FILE *fplog; // Log file
 
-  // Initialize iters just so compiler doesn't give a warning when optimization is on
   iters = 0;
 
-  // Allocate memory
-  AT = (int **) malloc(numTotal * sizeof(int *));
+  // memory allocations
+  AT = malloc(sizeof(int*) * numTotal);
   for (j = 0; j < numTotal; j++) {
-    AT[j] = (int *) malloc(numSS * sizeof(int));
+    AT[j] = malloc(sizeof(int) * numSS);
   }
-  Hes = (double **) malloc(numSS * sizeof(double *));
+  Hes = malloc(sizeof(double*) * numSS);
   for (i = 0; i < numSS; i++) {
-    Hes[i] = (double *) malloc(numSS * sizeof(double));
+    Hes[i] = malloc(sizeof(double) * numSS);
   }
 
-  AbsTol = (double *) malloc(numSS * sizeof(double));
-  Grad = (double *) malloc(numSS * sizeof(double));
-  lambda = (double *) malloc(numSS * sizeof(double));
-  p = (double *) malloc(numSS * sizeof(double));
+  AbsTol = malloc(sizeof(double) * numSS);
+  Grad = malloc(sizeof(double) * numSS);
+  lambda = malloc(sizeof(double) * numSS);
+  p = malloc(sizeof(double) * numSS);
 
-  // The absolute tolerance is a percentage of the entries in x0
+  // the absolute tolerance is a percentage of the entries in x0
   for (i = 0; i < numSS; i++) {
     AbsTol[i] = tol * x0[i];
   }
 
-  // Compute AT (transpose of A), useful to have around.
+  // compute AT (transpose of A)
   IntTranspose(AT,A,numSS,numTotal);
 
   nTrial = 0;
   for (i = 0; i < numSS; i++) {
-    Grad[i] = AbsTol[i] + 1.0; // Initialize just to get started.
+    Grad[i] = AbsTol[i] + 1.0;
   }
   while (CheckTol(Grad,AbsTol,numSS) == 0 && nTrial < MaxTrial) {
 
     if (nTrial == 1) {
-      // Seed the random number generator if necessary
+      // seed the random number generator if necessary
       rand_seed = GetRandSeed(seed);
       init_genrand(rand_seed);
     }
 
-    // Set initial guess
+    // set initial guess
     getInitialGuess(x0,lambda,G,AT,A,numSS,numTotal,PerturbScale,rand_seed);
 
-    // Calculate the counts of the species based on lambda
-    if (getx(x,lambda,G,AT,numSS,numTotal) == 0) { // Should be fine; checked prev.
+    // calculate the counts of the species based on lambda
+    if (getx(x,lambda,G,AT,numSS,numTotal) == 0) {
       if (quiet == 0) {
     printf("Overflow error in calcution of mole fractions.\n\n");
     printf("Exiting....\n");
@@ -151,13 +137,13 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
       exit(ERR_OVERFLOW);
     }
 
-    // Calculate the gradient
+    // calculate the gradient
     getGrad(Grad,x0,x,A,numSS,numTotal);
-    
-    // Initialize delta to be just less than deltaBar
+
+    // initialize delta to be just less than deltaBar
     delta = 0.99 * deltaBar;
-    
-    // Initializations
+
+    // initializations
     iters = 0;
     nNoStep = 0;
     RunStats[0] = 0; // Number of pure Newton steps (didn't hit trust region boundary)
@@ -166,11 +152,10 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
     RunStats[3] = 0; // Number of steps with Cholesky failure forcing Cauchy step
     RunStats[4] = 0; // Number of steps with irrelevant Cholesky failures
     RunStats[5] = 0; // Number of failed dogleg calculations
-    
+
     // Run trust region with these initial conditions
-    while (iters < MaxIters && CheckTol(Grad,AbsTol,numSS) == 0 
+    while (iters < MaxIters && CheckTol(Grad,AbsTol,numSS) == 0
       && nNoStep < MaxNoStep) {
-      
 
       // Compute the Hessian (symmetric, positive, positive definite)
       getHes(Hes,x,A,numSS,numTotal);
@@ -180,7 +165,7 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
 
       // Calculate rho, ratio of actual to predicted reduction
       rho = getRho(lambda,p,Grad,x,Hes,x0,G,AT,numSS,numTotal);
-      
+
       // Adjust delta and make step based on rho
       if (rho < 0.25) {
         delta /= 4.0;
@@ -188,16 +173,16 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
       else if (rho > 0.75 && fabs(norm(p,numSS) - delta) < NUM_PRECISION) {
         delta = min2(2.0*delta,deltaBar);
       }
-      if (rho > eta) {    
+      if (rho > eta) {
         for (i = 0; i < numSS; i++) {
           lambda[i] += p[i];
         }
-        nNoStep = 0;    
+        nNoStep = 0;
       }
       else {
         nNoStep++;
       }
-      
+
       // Calculate the mole fractions of the complexes based on lambda
       if (getx(x,lambda,G,AT,numSS,numTotal) == 0) {// Should be fine;checked prev.
         if (quiet == 0) {
@@ -206,10 +191,10 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
         }
         exit(ERR_OVERFLOW);
       }
-      
+
       // Calculate the gradient
       getGrad(Grad,x0,x,A,numSS,numTotal);
-      
+
       // Advance the iterations count
       iters++;
     }
@@ -252,7 +237,7 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
    }
   /* **************** END OF WRITING OUT RESULTS **************************** */
 
-   // Free memory
+  // free memory
   for (j = 0; j < numTotal; j++) {
     free(AT[j]);
   }
@@ -266,41 +251,33 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
   free(p);
   free(lambda);
 
-  // Return convergence
+  // return convergence
   if (nTrial == MaxTrial) {
     return 0;
   }
   else {
     return 1;
   }
-
 }
-/* ******************************************************************************** */
-/*                              END CALCCONC FUNCTION                               */
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
-void getInitialGuess(double *x0, double *lambda, double *G, int **AT, int **A, 
-             int numSS, int numTotal, double PerturbScale, 
-             unsigned long rand_seed) {
-  /*
-    Calculates an initial guess for lambda such that the maximum mole
-    fraction calculated will not give an overflow error and the
-    objective function $-g(\lambda)$ will be positive.  It is best to
-    have a positive objective function because when the objective
-    function is negative, it tends to be very close to zero and there
-    are precision issues.
 
-    We assume all the lambda's have the same value in the initial condition.
-    We compute the maximal lambda such that all mole fractions of all complexes
-    are below some maximum.
-  */
+/* Calculates an initial guess for lambda such that the maximum mole fraction
+ * calculated will not give an overflow error and the objective function
+ * -g(\lambda) will be positive.  It is best to have a positive objective
+ * function because when the objective function is negative, it tends to be
+ * very close to zero and there are precision issues. We assume all the
+ * lambda's have the same value in the initial condition. We compute the
+ * maximal lambda such that all mole fractions of all complexes are below some
+ * maximum
+ */
+void getInitialGuess(double *x0, double *lambda, double *G, int **AT, int **A,
+     int numSS, int numTotal, double PerturbScale, unsigned long rand_seed){
 
-  int i,j; // Counters
+  int i, j;
   double MaxLogx; // maximum log of the mole fraction allowed
-  double LambdaVal; // Possible values of lambda s.t. conc is exp(MaxLogx).
-  double NewLambdaVal; // Same as LambdaVal
+  double LambdaVal; // possible values of lambda s.t. conc is exp(MaxLogx).
+  double NewLambdaVal; // same as LambdaVal
   double tG;
 
   MaxLogx = 1.0;  // Maximum mole fraction is ~3
@@ -317,35 +294,30 @@ void getInitialGuess(double *x0, double *lambda, double *G, int **AT, int **A,
     lambda[i] = LambdaVal;
   }
 
-  // Perturb Lambda if desired
+  // perturb Lambda if desired
   if (rand_seed != 0) {
     PerturbLambda(lambda,PerturbScale,G,AT,numSS,numTotal);
   }
 
-  // If we already know concentration (ss species is inert), set lambda
+  // if we already know concentration (ss species is inert), set lambda
   for (i = 0; i < numSS; i++) {
     if (sumint(A[i],numTotal) == 1) {
       tG = G[FindNonZero(A[i],numTotal)];
       lambda[i] = log(x0[i]) + tG;
     }
   }
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Calculates the mole fractions of all species from lambda, G, and A.
+ * Returns 1 if the calculation was ok and 0 if there will be an overflow error
+ */
 int getx(double *x, double *lambda, double *G, int **AT, int numSS, int numTotal) {
-  /* 
-     Calculates the mole fractions of all species from lambda, G, and
-     A.  Returns 1 if the calculation was ok and 0 if there will be an
-     overflow error.
-  */
 
-  int j; // Counter
   double logx; // log of the mole fraction
 
-  for (j = 0; j < numTotal; j++) {
+  for (int j=0 ; j<numTotal ; ++j){
     logx = -G[j] + didot(lambda,AT[j],numSS);
     if (logx > MAXLOGX) { // Will have an overflow error
       return 0;
@@ -353,40 +325,29 @@ int getx(double *x, double *lambda, double *G, int **AT, int numSS, int numTotal
     x[j] = exp(logx);
   }
 
-  // No overflow errors
   return 1;
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Calculates the gradient of -g(\lambda), the dual function for which we're
+ * trying to find the minimum.
+ */
 void getGrad(double *Grad, double *x0, double *x, int **A, int numSS, int numTotal) {
-  /*
-    Calculates the gradient of -g(\lambda), the dual function for
-    which we're trying to find the minimum.
-  */
 
-  int i; // Counter
-
-  for (i = 0; i < numSS; i++) {
+  for (int i=0 ; i<numSS ; ++i){
     Grad[i] = -x0[i] + didot(x,A[i],numTotal);
   }
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Calculates the Hessian, Hes.  Must be preallocated and of size numSS by
+ * numSS. We only need to calculate the upper triangle of Hes since it's
+ * symmetric. We can then fill out the lower triangle. Avec is a vector
+ * consisting of elements of one row of A multiplied by those of another
+ */
 void getHes(double **Hes, double *x, int **A, int numSS, int numTotal) {
-  /*
-    Calculates the Hessian, Hes.  Must be preallocated and of size
-    numSS by numSS.  We only need to calculate the upper triangle of
-    Hes since it's symmetric.  We can then fill out the lower triangle.
-
-    Avec is a vector consisting of elements of one row of A multiplied by 
-    those of another.
-  */
 
 
   int m,n,j; // Counters
@@ -411,36 +372,30 @@ void getHes(double **Hes, double *x, int **A, int numSS, int numTotal) {
   }
 
   free(Avec);
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Computes the search direction using the dogleg method (Nocedal and Wright,
+ * page 71). Notation is consistent with that in this reference. Due to the
+ * construction of the problem, the minimization routine to find tau can be
+ * solved exactly by solving a quadratic. There can be precision issues with
+ * this, so this is checked. If the argument of the square root in the
+ * quadratic formula is negative, there must be a precision error, as such a
+ * situation is not possible in the construction of the problem.
+ * Returns:
+ * 1 if step was a pure Newton step (didn't hit trust region boundary)
+ * 2 if the step was purely Cauchy in nature (hit trust region boundary)
+ * 3 if the step was a dogleg step (part Newton and part Cauchy)
+ * 4 if Cholesky decomposition failed and we had to take a Cauchy step
+ * 5 if Cholesky decompostion failed but we would've taken Cauchy step anyways
+ * 6 if the dogleg calculation failed (should never happen)
+ */
 int getSearchDir(double *p, double *Grad, double **Hes, double delta, int numSS) {
-  /*
-    Computes the search direction using the dogleg method (Nocedal and Wright,
-    page 71).  Notation is consistent with that in this reference.
 
-    Due to the construction of the problem, the minimization routine
-    to find tau can be solved exactly by solving a quadratic.  There
-    can be precision issues with this, so this is checked.  If the
-    argument of the square root in the quadratic formula is negative,
-    there must be a precision error, as such a situation is not
-    possible in the construction of the problem.
-
-    Returns:
-      1 if step was a pure Newton step (didn't hit trust region boundary)
-      2 if the step was purely Cauchy in nature (hit trust region boundary)
-      3 if the step was a dogleg step (part Newton and part Cauchy)
-      4 if Cholesky decomposition failed and we had to take a Cauchy step
-      5 if Cholesky decompostion failed but we would've taken Cauchy step anyways
-      6 if the dogleg calculation failed (should never happen)
-  */
-
-  int i,j; // counters
-  double a,b,c,sgnb; // Constants used in quadratic formula
-  double q,x1,x2; // results from quadratic formula
+  int i, j;
+  double a, b, c, sgnb; // Constants used in quadratic formula
+  double q, x1, x2; // results from quadratic formula
   double tau; // Multipler in Newtonstep
   double *pB; // Unconstrained minimizer (the regular Newton step)
   double *pU; // Minimizer along steepest descent direction
@@ -608,24 +563,19 @@ int getSearchDir(double *p, double *Grad, double **Hes, double delta, int numSS)
     return 6; // Signifies no root satisfies the dogleg step and we took a Cauchy step
   }
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
-double getRho(double *lambda, double *p, double *Grad, double *x, double **Hes, 
+
+/* Calculates rho based on equations 4.4 and 4.1 of Nocedal and Wright. This
+ * is the ratio of the actual correction based on the stepping a length delta
+ * along the search direction to the predicted correction of taking the same
+ * step.
+ * Returns -1 if there is an overflow error in the calculation of rho
+ */
+double getRho(double *lambda, double *p, double *Grad, double *x, double **Hes,
           double *x0, double *G, int **AT, int numSS, int numTotal) {
-  /*
-    Calculates rho based on equations 4.4 and 4.1 of Nocedal and
-    Wright.  This is the ratio of the actual correction based on the
-    stepping a length delta along the search direction to the
-    predicted correction of taking the same step.
 
-    Function returns -1 if there is an overflow error in the
-    calculation of rho.
-  */
-
-  int i; // Counter
-  double rho; // That which we return
+  double rho;
   double *newlambda; // y after the step
   double *newx; // x after the Newton step
   double *Hp; // the vector Hes*p
@@ -643,7 +593,7 @@ double getRho(double *lambda, double *p, double *Grad, double *x, double **Hes,
   negh -= dot(lambda,x0,numSS);
 
   // Calculate the new lambda
-  for (i = 0; i < numSS; i++) {
+  for (int i=0 ; i<numSS ; ++i){
     newlambda[i] = lambda[i] + p[i];
   }
 
@@ -656,13 +606,11 @@ double getRho(double *lambda, double *p, double *Grad, double *x, double **Hes,
     pHp = dot(p,Hp,numSS);
 
     rho = (negh - NewNegh) / (-dot(Grad,p,numSS) - pHp/2.0);
-
   }
   else {
     // Since the denominator is always positive, an overflow error in the
     // calculation of the mole fractions for the "new lambda" implies
     // a negative denominator, and therefore the value of rho is negative.
-  
     rho = -1.0;
   }
 
@@ -671,31 +619,25 @@ double getRho(double *lambda, double *p, double *Grad, double *x, double **Hes,
   free(Hp);
 
   return rho;
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Computes the Cauchy point using the formulas 4.7 and 4.8 in Nocedal and
+ * Wright, Numerical Optimization (1999), page 70.
+ * Note that because the Hessian is symmetric that it is equal to its transpose
+ */
 void getCauchyPoint(double *CauchyPoint, double **Hes, double *Grad, double delta, 
             int numSS) {
-  /*
-   Computes the Cauchy point using the formulas 4.7 and 4.8 in Nocedal
-   and Wright, Numerical Optimization (1999), page 70.
 
-   Note that because the Hessian is symmetric that it is equal to its
-   transpose.
-  */
-
-  int i; // Counters
   double coeff; // Coefficient on gradient for Cauchy point
   double tau; // Multiplier used in Cauchy point calculation
   double normGrad; // ||Grad||
   double *Hgrad; // Hessian dotted with the gradient
   double numerator;   // Used to hold temporary variables
   double denominator;
-  
-  Hgrad = (double *) malloc (numSS * sizeof(double));
+
+  Hgrad = malloc (sizeof(double) * numSS);
 
   normGrad = norm(Grad,numSS);
   MatrixVectorMult(Hgrad,Hes,Grad,numSS);
@@ -704,27 +646,22 @@ void getCauchyPoint(double *CauchyPoint, double **Hes, double *Grad, double delt
   tau = min2(numerator/denominator , 1.0);
   coeff = -tau * delta / normGrad;
 
-  for (i = 0; i < numSS; i++) {
+  for (int i=0 ; i<numSS ; ++i) {
     CauchyPoint[i] = coeff*Grad[i];
   }
-   
+
   free(Hgrad);
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Perturbs the values of Lambda in case the trust region has shrunk to be very
+ * small. Adds PerturbScale*random number to each entry in Lambda
+ */
 void PerturbLambda(double *lambda, double PerturbScale, double *G, int **AT, 
            int numSS, int numTotal) {
-  /*
-    Perturbs the values of Lambda in case the trust region has shrunk to be 
-    very small.
 
-    Adds PerturbScale*random number to each entry in Lambda
-  */
-
-  int i; // Counter
+  int i;
   double *dummyx; // A dummy mole fraction vector for checking overflow
   double *newlambda; // The new perturbed lambda
   int xOK; // = 1 is there is no overflow error induced in the concentrations
@@ -745,33 +682,25 @@ void PerturbLambda(double *lambda, double PerturbScale, double *G, int **AT,
   for (i = 0; i < numSS; i++) {
     lambda[i] = newlambda[i];
   }
-  
+
   free(dummyx);
   free(newlambda);
 
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Check the to see if the entries in the gradient satisfy the tolerance.
+ * Returns 1 if they all do and 0 otherwise
+ */
 int CheckTol(double *Grad, double *AbsTol, int numSS) {
-  /*
-    Check the to see if the entries in the gradient satisfy the
-    tolerance.  Returns 1 if they all do and 0 otherwise.
-  */
 
-
-  int i; // Counter
-
-  for (i = 0; i < numSS; i++) {
+  for (int i=0 ; i<numSS ; ++i){
     if (fabs(Grad[i]) > AbsTol[i]) {
       return 0;
     }
   }
 
   return 1;
-
 }
-/* ******************************************************************************** */
-
 
