@@ -1,33 +1,23 @@
 /*
-  ReadCommandLine.c is part of the NUPACK software suite
-  Copyright (c) 2007 Caltech. All rights reserved.
-  Coded by: Justin Bois 9/2006
-
-  Reads command line input for Concentrations.c.  The argument is the
-  either the prefix for the files that contain the input data, e.g.,
-  prefix.cx and prefix.con, or it is the full file name of the input,
-  e.g., prefix.ox-epairs, in which case the concentration information
-  is if prefix.con.  Uses the package getopt.h to retrieve option
-  flags.
-
-  Justin Bois, Caltech, 2 September 2006
-*/
+ * ReadCommandLine.c is part of the NUPACK software suite
+ * Copyright (c) 2007 Caltech. All rights reserved.
+ * Coded by: Justin Bois 9/2006
+ */
 
 #include "ReadCommandLine.h"
 #include "constants.h"
 
-/* ******************************************************************************** */
+
 void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
         int *SortOutput, int *MaxIters, double *tol, double *kT,
         int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
         int *Toverride, int *NoPermID, unsigned long *seed,
         int *NUPACK_VALIDATE){
 
-  int options;  // Counters used in getting flags
-  int ShowHelp; // ShowHelp = 1 if help option flag is selected
-  char prefix[MAXLINE]; // The prefix for the input and output files
-  char InputStr[MAXLINE]; // Dummy string for storing flag options from command line
-  FILE *fp; // The cx file, used to check if we can open it.
+  int options;
+  int ShowHelp; // 1 if help option flag is selected
+  char prefix[MAXLINE]; // prefix for the input and output files
+  char InputStr[MAXLINE]; // dummy string for storing flag options from command line
 
   if (nargs == 1) {
     printf("For instructions on running this program, run it with the ");
@@ -52,7 +42,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
   ShowHelp = 0;
 
   SetExecutionPath(nargs, args);
-  
+
   // Get the option flags
   while (1){
     static struct option long_options[] = {
@@ -68,7 +58,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
     options = getopt_long_only (nargs, args, "d:ho", long_options,
         &option_index);
 
-    // Detect the end of the options.
+    // detect the end of the options
     if (options == -1){
       break;
     }
@@ -106,7 +96,7 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
   }
 
   // Get the the input file
-  if(optind == nargs){ // There's no input from the user
+  if(optind == nargs){ // no input from the user
     exit(ERR_NOINPUT);
   }
   else{
@@ -118,22 +108,13 @@ void ReadCommandLine(int nargs, char **args, char *cxFile, char *eqFile,
   strcpy(eqFile,prefix);
   strcat(cxFile,".ocx");
   strcat(eqFile,".eq");
-
-  // Do a quick check to make sure the cx file exists before we proceed
-  if((fp = fopen(cxFile,"r")) == NULL){
-    exit(ERR_CX);
-  }
-  fclose(fp);
-
 }
-/* ******************************************************************************** */
 
 
-/* ******************************************************************************** */
+
+/* Displays the contents of the Concentrations help file
+ */
 void DisplayHelpConc(){
-  /*
-    Displays the contents of the Concentrations help file.
-  */
 
   printf("Please read the NUPACK User Guide for detailed instructions.\n");
   printf("Usage: concentrations [OPTIONS] PREFIX\n");
