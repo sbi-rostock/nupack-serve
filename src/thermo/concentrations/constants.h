@@ -49,10 +49,10 @@
 #define ERR_PAIRSFILE 16 // Error opening pairs file
 
 typedef struct InStruct {
-  int *Aj;   // array representing column j of A
   int numSS; // number of entries in Aj
   int CompID;
   int PermID;
+  int *Aj;   // array representing column j of A
   double FreeEnergy; // partition function for species
   double xj;
   double xjc;

@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
   double *G;  // free energies of complexes
   double *x;  // the mole fractions
   double *x0; // total concentrations of single-species
-  double *concentrations;
+  double *conc;
   int NUPACK_VALIDATE; // 1 if validation mode (14 digit printout)
   int *numPermsArray; // number of permutations of each species
   int *CompIDArray;   // complex IDs
@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
   // provenance blocks
   int len_header = 1000;
   int len_parameters = 1000;
+  int len_concentrations = 2000;
   int len_provenance;
 
 
@@ -111,8 +112,8 @@ int main(int argc, char *argv[]) {
 
   // read input files
   MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
-        &concentrations, &numSS, &numSS0, &numTotal, numPermsArray, &kT,
-        &temperature, Toverride, InputStruct);
+        &conc, &numSS, &numSS0, &numTotal, numPermsArray, &kT, &temperature,
+        Toverride, InputStruct);
 
 
   /* echo provenance parameters starts
@@ -127,7 +128,7 @@ int main(int argc, char *argv[]) {
   }
 
   // fill provenance block
-  len_provenance = concentrations_parameters(parameters, numSS, concentrations,
+  len_provenance = concentrations_parameters(parameters, numSS, conc,
         temperature);
   for(int y=0 ; y<len_provenance ; ++y){
     printf("%c", parameters[y]);
@@ -151,6 +152,32 @@ int main(int argc, char *argv[]) {
         SortOutput, MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE, InputStruct);
 
 
+  /* echo provenance concentrations starts
+   */
+  // allocate provenance block
+  char *concentrations = malloc(sizeof(char) * len_concentrations);
+  if(!concentrations){
+    exit(1);
+  }
+  for(int y=0 ; y<len_concentrations ; ++y){
+    concentrations[y] = 0;
+  }
+
+  // fill provenance block
+  len_provenance = concentrations_results(concentrations, numSS, nTotal, kT,
+        MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE, InputStruct);
+
+  for(int y=0 ; y<len_provenance ; ++y){
+    printf("%c", concentrations[y]);
+  }
+
+  // free provenance block
+  free(concentrations);
+  concentrations = NULL;
+  /*
+   * echo provenance concentrations ends */
+
+
   // free memory allocations
   for(int i=0 ; i<numSS ; ++i){
     free(A[i]); // allocated in ReadInput
@@ -161,7 +188,7 @@ int main(int argc, char *argv[]) {
   free(CompIDArray);   // allocated in ReadInput
   free(PermIDArray);   // allocated in ReadInput
   free(x0); // allocated in ReadInput
-  free(concentrations);
+  free(conc);
   free(x);
 
   for(int i=0 ; i<nTotal ; ++i){

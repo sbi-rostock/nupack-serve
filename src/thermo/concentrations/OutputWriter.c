@@ -14,13 +14,13 @@
 
 // structure for sorting output that includes permutations
 struct PermSortStruct {
+  int numSS; // number of entries in Aj (needed for sorting routine)
   int CompID; // ID tag associated with a complex
   int PermID; // ID number for permutation
   int *Aj; // array representing column j of A
   double FreeEnergy; // free energy for permutation
   double xj; // concentration of the permutation
   double xjc; // complex concentration
-  int numSS; // number of entries in Aj (needed for sorting routine)
 };
 
 
@@ -116,7 +116,7 @@ int concentrations_header(char *provenance, int argc, char **argv) {
 int concentrations_parameters(char* provenance, int numSS,
         double* concentrations, double temperature){
 
-  char FIELD_CONCENTRATIONS[] = "\"concentrations (M)\": ";
+  char FIELD_CONCENTRATIONS[] = "\"monomer concentrations (M)\": ";
   char FIELD_TEMPERATURE[] = "\"temperature (C)\": ";
   char FIELD_NEXT[] = ", ";
   char LIST_STARTS[] = "[";
@@ -218,6 +218,188 @@ int concentrations_parameters(char* provenance, int numSS,
 
 
 
+/* create a string containing all provenance's concentrations informations:
+ * - complex ID
+ * - permutation ID
+ * - strand code (one per provided strand)
+ * - concentrations
+ * - free energy
+ * return the length of the generated string
+ */
+int concentrations_results(char* provenance, int numSS, int nTotal, double kT,
+        double MolesWaterPerLiter, int NoPermID, int NUPACK_VALIDATE,
+        struct InStruct* inStruct){
+
+  char FIELD_CONCENTRATIONS[] = "\"complex concentrations\": ";
+  char PROVENANCE_ENDS[] = " }\n";
+  char LIST_STARTS[] = "[";
+  char LIST_ENDS[]   = "]";
+  char PAIR_STARTS[] = "(";
+  char PAIR_ENDS[]   = ")";
+  char COMMA[] = ",";
+
+
+  int len_entry_concentrations = 0;
+  int len_provenance = 0;
+
+
+  /* retrieve each concentrations' entry values, and store it as provenance
+   */
+
+
+  // start provenance
+  len_provenance += (strlen(FIELD_CONCENTRATIONS) + strlen(LIST_STARTS));
+  provenance = strcat(
+                strcpy(provenance, FIELD_CONCENTRATIONS),
+                LIST_STARTS);
+
+
+  for(int i=0 ; i<nTotal ; ++i){
+
+    // start pair
+    len_entry_concentrations += strlen(PAIR_STARTS);
+    provenance = strcat(provenance, PAIR_STARTS);
+
+
+    /* complex ID
+     */
+
+    // length
+    int len_nupack_complex_id = (
+        snprintf(NULL, 0, "%d", inStruct[i].CompID) + 1);
+    len_entry_concentrations += (len_nupack_complex_id + strlen(COMMA));
+    // value
+    char nupack_complex_id[len_nupack_complex_id];
+    snprintf(nupack_complex_id, len_nupack_complex_id, "%d",
+        inStruct[i].CompID);
+    // store
+    provenance = strcat(
+                    strcat(provenance, nupack_complex_id),
+                    COMMA);
+
+
+    /* permutation
+     */
+
+    // length
+    int len_nupack_permutation_id = (
+        snprintf(NULL, 0, "%d", inStruct[i].PermID) + 1);
+    len_entry_concentrations += (len_nupack_permutation_id + strlen(COMMA));
+    // value
+    char nupack_permutation_id[len_nupack_permutation_id];
+    snprintf(nupack_permutation_id, len_nupack_permutation_id, "%d",
+        inStruct[i].PermID);
+    // store
+    provenance = strcat(
+                    strcat(provenance, nupack_permutation_id),
+                    COMMA);
+
+
+    /* A
+     */
+
+    int len_nupack_set_number = 0;
+    for(int j=0 ; j<numSS ; ++j){
+      // length
+      len_nupack_set_number = (
+        snprintf(NULL, 0, "%d", inStruct[i].Aj[j]) + 1);
+      len_entry_concentrations += (len_nupack_set_number + strlen(COMMA));
+      //value
+      char nupack_set_number[len_nupack_set_number];
+      snprintf(nupack_set_number, len_nupack_set_number, "%d",
+        inStruct[i].Aj[j]);
+      // store
+      provenance = strcat(
+                    strcat(provenance, nupack_set_number),
+                    COMMA);
+    }
+
+
+    /* energy (Kcal/mol)
+     */
+
+    int len_nupack_energy = 0;
+    if(!NUPACK_VALIDATE){
+      // length
+      len_nupack_energy = (
+        snprintf(NULL, 0, "%8.6e", ((inStruct[i].FreeEnergy) * kT)) + 1);
+      len_entry_concentrations += (len_nupack_energy + strlen(COMMA));
+      // value
+      char nupack_energy[len_nupack_energy];
+      snprintf(nupack_energy, len_nupack_energy, "%8.6e",
+        ((inStruct[i].FreeEnergy) * kT));
+      // store
+      provenance = strcat(
+                    strcat(provenance, nupack_energy),
+                    COMMA);
+    }else{
+      // length
+      len_nupack_energy = (
+        snprintf(NULL, 0, "%.14e", ((inStruct[i].FreeEnergy) * kT)) + 1);
+      len_entry_concentrations += (len_nupack_energy + strlen(COMMA));
+      // value
+      char nupack_energy[len_nupack_energy];
+      snprintf(nupack_energy, len_nupack_energy, "%.14e",
+        ((inStruct[i].FreeEnergy) * kT));
+      // store
+      provenance = strcat(
+                    strcat(provenance, nupack_energy),
+                    COMMA);
+    }
+
+
+    /* concentration (M)
+     */
+
+    int len_nupack_concentration = 0;
+    if(!NUPACK_VALIDATE){
+      // length
+      len_nupack_concentration = (
+        snprintf(NULL, 0, "%8.6e", ((inStruct[i].xj) * MolesWaterPerLiter)) + 1);
+      len_entry_concentrations += (len_nupack_concentration + strlen(PAIR_ENDS));
+      // value
+      char nupack_concentration[len_nupack_concentration];
+      snprintf(nupack_concentration, len_nupack_concentration, "%8.6e",
+        ((inStruct[i].xj) * MolesWaterPerLiter));
+      // store
+      provenance = strcat(provenance, nupack_concentration);
+    }else{
+      // length
+      len_nupack_concentration = (
+        snprintf(NULL, 0, "%.14e", ((inStruct[i].xj) * MolesWaterPerLiter)) + 1);
+      len_entry_concentrations += (len_nupack_concentration + strlen(PAIR_ENDS));
+      // value
+      char nupack_concentration[len_nupack_concentration];
+      snprintf(nupack_concentration, len_nupack_concentration, "%.14e",
+        ((inStruct[i].xj) * MolesWaterPerLiter));
+      // store
+      provenance = strcat(provenance, nupack_concentration);
+    }
+
+    // close pair
+    if(i < (nTotal - 1)){
+      len_entry_concentrations += (strlen(PAIR_ENDS) + strlen(COMMA));
+      provenance = strcat(
+                    strcat(provenance, PAIR_ENDS),
+                    COMMA);
+    }else{
+      len_entry_concentrations += strlen(PAIR_ENDS);
+      provenance = strcat(provenance, PAIR_ENDS);
+    }
+    len_provenance += len_entry_concentrations;
+  }
+
+  // end provenance
+  len_provenance += (strlen(LIST_ENDS) + strlen(PROVENANCE_ENDS));
+  provenance = strcat(
+                strcat(provenance, LIST_ENDS),
+                PROVENANCE_ENDS);
+
+  return len_provenance;
+}
+
+
+
 /* Writes the output of a concentrations calculation.
  * We assume no strand has been associated to a zero concentration, therefore
  * we avoid re-reading the input to check whether the problem has changed
@@ -268,25 +450,6 @@ void WriteOutput(double *X, double *G, int *CompIDArray, int LargestCompID,
     qsort(InputStruct, nTotal, sizeof(struct InStruct), Compare14);
   }
 
-  for(int k=0 ; k<nTotal ; ++k){
-    printf("%d\t", InputStruct[k].CompID); // complex ID
-    if(NoPermID == 0){
-      printf("%d\t", InputStruct[k].PermID);
-    }
-    for(int i=0 ; i<numSS ; ++i){ // corresponding column in A
-      printf("%d\t", InputStruct[k].Aj[i]);
-    }
-    if(!NUPACK_VALIDATE){ // free energy (Kcal/mol)
-      printf("%8.6e\t", InputStruct[k].FreeEnergy * kT);
-      // concentration (M)
-      printf("%8.6e\t", InputStruct[k].xj * MolesWaterPerLiter);
-    }else{
-      printf("%.14e\t", InputStruct[k].FreeEnergy * kT);
-      // concentration in (M)
-      printf("%.14e\t", InputStruct[k].xj * MolesWaterPerLiter);
-    }
-    printf("\n");
-  }
 
   // free allocated memory
   free(CompLookup);
@@ -383,7 +546,6 @@ int Compare12(const void *p1, const void *p2) {
       }
     }
   }
-
 }
 
 
@@ -415,7 +577,6 @@ int Compare13(const void *p1, const void *p2) {
       return 0;
     }
   }
-
 }
 
 
