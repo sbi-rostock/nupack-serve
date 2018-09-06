@@ -7,6 +7,8 @@ extern "C" {
 
 int concentrations_header(char*, int, char**);
 
+int concentrations_parameters(char*, int, double*, double);
+
 void WriteOutput(double *x, double *G, int *CompIDArray, int LargestCompID, 
      int numSS, int numTotal, int nTotal, double kT, char *cxFile, 
      int SortOutput, char  *eqFile, double MolesWaterPerLiter, int quiet, 

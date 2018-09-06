@@ -83,11 +83,10 @@ void getSize(int *numSS, int *numTotal, int *nTotal, int *LargestCompID,
 
 
 /* ******************************************************************************** */
-double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray, 
-                      double **x0, int *numSS, int *numSS0, int *numTotal, 
-                      int *numPermsArray, double *kT, 
-                      int Toverride, char  *eqFile, 
-                      int quiet) {
+double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray,
+        double **x0, double** concentrations, int *numSS, int *numSS0, int *numTotal,
+        int *numPermsArray, double *kT, double* temperature, int Toverride,
+        char *eqFile, int quiet){
   /*
     If one of the entries in the con file is zero, the problem is
     reformulated as if that strand does not exist.
@@ -157,6 +156,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   }
 
   *x0 = (double *) malloc(nSS * sizeof(double));
+  *concentrations = (double *) malloc(nSS * sizeof(double));
 
   // Allocate memory for the struct
   InputStruct = (struct CompStruct *) malloc(cTotal * sizeof(struct CompStruct));
@@ -181,6 +181,7 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
     scanf("%s", nupack_concentration);
     tok = strtok(nupack_concentration, tokseps);
     (*x0)[x] = str2double(tok);
+    (*concentrations)[x] = (*x0)[x];
   }
 
   // Write to eq file
@@ -202,7 +203,8 @@ double ReadInputFiles(int ***A, double **G, int **CompIDArray, int **PermIDArray
   printf("Enter temperature: ");
   scanf("%s", nupack_temperature);
   tok = strtok(nupack_temperature, tokseps);
-  *kT = kB*(str2double(tok) + ZERO_C_IN_KELVIN);
+  *temperature = str2double(tok);
+  *kT = kB*((*temperature) + ZERO_C_IN_KELVIN);
 
 
   /* HARDCODE OCX STARTS */

@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
   double deltaBar; // maximum allowed step size in trust region method
   double eta;      // eta parameter in trust region method, 0 < eta < 0.25
   double kT;       // thermal energy in kcal/mol
+  double temperature;
   double MolesWaterPerLiter; // moles of water per liter
   int Toverride; // 1 if the user has enforced a temperature in the command line
   int MaxNoStep; // maximum number of iterations allowed without taking a step
@@ -55,6 +56,7 @@ int main(int argc, char *argv[]) {
   double *G;  // free energies of complexes
   double *x;  // the mole fractions
   double *x0; // total concentrations of single-species
+  double *concentrations;
   int NUPACK_VALIDATE; // 1 if validation mode (14 digit printout)
   int *numPermsArray; // number of permutations of each species
   int *CompIDArray;   // complex IDs
@@ -63,6 +65,7 @@ int main(int argc, char *argv[]) {
 
   // provenance blocks
   int len_header = 1000;
+  int len_parameters = 1000;
   int len_provenance;
 
 
@@ -100,16 +103,39 @@ int main(int argc, char *argv[]) {
    * echo provenance header ends */
 
 
-  /* get the system's size
-   */
+  // get the system's size
   getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray);
 
 
-  /* read input files
-   */
+  // read input files
   MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
-        &numSS, &numSS0, &numTotal, numPermsArray, &kT, Toverride, eqFile,
-        quiet);
+        &concentrations, &numSS, &numSS0, &numTotal, numPermsArray, &kT,
+        &temperature, Toverride, eqFile, quiet);
+
+
+  /* echo provenance parameters starts
+   */
+  // allocate provenance block
+  char *parameters = malloc(sizeof(char) * len_parameters);
+  if(!parameters){
+    exit(1);
+  }
+  for(int y=0 ; y<len_parameters ; ++y){
+    parameters[y] = 0;
+  }
+
+  // fill provenance block
+  len_provenance = concentrations_parameters(parameters, numSS, concentrations,
+        temperature);
+  for(int y=0 ; y<len_provenance ; ++y){
+    printf("%c", parameters[y]);
+  }
+
+  // free provenance block
+  free(parameters);
+  parameters = NULL;
+  /*
+   * echo provenance parameters ends */
 
 
   /* compute convergence
@@ -147,6 +173,7 @@ int main(int argc, char *argv[]) {
   free(CompIDArray);   // allocated in ReadInput
   free(PermIDArray);   // allocated in ReadInput
   free(x0); // allocated in ReadInput
+  free(concentrations);
   free(x);
 
   // If didn't converge, give error message

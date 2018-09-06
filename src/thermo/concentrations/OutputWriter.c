@@ -110,6 +110,116 @@ int concentrations_header(char *provenance, int argc, char **argv) {
 
 
 
+/* create a string containing all provenance's parameter informations:
+ * - temperature
+ * - concentrations
+ * return the length of the generated string
+ */
+int concentrations_parameters(char* provenance, int numSS,
+        double* concentrations, double temperature){
+
+  char FIELD_CONCENTRATIONS[] = "\"concentrations (M)\": ";
+  char FIELD_TEMPERATURE[] = "\"temperature (C)\": ";
+  char FIELD_NEXT[] = ", ";
+  char LIST_STARTS[] = "[";
+  char LIST_ENDS[]   = "]";
+  char COMMA[] = ",";
+
+
+  int len_entry_concentrations;
+  int len_entry_temperature;
+  int len_provenance = 0;
+
+
+  /* retrieve each entry's value, and store it as provenance
+   */
+
+  provenance = strcpy(provenance, "");
+
+
+  /* temperature
+   */
+
+  // retrieve the temperature's length, and add it to the provenance
+  int len_nupack_temperature = (snprintf(NULL, 0, "%.1f", temperature) + 1);
+  len_entry_temperature = strlen(FIELD_TEMPERATURE) + len_nupack_temperature
+        + strlen(FIELD_NEXT);
+  len_provenance += len_entry_temperature;
+
+  // retrieve the temperature's value
+  char nupack_temperature[len_nupack_temperature];
+  snprintf(nupack_temperature, len_nupack_temperature, "%.1f", temperature);
+
+  // store the temperature
+  provenance = strcat(
+                  strcat(
+                    strcat(provenance, FIELD_TEMPERATURE),
+                    nupack_temperature),
+                  FIELD_NEXT);
+
+
+  /* concentrations
+   */
+
+  // retrieve the concentrations' length, and add it to the provenance
+  int len_nupack_concentrations = strlen(LIST_STARTS);
+  for(int j=0 ; j<numSS ; ++j) {
+    int len_nupack_concentration = (
+        snprintf(NULL, 0, "%e", concentrations[j]) + 1);
+    len_nupack_concentrations += len_nupack_concentration;
+    if(j < (numSS - 1)){
+      len_nupack_concentrations += strlen(COMMA);
+    }
+  }
+  len_nupack_concentrations += strlen(LIST_ENDS);
+
+  len_entry_concentrations = strlen(FIELD_CONCENTRATIONS)
+        + len_nupack_concentrations + strlen(FIELD_NEXT);
+
+  len_provenance += len_entry_concentrations;
+
+  // retrieve the concentrations' value
+  char *nupack_concentrations = malloc(sizeof(char) * len_nupack_concentrations);
+  if(!nupack_concentrations){
+    exit(1);
+  }
+  for(size_t x=0 ; x < len_nupack_concentrations ; ++x){
+    nupack_concentrations[x] = 0;
+  }
+  nupack_concentrations = strcpy(nupack_concentrations, LIST_STARTS);
+
+  for(int j=0 ; j<numSS ; ++j) {
+    int len_nupack_concentration = (
+        snprintf(NULL, 0, "%e", concentrations[j]) + 1);
+    char nupack_concentration[len_nupack_concentration];
+    snprintf(nupack_concentration, len_nupack_concentration, "%e",
+        concentrations[j]);
+
+    nupack_concentrations = strcat(nupack_concentrations, nupack_concentration);
+
+    if(j < (numSS - 1)){
+      nupack_concentrations = strcat(nupack_concentrations, COMMA);
+    }
+  }
+  nupack_concentrations = strcat(nupack_concentrations, LIST_ENDS);
+
+  // store the concentrations
+  provenance = strcat(
+                strcat(
+                  strcat(provenance, FIELD_CONCENTRATIONS),
+                  nupack_concentrations),
+                FIELD_NEXT);
+
+
+  // free all memory objects
+  free(nupack_concentrations);
+  nupack_concentrations = NULL;
+
+  return len_provenance;
+}
+
+
+
 /* ******************************************************************************** */
 void WriteOutput(double *x, double *G, int *CompIDArray, int LargestCompID, 
 		 int numSS, int numTotal, int nTotal, double kT, char *cxFile, 
