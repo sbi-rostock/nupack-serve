@@ -76,6 +76,33 @@ int main(int argc, char *argv[]) {
         &NUPACK_VALIDATE);
 
 
+  // get the system's size
+  getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray);
+
+
+  // store input parameters
+  struct InStruct* InputStruct = malloc(sizeof(InStruct) * nTotal);
+  for(int j=0 ; j<nTotal; ++j){
+    InputStruct[j].Aj = malloc (sizeof(int) * numSS);
+  }
+
+  // read input files
+  MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
+        &conc, &numSS, &numSS0, &numTotal, numPermsArray, &kT, &temperature,
+        Toverride, InputStruct);
+
+
+  // compute convergence
+  x = malloc (sizeof(double) * numTotal);
+  CalcConcConverge = CalcConc(x, A, G, x0, numSS, numTotal, MaxIters, tol,
+        deltaBar, eta, kT, MaxNoStep, MaxTrial, PerturbScale,
+        MolesWaterPerLiter, seed);
+
+
+  WriteOutput(x, G, CompIDArray, LargestCompID, numSS0, numTotal, nTotal, kT,
+        SortOutput, MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE, InputStruct);
+
+
   /* echo provenance header starts
    */
   // allocate provenance block
@@ -98,22 +125,6 @@ int main(int argc, char *argv[]) {
   header = NULL;
   /*
    * echo provenance header ends */
-
-
-  // get the system's size
-  getSize(&numSS,&numTotal,&nTotal,&LargestCompID,&numPermsArray);
-
-
-  // store input parameters
-  struct InStruct* InputStruct = malloc(sizeof(InStruct) * nTotal);
-  for(int j=0 ; j<nTotal; ++j){
-    InputStruct[j].Aj = malloc (sizeof(int) * numSS);
-  }
-
-  // read input files
-  MolesWaterPerLiter = ReadInputFiles(&A, &G, &CompIDArray, &PermIDArray, &x0,
-        &conc, &numSS, &numSS0, &numTotal, numPermsArray, &kT, &temperature,
-        Toverride, InputStruct);
 
 
   /* echo provenance parameters starts
@@ -139,17 +150,6 @@ int main(int argc, char *argv[]) {
   parameters = NULL;
   /*
    * echo provenance parameters ends */
-
-
-  // compute convergence
-  x = malloc (sizeof(double) * numTotal);
-  CalcConcConverge = CalcConc(x, A, G, x0, numSS, numTotal, MaxIters, tol,
-        deltaBar, eta, kT, MaxNoStep, MaxTrial, PerturbScale,
-        MolesWaterPerLiter, seed);
-
-
-  WriteOutput(x, G, CompIDArray, LargestCompID, numSS0, numTotal, nTotal, kT,
-        SortOutput, MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE, InputStruct);
 
 
   /* echo provenance concentrations starts
