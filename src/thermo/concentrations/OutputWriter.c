@@ -2,14 +2,12 @@
  * OutputWriter.c is part of the NUPACK software suite
  * Copyright (c) 2007 Caltech. All rights reserved.
  * Coded by: Justin Bois 9/2006
- *
- * For input and output formatting, see associated manual
  */
 
 
-#include "constants.h" // Concentrations header file
-#include "OutputWriter.h" // Concentrations header file
-#include <shared.h> // Concentrations header file
+#include "constants.h"
+#include "OutputWriter.h"
+#include <shared.h>
 
 
 // structure for sorting output that includes permutations
@@ -227,7 +225,7 @@ int concentrations_parameters(char* provenance, int numSS,
  * return the length of the generated string
  */
 int concentrations_results(char* provenance, int numSS, int nTotal, double kT,
-        double MolesWaterPerLiter, int NoPermID, int NUPACK_VALIDATE,
+        double MolesWaterPerLiter, int NUPACK_VALIDATE,
         struct InStruct* inStruct){
 
   char FIELD_CONCENTRATIONS[] = "\"complex concentrations\": ";
@@ -406,7 +404,7 @@ int concentrations_results(char* provenance, int numSS, int nTotal, double kT,
  */
 void WriteOutput(double *X, double *G, int *CompIDArray, int LargestCompID,
         int numSS, int numTotal, int nTotal, double kT, int SortOutput,
-        double MolesWaterPerLiter, int NoPermID, int NUPACK_VALIDATE,
+        double MolesWaterPerLiter, int NUPACK_VALIDATE,
         struct InStruct* InputStruct){
 
   int *CompLookup;

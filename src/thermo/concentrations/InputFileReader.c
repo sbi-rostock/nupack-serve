@@ -1,37 +1,21 @@
 /*
-  InputFileReader.c is part of the NUPACK software suite
-  Copyright (c) 2007 Caltech. All rights reserved.
-  Coded by: Justin Bois 9/2006
-
-  For use with Concentrations.c. 
-
-  Reads the input from the .cx and .con files.
-
-  After the comment lines, which must begin with a % character, each
-  row of the cxFile contains the complex ID and its free energy in
-  kcal/mol.  E.g., if permutation 2 of complex ID number 17 is ABBD
-  and has a free energy -18.64 kcal/mol, and there are four monomer
-  types, the corresponding row in the cxFile would be:
-      17  2  1  2  0  1  -18.62
-
-  If the input NoPermID == 1, i.e., the second column above doesn't
-  exist, the entry in the file looks like:
-      17  1  2  0  1  -18.62
-
-  The conFile has the initial concentrations of each of the monomer
-  types in solution.  These are in units of MOLAR.
-
-  For further info about input and output formatting, see associated
-  manual.
-
-  WARNING: This program does little format checking, so if there is an
-  error in the input, it is likely to result in some strange error
-  and/or seg fault.
-*/
+ * InputFileReader.c is part of the NUPACK software suite
+ * Copyright (c) 2007 Caltech. All rights reserved.
+ * Coded by: Justin Bois 9/2006
+ *
+ * Reads concentration.c output, where each line holds a complex ID, its
+ * permutations, and the free energy (Kcal/mol). For instance, if permutation
+ * 2 of complex ID number 17 is ABBD and has a free energy -18.64 kcal/mol, and
+ * there are four monomer types, the corresponding input would be:
+ * 17  2  1  2  0  1  -18.62
+ *
+ * Initial monomer concentrations are also read in units of MOLAR, as well as
+ * the temperature at which the simulation takes place
+ */
 
 
 #include "constants.h"
-#include "InputFileReader.h" // File with important definitions
+#include "InputFileReader.h"
 #include <float.h>
 
 

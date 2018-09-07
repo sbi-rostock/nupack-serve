@@ -1,56 +1,45 @@
 /*
-  CalcConc.c is part of the NUPACK software suite
-  Copyright (c) 2007 Caltech. All rights reserved.
-  Coded by: Justin Bois 9/2006
-
-  CALCCONC.C
-
-  For use with Concentrations.c.
-
-  Computes the equilibrium mole fractions of the products of
-  aggregation reactions in dilute solution, given the identity of the
-  aggregates (called "complexes") and their repsective free energies.
-
-  This program solves the problem presented in Dirks, et al., "Thermodynamic
-  analysis of interacting nucleic acid strands", SIAM Review, in press. All
-  variable names are chosen to match those in that paper.
-
-  This file contains CalcConc, the main function that computes the equilibrium
-  mole fractions of the complexes, and the auxillary functions it calls. Some
-  of the functions it calls are standard utility functions, such as functions
-  to sum entries in an array, etc. These are included in utils.c.
-
-  The trust region algorithm for solving the dual problem is that in Nocedal
-  and Wright, Numerical Optimization, 1999, page 68, with the dogleg method on
-  page 71. There are some inherent precision issues. For most systems involving
-  nucleic acids, this isn't a problem, but for some problematic cases,
-  adjustments are made.  For some initial conditions, these precision issues
-  cannot be overcome and a new initial condition must be generated. This is
-  done by randomly perturbing the standard initial condition (see comments in
-  the function getInitialCondition, below), and re-running the trust region
-  optimization.
-
-  The inputs are as follows:
-  A: A 2-D array; A[i][j] is the number of monomers of type i in complex j
-  G: An array containing the corresponding complex free energies in units of
-    kT. G[j] corresponds to the entries A[..][j].
-  x0: Initial mole fractions of the unit-size complexes as mole fractions.
-  numSS: The number of single-species (monomers) in the system.
-  numTotal: The total number of complexes.
-  maxIters: Maximum number of interations allowed in trust region method.
-  tol: The tolerance for convergence.  The absolute tolerance is tol*(mininium
-    single-species initial mole fraction)
-  deltaBar: The maximum step size allowed in the trust region method
-  eta: The value for eta in the trust region method, 0 < eta < 1/4
-  outputFile: The file to which the output is written.
-  kT: kT in kcal/mol.
-  MaxNoStep: The maximum number of iterations without a step being taken before
-    the initial conditions are regenerated.
-  MaxTrial: The maximum number of initial conditions to be tried.
-  PerturbScale: The multiplier on the random perturbations to the initial
-    conditions as new ones are generated.
-  MolesWaterPerLiter: Number of moles of water per liter
-*/
+ * CalcConc.c is part of the NUPACK software suite
+ * Copyright (c) 2007 Caltech. All rights reserved.
+ * Coded by: Justin Bois 9/2006
+ *
+ * Computes the equilibrium mole fractions of the products of aggregation
+ * reactions in dilute solution, given the identity of the aggregates (called
+ * "complexes") and their repsective free energies.
+ * This program solves the problem presented in Dirks, et al., "Thermodynamic
+ * analysis of interacting nucleic acid strands", SIAM Review, in press. All
+ * variable names are chosen to match those in that paper.
+ * The trust region algorithm for solving the dual problem is that in Nocedal
+ * and Wright, Numerical Optimization, 1999, page 68, with the dogleg method on
+ * page 71. There are some inherent precision issues. For most systems
+ * involving nucleic acids, this isn't a problem, but for some problematic
+ * cases, adjustments are made.  For some initial conditions, these precision
+ * issues cannot be overcome and a new initial condition must be generated.
+ * This is done by randomly perturbing the standard initial condition (see
+ * comments in the function getInitialCondition, below), and re-running the
+ * trust region optimization.
+ *
+ * The inputs are as follows:
+ * A: A 2-D array; A[i][j] is the number of monomers of type i in complex j
+ * G: An array containing the corresponding complex free energies in units of
+ *  kT. G[j] corresponds to the entries A[..][j]
+ * x0: Initial mole fractions of the unit-size complexes as mole fractions
+ * numSS: The number of single-species (monomers) in the system
+ * numTotal: The total number of complexes
+ * maxIters: Maximum number of interations allowed in trust region method
+ * tol: The tolerance for convergence.  The absolute tolerance is tol*(mininium
+ *  single-species initial mole fraction)
+ * deltaBar: The maximum step size allowed in the trust region method
+ * eta: The value for eta in the trust region method, 0 < eta < 1/4
+ * outputFile: The file to which the output is written
+ * kT: kT in kcal/mol
+ * MaxNoStep: The maximum number of iterations without a step being taken
+ *  before the initial conditions are regenerated
+ * MaxTrial: The maximum number of initial conditions to be tried
+ * PerturbScale: The multiplier on the random perturbations to the initial
+ *  conditions as new ones are generated
+ * MolesWaterPerLiter: Number of moles of water per liter
+ */
 
 
 #include "CalcConc.h"
@@ -70,22 +59,21 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
     int MaxNoStep, int MaxTrial, double PerturbScale,
     double MolesWaterPerLiter, unsigned long seed){
 
-  int i,j; // Counters, i is over single-species and j is over all complexes
-  int iters; // Number of iterations
-  double *AbsTol; // The absolute tolerance on all values of gradient
-  double rho; // Ratio of actual to predicted reduction in trust region method
-  double delta; // Radius of trust region
-  double *Grad; // The gradient of -g(lambda)
-  double *lambda; // Lagrange multipliers (dual variables),x[j] = Q[j]*exp(lambda[j])
-                  // for j \in \Psi^0
-  double *p; // The step we take toward minimization
-  double **Hes; // The Hessian
-  double FreeEnergy; // The free energy of the solution
-  unsigned long rand_seed = 0; // Random number seed
-  int nNoStep; // Number of iterations without taking a step
-  int nTrial; // Number of times we've perturbed lambda
-  int **AT; // Transpose of A
-  int RunStats[6]; // Statistics on results from getSearchDir (see comments below)
+  int i,j;
+  int iters; // number of iterations
+  double *AbsTol; // absolute tolerance on all values of gradient
+  double rho; // ratio of actual to predicted reduction in trust region method
+  double delta; // radius of trust region
+  double *Grad; // gradient of -g(lambda)
+  double *lambda; // lagrange multipliers
+  double *p; // step toward minimization
+  double **Hes; // hessian
+  double FreeEnergy; // free energy of the solution
+  unsigned long rand_seed = 0; // random seed
+  int nNoStep; // number of iterations without taking a step
+  int nTrial; // number of times lambda underwent perturbation
+  int **AT; // transpose of A
+  int RunStats[6]; // statistics from getSearchDir
 
   iters = 0;
 
@@ -109,7 +97,7 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
     AbsTol[i] = tol * x0[i];
   }
 
-  // compute AT (transpose of A)
+  // compute transpose of A
   IntTranspose(AT,A,numSS,numTotal);
 
   nTrial = 0;
@@ -141,24 +129,24 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
     // initializations
     iters = 0;
     nNoStep = 0;
-    RunStats[0] = 0; // Number of pure Newton steps (didn't hit trust region boundary)
-    RunStats[1] = 0; // Number of pure Cauchy steps (hit trust region boundary)
-    RunStats[2] = 0; // Number of dogleg steps (part Newton and part Cauchy)
-    RunStats[3] = 0; // Number of steps with Cholesky failure forcing Cauchy step
-    RunStats[4] = 0; // Number of steps with irrelevant Cholesky failures
-    RunStats[5] = 0; // Number of failed dogleg calculations
+    RunStats[0] = 0; // pure Newton steps (didn't hit trust region boundary)
+    RunStats[1] = 0; // pure Cauchy steps (hit trust region boundary)
+    RunStats[2] = 0; // dogleg steps (part Newton and part Cauchy)
+    RunStats[3] = 0; // steps with Cholesky failure forcing Cauchy step
+    RunStats[4] = 0; // steps with irrelevant Cholesky failures
+    RunStats[5] = 0; // failed dogleg calculations
 
-    // Run trust region with these initial conditions
+    // run trust region with these initial conditions
     while (iters < MaxIters && CheckTol(Grad,AbsTol,numSS) == 0
       && nNoStep < MaxNoStep) {
 
-      // Compute the Hessian (symmetric, positive, positive definite)
+      // compute the Hessian (symmetric, positive, positive definite)
       getHes(Hes,x,A,numSS,numTotal);
 
-      // Solve for the search direction
+      // solve for the search direction
       (RunStats[getSearchDir(p,Grad,Hes,delta,numSS) - 1])++;
 
-      // Calculate rho, ratio of actual to predicted reduction
+      // calculate rho, ratio of actual to predicted reduction
       rho = getRho(lambda,p,Grad,x,Hes,x0,G,AT,numSS,numTotal);
 
       // Adjust delta and make step based on rho
@@ -178,39 +166,39 @@ int CalcConc(double *x, int **A, double *G, double *x0, int numSS, int numTotal,
         nNoStep++;
       }
 
-      // Calculate the mole fractions of the complexes based on lambda
-      if (getx(x,lambda,G,AT,numSS,numTotal) == 0) {// Should be fine;checked prev.
+      // calculate the mole fractions of the complexes based on lambda
+      if (getx(x,lambda,G,AT,numSS,numTotal) == 0) {
         exit(ERR_OVERFLOW);
       }
 
-      // Calculate the gradient
+      // calculate the gradient
       getGrad(Grad,x0,x,A,numSS,numTotal);
 
-      // Advance the iterations count
+      // advance the iterations count
       iters++;
     }
 
-    // Advance the number of perturbations we've tried
+    // advance the number of perturbations we've tried
     nTrial++;
   }
 
-  // Compute the free energy
+  // compute the free energy
   FreeEnergy = 0;
-  // First the reference free energy
+  // first the reference free energy
   for (i = 0; i < numSS; i++) {
     FreeEnergy += x0[i]*(1.0 - log(x0[i]));
   }
-  // Now the free energy
+  // free energy
   for (j = 0; j < numTotal; j++) {
     if (x[j] > 0) {
       FreeEnergy += x[j]*(log(x[j]) + G[j] - 1.0);
     }
   }
-  // Convert to kcal/liter of solution
+  // convert to kcal/liter of solution
   FreeEnergy *= kT*MolesWaterPerLiter;
 
 
-  // free memory
+  // free memory allocations
   for (j = 0; j < numTotal; j++) {
     free(AT[j]);
   }
@@ -286,7 +274,8 @@ void getInitialGuess(double *x0, double *lambda, double *G, int **AT, int **A,
 /* Calculates the mole fractions of all species from lambda, G, and A.
  * Returns 1 if the calculation was ok and 0 if there will be an overflow error
  */
-int getx(double *x, double *lambda, double *G, int **AT, int numSS, int numTotal) {
+int getx(double *x, double *lambda, double *G, int **AT, int numSS,
+    int numTotal){
 
   double logx; // log of the mole fraction
 
@@ -306,7 +295,8 @@ int getx(double *x, double *lambda, double *G, int **AT, int numSS, int numTotal
 /* Calculates the gradient of -g(\lambda), the dual function for which we're
  * trying to find the minimum.
  */
-void getGrad(double *Grad, double *x0, double *x, int **A, int numSS, int numTotal) {
+void getGrad(double *Grad, double *x0, double *x, int **A, int numSS,
+    int numTotal){
 
   for (int i=0 ; i<numSS ; ++i){
     Grad[i] = -x0[i] + didot(x,A[i],numTotal);
@@ -364,30 +354,28 @@ void getHes(double **Hes, double *x, int **A, int numSS, int numTotal) {
  * 5 if Cholesky decompostion failed but we would've taken Cauchy step anyways
  * 6 if the dogleg calculation failed (should never happen)
  */
-int getSearchDir(double *p, double *Grad, double **Hes, double delta, int numSS) {
+int getSearchDir(double *p, double *Grad, double **Hes, double delta,
+    int numSS){
 
   int i, j;
-  double a, b, c, sgnb; // Constants used in quadratic formula
-  double q, x1, x2; // results from quadratic formula
-  double tau; // Multipler in Newtonstep
-  double *pB; // Unconstrained minimizer (the regular Newton step)
-  double *pU; // Minimizer along steepest descent direction
+  double a, b, c, sgnb;
+  double q, x1, x2; // quadratic formulas
+  double tau; // multipler for Newtonstep
+  double *pB; // unconstrained minimizer (regular Newton step)
+  double *pU; // minimizer along steepest descent direction
   double pB2; // pj^2
   double pU2; // pu^2
   double pBpU; // pj . pc
-  double *CholDiag; // Diagonal from Cholesky decomposition
-  double **HesCopy; // Copy of the upper triangle of the Hessian (don't want to mess
-                   // with actual Hessian).
-  int CholSuccess; // Whether of not Cholesky decomposition is successful
-  double *HGrad; // Hessian dotted with the gradient
-  double pUcoeff;  // The coefficient on the Cauchy step
+  double *CholDiag; // diagonal from Cholesky decomposition
+  double **HesCopy; // copy of the upper triangle of the hessian
+  int CholSuccess; // success/failure of Cholesky decomposition
+  double pUcoeff; // Cauchy step coefficient
+  double *HGrad; // hessian dotted with the gradient
   double delta2; // delta^2
-  double mag1;   // temporary variables for vector magnitudes
+  double mag1;
   double mag2;
 
-  // Initialize pB2 just so compiler doesn't give a warning when optimization is on
   pB2 = 0.0;
-
   delta2 = pow(delta,2);
 
   /* ********** Compute the Newton step ************** */
@@ -398,7 +386,7 @@ int getSearchDir(double *p, double *Grad, double **Hes, double delta, int numSS)
   for (j = 0; j < numSS; j++) {
     HesCopy[j] = (double *) malloc(numSS * sizeof(double));
   }
- 
+
   // Make a copy of the Hessian because the Cholesky decomposition messes
   // with its entries.  We only have to copy the upper diagonal.
   for (j = 0; j < numSS; j++) {

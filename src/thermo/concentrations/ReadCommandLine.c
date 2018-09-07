@@ -8,29 +8,29 @@
 #include "constants.h"
 
 
-void ReadCommandLine(int nargs, char **args, int *SortOutput, int *MaxIters,
-        double *tol, double *kT, int *MaxNoStep, int *MaxTrial,
-        double *PerturbScale, int *Toverride, int *NoPermID,
-        unsigned long *seed, int *NUPACK_VALIDATE){
+void ReadCommandLine(int nargs, char** args, int* SortOutput, int* MaxIters,
+        double* tol, double* kT, int* MaxNoStep, int* MaxTrial,
+        double* PerturbScale, int* Toverride, unsigned long* seed,
+        double* cutoff, int* NUPACK_VALIDATE){
 
   int options;
   int option_index = 0;
   char InputStr[MAXLINE];
 
 
-  *SortOutput = 1;  // Default is to sort the output by concentration
-  *MaxIters = 10000; // Default maxiters
-  *tol = 0.0000001; // Default tolerance is 0.00001% of minimum of the
-                    // minimum count among the single-strands
-  *kT = kB*(37.0 + ZERO_C_IN_KELVIN); // Default temperature is 37 deg. C
-  *MaxNoStep = 50; // Default is 50 iterations with no step
-  *MaxTrial = 100000; // Default is maximum of 100,000 trials
-  *PerturbScale = 100; // Default is a scale of 100 on the perturb scale
-  *Toverride = 0; // Default is to either use T = 37 or that specified in input file
-  *NoPermID = 0; // Default is to use .ocx file => permutation IDs in file
-  *seed = 0; // Default is to seed off the clock.
-  double cutoff = 0.001; // Default cutoff
+  // default settings
   *NUPACK_VALIDATE = 0;
+  *kT = kB*(37.0 + ZERO_C_IN_KELVIN); // temperature
+  *PerturbScale = 100; // perturbation scale
+  *MaxIters = 10000;  // max iterations
+  *MaxTrial = 100000; // maximum number of trials
+  *seed = 0; // seed off the clock
+  *Toverride = 0;   // do not override default temperature value
+  *cutoff = 0.001;  // cutoff
+  *MaxNoStep = 50;  // iterations
+  *SortOutput = 1;  // sort output by concentration
+  *tol = 0.0000001; // tolerance percentage of the minimum count among
+                    // single-strands
 
   SetExecutionPath(nargs, args);
 
@@ -62,7 +62,7 @@ void ReadCommandLine(int nargs, char **args, int *SortOutput, int *MaxIters,
         *NUPACK_VALIDATE = 1;
         *tol = 0.0000000000001;
         *SortOutput = 3;
-        cutoff = 0;
+        *cutoff = 0;
         break;
 
       default:

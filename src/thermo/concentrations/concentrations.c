@@ -14,9 +14,6 @@
  * trust region algorithm for solving the dual problem is that in Nocedal and
  * Wright, Numerical Optimization, 1999, page 68, with the dogleg method on
  * page 71. The subroutine used to do this calculation is CalcConc.c.
- *
- * For usage instructions, input and output formats, etc., see the associated
- * manual.
  */
 
 #include "constants.h"
@@ -27,37 +24,37 @@
 #include "ReadCommandLine.h"
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]){
 
-  unsigned long seed; // seed for random number generation
-  int numSS;    // number of single-strand (monomer) types
-  int numSS0;   // number of monomer types including those with zero concentration
+  int numSS;  // number of single-strand (monomer) types
+  int numSS0; // number of monomer types including zero concentration ones
   int numTotal; // total number of complexes
   int nTotal;   // total number of permutations
   int LargestCompID; // largest complex ID
   int MaxIters;   // maximum number of iterations in trust region method
   int SortOutput; // sorting options for output
-  int NoPermID;   // 1 if there are no perumtation IDs in 2nd column of input file
   int CalcConcConverge; // 1 for convergence, 0 otherwise
+  int Toverride; // 1 when user provided new temperature in the command line
+  int MaxNoStep; // maximum number of iterations allowed without taking a step
+  int MaxTrial;  // maximum number ot perturbations allowed in a calculation
+  int NUPACK_VALIDATE; // 1 if validation mode (14 digit printout)
+  int *numPermsArray; // number of permutations of each species
+  int *CompIDArray;   // complex IDs
+  int *PermIDArray;   // permutation IDs
+  unsigned long seed; // seed for random number generation
   double tol;      // absolute tolerance is tol*(mininium monomer init. conc.)
   double deltaBar; // maximum allowed step size in trust region method
   double eta;      // eta parameter in trust region method, 0 < eta < 0.25
   double kT;       // thermal energy in kcal/mol
-  double temperature;
   double MolesWaterPerLiter; // moles of water per liter
-  int Toverride; // 1 if the user has enforced a temperature in the command line
-  int MaxNoStep; // maximum number of iterations allowed without taking a step
-  int MaxTrial;  // maximum number ot perturbations allowed in a calculation
+  double cutoff; // cutoff value for reporting pair fractions
   double PerturbScale; // multiplier on the random number for perturbations
   int **A;    // number of monomers of type i in complex j
   double *G;  // free energies of complexes
   double *x;  // the mole fractions
   double *x0; // total concentrations of single-species
   double *conc;
-  int NUPACK_VALIDATE; // 1 if validation mode (14 digit printout)
-  int *numPermsArray; // number of permutations of each species
-  int *CompIDArray;   // complex IDs
-  int *PermIDArray;   // permutation IDs
+  double temperature;
 
   // provenance blocks
   int len_header = 1000;
@@ -72,7 +69,7 @@ int main(int argc, char *argv[]) {
 
   // read command line arguments
   ReadCommandLine(argc, argv, &SortOutput, &MaxIters, &tol, &kT, &MaxNoStep,
-        &MaxTrial, &PerturbScale, &Toverride, &NoPermID, &seed,
+        &MaxTrial, &PerturbScale, &Toverride, &seed, &cutoff,
         &NUPACK_VALIDATE);
 
 
@@ -100,7 +97,7 @@ int main(int argc, char *argv[]) {
 
 
   WriteOutput(x, G, CompIDArray, LargestCompID, numSS0, numTotal, nTotal, kT,
-        SortOutput, MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE, InputStruct);
+        SortOutput, MolesWaterPerLiter, NUPACK_VALIDATE, InputStruct);
 
 
   /* echo provenance header starts
@@ -165,7 +162,7 @@ int main(int argc, char *argv[]) {
 
   // fill provenance block
   len_provenance = concentrations_results(concentrations, numSS, nTotal, kT,
-        MolesWaterPerLiter, NoPermID, NUPACK_VALIDATE, InputStruct);
+        MolesWaterPerLiter, NUPACK_VALIDATE, InputStruct);
 
   for(int y=0 ; y<len_provenance ; ++y){
     printf("%c", concentrations[y]);

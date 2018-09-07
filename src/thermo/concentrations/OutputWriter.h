@@ -5,13 +5,15 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void WriteOutput(double*, double*, int*, int, int, int, int, double, int,
-        double, int, int, struct InStruct*);
+void WriteOutput(double* X, double* G, int* CompIDArray, int LargestCompID,
+        int numSS, int numTotal, int nTotal, double kT, int SortOutput,
+        double MolesWaterPerLiter, int NUPACK_VALIDATE,
+        struct InStruct* InputStruct);
 
 // provenance functions
 int concentrations_header(char*, int, char**);
 int concentrations_parameters(char*, int, double*, double);
-int concentrations_results(char*, int, int, double kT, double, int, int,
+int concentrations_results(char*, int, int, double kT, double, int,
         struct InStruct*);
 
 // comparison functions for sorting

@@ -7,10 +7,10 @@ extern "C" {
 
 #include <stdio.h>
 
-void ReadCommandLine(int nargs, char **args, int *SortOutput, int *MaxIters,
-        double *tol, double *kT, int *MaxNoStep, int *MaxTrial,
-        double *PerturbScale, int *Toverride, int *NoPermID,
-        unsigned long *seed, int *NUPACK_VALIDATE);
+void ReadCommandLine(int nargs, char** args, int* SortOutput, int* MaxIters,
+        double* tol, double* kT, int* MaxNoStep, int* MaxTrial,
+        double* PerturbScale, int* Toverride, unsigned long* seed,
+        double* cutoff, int* NUPACK_VALIDATE);
 
 void DisplayHelpConc(void);
 
