@@ -7,13 +7,10 @@ extern "C" {
 
 #include <stdio.h>
 
-void ReadCommandLine(int nargs, char **args, char *cxFile, char *conFile, 
-         char *logFile, char *eqFile, char *pairsFile, char *fpairsFile,
-         int *SortOutput, int *MaxIters, double *tol, double *kT,
-         int *MaxNoStep, int *MaxTrial, double *PerturbScale, int *quiet,
-         int *WriteLogFile, int *Toverride, int *NoPermID, 
-         int *DoBPfracs, unsigned long *seed, double *cutoff, int * NUPACK_VALIDATE,
-         int *v3);
+void ReadCommandLine(int nargs, char** args, int* SortOutput, int* MaxIters,
+        double* tol, double* kT, int* MaxNoStep, int* MaxTrial,
+        double* PerturbScale, int* Toverride, unsigned long* seed,
+        double* cutoff, int* NUPACK_VALIDATE);
 
 void DisplayHelpConc(void);
 

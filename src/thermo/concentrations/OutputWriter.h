@@ -5,18 +5,22 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void WriteOutput(double *x, double *G, int *CompIDArray, int LargestCompID, 
-     int numSS, int numTotal, int nTotal, double kT, char *cxFile, 
-     int SortOutput, char  *eqFile, double MolesWaterPerLiter, int quiet, 
-     int NoPermID,int NUPACK_VALIDATE);
+void WriteOutput(double* X, double* G, int* CompIDArray, int LargestCompID,
+        int numSS, int numTotal, int nTotal, double kT, int SortOutput,
+        double MolesWaterPerLiter, int NUPACK_VALIDATE,
+        struct InStruct* InputStruct);
 
-int Compare11(const void *p1, const void *p2);  // Comparison function for sorting
+// provenance functions
+int concentrations_header(char*, int, char**);
+int concentrations_parameters(char*, int, double*, double);
+int concentrations_results(char*, int, int, double kT, double, int,
+        struct InStruct*);
 
-int Compare12(const void *p1, const void *p2);  // Comparison function for sorting
-
-int Compare13(const void *p1, const void *p2);  // Comparison function for sorting
-
-int Compare14(const void *p1, const void *p2);  // Comparison function for sorting
+// comparison functions for sorting
+int Compare11(const void*, const void*);
+int Compare12(const void*, const void*);
+int Compare13(const void*, const void*);
+int Compare14(const void*, const void*);
 
 #ifdef __cplusplus
 }
