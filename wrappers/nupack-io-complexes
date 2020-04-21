@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import common
 import io
 import pexpect
 
@@ -44,6 +45,8 @@ def complexes(call, sequences, max_complex_size, permutations):
 
 
 if __name__ == "__main__":
+    common.print_license()
+
     call = "complexes"
     sequences = [
         "GGCTGGTTTCTGCTCTCTAGTTCGCGAGGTGCAATCTCCTATC",
