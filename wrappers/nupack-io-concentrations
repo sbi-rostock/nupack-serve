@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+import io
+import pexpect
+
+
+def concentrations(call, complex_ids, monomer_concentrations, temperature,
+    ocx):
+
+    result = None
+
+    # spawn a subprocess for the provided call
+    p = pexpect.spawn(call, encoding="ascii")
+
+    # suppress echo
+    p.setecho(False)
+
+    # interact to provide its input
+    p.expect("Enter number of complex IDs")
+    p.sendline(complex_ids)
+    p.expect("Enter number of different concentrations")
+    p.sendline(str(len(monomer_concentrations)))
+    for entry in range(len(monomer_concentrations)):
+        p.expect("Enter concentration")
+        p.sendline(monomer_concentrations[entry])
+    p.expect("Enter temperature")
+    p.sendline(temperature)
+    for entry in range(len(ocx)):
+        p.expect("Enter complex ocx")
+        p.sendline(ocx[entry])
+
+    # start log the subprocess' result
+    log = io.StringIO()
+    p.logfile = log
+    p.expect("{") # starting of JSON string
+    log.seek(0)
+
+    # store the result
+    result = log.read()
+    result = result.replace("\x00", "").replace("\n", "").replace("\r", "")
+
+    log.close()
+    p.close()
+
+    return (p.exitstatus, result)
+
+
+
+if __name__ == "__main__":
+    call = "concentrations"
+    complex_ids = "6"
+    monomer_concentrations = ["1e-7", "1e-7", "1e-7"]
+    temperature = "37.0"
+    ocx = [
+        "1,1,1,0,0,-7.92078773e+00",
+        "2,1,0,1,0,-9.79502400e+00",
+        "3,1,0,0,1,-9.79502400e+00",
+        "4,1,1,1,0,-4.84277745e+01",
+        "5,1,1,0,1,-4.84277745e+01",
+        "6,1,1,1,1,-6.36285141e+01"
+        ]
+
+    (status, result) = concentrations(call, complex_ids,
+        monomer_concentrations, temperature, ocx)
+
+    print(status)
+    print(result)
+
