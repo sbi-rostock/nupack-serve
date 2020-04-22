@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import common
 import io
 import pexpect
 
@@ -41,6 +42,8 @@ def mfe(call, sequences):
 
 
 if __name__ == "__main__":
+    common.print_license()
+
     call = "mfe --multi"
     sequences = [
         "GGCTGGTTTCTGCTCTCTAGTTCGCGAGGTGCAATCTCCTATC",

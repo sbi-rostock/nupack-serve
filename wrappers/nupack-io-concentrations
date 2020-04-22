@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import common
 import io
 import pexpect
 
@@ -47,6 +48,8 @@ def concentrations(call, complex_ids, monomer_concentrations, temperature,
 
 
 if __name__ == "__main__":
+    common.print_license()
+
     call = "concentrations"
     complex_ids = "6"
     monomer_concentrations = ["1e-7", "1e-7", "1e-7"]
