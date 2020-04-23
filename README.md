@@ -2,23 +2,22 @@
 
 [![Docker Repository on Quay](https://quay.io/repository/bagnacan/nupack-serve/status "Docker Repository on Quay")](https://quay.io/repository/bagnacan/nupack-serve)
 
-# Nupack-serve
+# nupack-serve
 
 Nupack-serve is a wrapper for [NUPACK](http://www.nupack.org/): a software
 suite for the analysis and design of nucleic acid structures, devices, and
-systems ().  
+systems [(Wolfe et al. 2017)](https://www.doi.org/10.1021/jacs.6b12693).  
 This wrapper modifies the default behavior of some of NUPACK's functions in
 order to:
 - Incoporate NUPACK within computational pipelines
-- Make results machine readabile (JSON)
+- Enhance the machine-readability of results
 - Restrict computation to CPU-bound operations
-- Provide provenance medatada
 
 Nupack-serve was initially created to port NUPACK's *mfe*, *complexes* and
 *concentrations* within the [Triplexer](https://github.com/sbi-rostock/triplexer)
 pipeline. However, the C functions written to remove I/O bound operation,
 provide provenance medatada and JSON output, can be adopted by the remaining
-NUPACK utilities.
+NUPACK utilities.  
 
 - [Motivation](#motivation)
 - [Installation requirements](#installation-requirements)
@@ -28,7 +27,7 @@ NUPACK utilities.
 
 ## Motivation
 
-NUPACK's functionalities rely on the reading and writing of files on the hard
+NUPACK's functionalities rely on the reading/writing of files on the hard
 drive. This design principle is handy when results need to be overviewed only
 by the user. However, when placed within the context of computational
 pipelines, I/O operations can exert a negative impact on the performances of
@@ -39,7 +38,7 @@ to parse the generated output files, and this might become an additional source
 of errors.  
 
 Nupack-serve was created as a working proof-of-concept, to address these
-limitations, and bring NUPACK functionalities to reproducible bioinforamatics
+limitations, and bring NUPACK functionalities to reproducible bioinformatics
 pipelines.  
 In this package we modified only three of the many operations provided by
 NUPACK: *mfe*, *complexes*, and *concentrations*; which we use within the
@@ -59,9 +58,8 @@ following information:
 2. The sequence for each distinct strand species (each on a separate line)
 3. As many integers as the range of 1 to # of *S* sequences, representing the
 strand ordering in the complex *C*.  
-So, to compute the MFE of the complex resulting from 2 miRNAs binding against
-the binding site of gene E2F1, we have to provide the following ``test.in``
-file:
+So, to compute the MFE of the complex resulting from 2 miRNAs binding with
+gene E2F1, we have to provide the following ``test.in`` file:
 ```
 3
 ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu
@@ -70,7 +68,7 @@ ucucacacagaaaucgcacccgu
 1 2 3
 ```
 
-and call mfe with the following command line invocation:
+then call mfe with the following command line invocation:
 ```
 $ mfe -multi test
 ```
@@ -81,7 +79,7 @@ following lines:
 % NUPACK 3.2.2
 % Program: mfe
 % Start time: Thu Apr 23 16:32:20 2020
-% Command: ./mfe -multi test 
+% Command: mfe -multi test 
 % Sequence:  ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu+uccuucauuccaccggagucug+ucucacacagaaaucgcacccgu
 % v(pi): 1
 % Parameters: RNA, 1995
@@ -174,9 +172,8 @@ is wrapped in a python script, which returns:
 
 With this modified behavior, nupack-serve is able to: 
 - Incoporate NUPACK within computational pipelines
-- Make results machine readabile (JSON)
+- Enhance the machine-readability of results (JSON)
 - Avoid read/writes to disk
-- Provide provenance medatada
 <p align="right"><a href="#top">&#x25B2; back to top</a></p>
 
 
