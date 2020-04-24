@@ -172,18 +172,22 @@ RUN apt-get update && \
   cmake-data \
   && rm -rf /var/lib/apt/lists/*
 
-# nupack-io dependencies
-RUN pip install pexpect
+# nupack-serve dependencies
+RUN pip install aiofiles \
+  pexpect \
+  starlette \
+  uvicorn \
+  virtualenv
 
-# nupack-io
+# nupack-serve
 COPY nupack3.2.2 /tmp/nupack3.2.2
 RUN mkdir -p /tmp/nupack3.2.2/build
 WORKDIR /tmp/nupack3.2.2/build
 RUN cmake ../ \
-  &&  make \
+  && make \
   && make install
-COPY wrappers/* /srv/
+COPY ["app.py", "serve_mfe.py", "/srv/"]
 ENV PATH="${PATH}:/srv"
 WORKDIR /srv
 USER user
-CMD ["bash"]
+CMD ["python3", "app.py"]
