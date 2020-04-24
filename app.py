@@ -8,7 +8,7 @@ import uvicorn
 import serve_mfe
 
 
-NUPACK_LICENSE_LOCATION = "nupack3.2.2/LICENSE"
+NUPACK_LICENSE_LOCATION = "/tmp/nupack3.2.2/LICENSE"
 NUPACK_LICENSE_TERMS = None
 LICENSE = "license"
 STATUS  = "status"
