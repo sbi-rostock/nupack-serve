@@ -187,6 +187,7 @@ RUN cmake ../ \
   && make \
   && make install
 COPY ["app.py", "serve_mfe.py", "/srv/"]
+ENV PATH="${PATH}:/srv"
 WORKDIR /srv
 USER user
-CMD ["bash"]
+CMD ["python3", "app.py"]
