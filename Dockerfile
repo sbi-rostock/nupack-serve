@@ -172,14 +172,14 @@ RUN apt-get update && \
   cmake-data \
   && rm -rf /var/lib/apt/lists/*
 
-# nupack-io dependencies
+# nupack-serve dependencies
 RUN pip install aiofiles \
   pexpect \
   starlette \
   uvicorn \
   virtualenv
 
-# nupack-io
+# nupack-serve
 COPY nupack3.2.2 /tmp/nupack3.2.2
 RUN mkdir -p /tmp/nupack3.2.2/build
 WORKDIR /tmp/nupack3.2.2/build
