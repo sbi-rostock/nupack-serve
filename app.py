@@ -43,6 +43,30 @@ def mfe(request):
   response[RESULT]  = result
   return JSONResponse(response)
 
+#
+# nupac-serve mfe example:
+#
+# Compute the MFE of the complex formed by aligning Human target gene E2F1's
+# binding site sequence and the putatively cooperating miRNA pair hsa-miR-205
+# and hsa-miR-342-3p
+#
+@app.route("/example/mfe")
+def mfe(request):
+
+  global NUPACK_LICENSE_TERMS
+  target = "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu"
+  mir1 = "uccuucauuccaccggagucug"
+  mir2 = "ucucacacagaaaucgcacccgu"
+  response = {}
+
+  status, result = serve_mfe.mfe(target, mir1, mir2)
+
+  # send response
+  response[LICENSE] = NUPACK_LICENSE_TERMS
+  response[STATUS]  = status
+  response[RESULT]  = result
+  return JSONResponse(response)
+
 
 
 #
