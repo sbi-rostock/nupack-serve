@@ -195,7 +195,7 @@ and install both Docker and Docker compose
 
 To run nupack-serve, you need to run its docker container. Type:
 ```
-docker run -it quay.io/bagnacan/nupack-serve
+docker run -d -p 9000:8000 quay.io/bagnacan/nupack-serve
 ```
 
 You can now access the wrapped NUPACK functions.
