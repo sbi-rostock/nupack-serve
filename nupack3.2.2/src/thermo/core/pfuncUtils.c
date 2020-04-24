@@ -1226,8 +1226,8 @@ int structure2provenance(char *provenance, char *thefold, const int *thepairs,
   char FIELD_NEXT[]  = ", ";
   char LIST_STARTS[] = "[";
   char LIST_ENDS[]   = "]";
-  char PAIR_STARTS[] = "(";
-  char PAIR_ENDS[]   = ")";
+  char PAIR_STARTS[] = "[";
+  char PAIR_ENDS[]   = "]";
   char COMMA[] = ",";
 
   int len_entry_dotbracket;
