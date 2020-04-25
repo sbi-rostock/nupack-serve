@@ -20,6 +20,7 @@ provide provenance medatada and JSON output can be adopted by the remaining
 NUPACK utilities.  
 
 - [Motivation](#motivation)
+  - [A practical example: nupack-serve mfe](#a-practical-example--nupack-serve-mfe)
 - [Installation requirements](#installation-requirements)
 - [Run nupack-serve](#run-nupack-serve)
 
@@ -45,7 +46,10 @@ NUPACK: *mfe*, *complexes*, and *concentrations*; which we use within the
 context of the [Triplexer](https://github.com/sbi-rostock/triplexer) pipeline
 to compute the minimum free energy of secondary structures, the equilibrium
 base-pairing properties for each complex in a test tube, and the equilibrium
-concentration for each complex in a test tube.  
+concentration for each complex in a test tube.
+<p align="right"><a href="#top">&#x25B2; back to top</a></p>
+
+
 
 ### A practical example: nupack-serve mfe
 
@@ -59,8 +63,10 @@ following information:
 3. As many integers as the range of 1 to # of *S* sequences, representing the
 strand ordering in the complex *C*.  
 
-So, to compute the MFE of the complex resulting from 2 miRNAs binding with
-gene E2F1, we have to provide the following ``test.in`` file:
+So, to compute the MFE of the complex resulting from the binding of human
+target gene E2F1's binding site with the two putatively cooperating miRNAs
+hsa-miR-205 and hsa-miR-342-3p, we have to provide the following ``test.in``
+file:
 ```
 3
 ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu
@@ -69,7 +75,7 @@ ucucacacagaaaucgcacccgu
 1 2 3
 ```
 
-then call mfe with the following command line invocation:
+then, call mfe with the following command line invocation:
 ```
 $ mfe -multi test
 ```
@@ -204,6 +210,11 @@ your browser, type:
 ```
 localhost:9000/example/mfe
 ```
+
+This address is mapped to a sample function that reproduces the example showed
+[above](#a-practical-example--nupack-serve-mfe): compute the MFE of human
+target gene E2F1's binding site sequence with the two putatively cooperating
+miRNAs hsa-miR-205 and hsa-miR-342-3p.  
 
 You should obtain something like this:
 ```
