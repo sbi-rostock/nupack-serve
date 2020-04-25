@@ -20,7 +20,7 @@ provide provenance medatada and JSON output can be adopted by the remaining
 NUPACK utilities.  
 
 - [Motivation](#motivation)
-  - [A practical example: nupack-serve mfe](#a-practical-example--nupack-serve-mfe)
+  - [A practical example: nupack-serve mfe](#a-practical-example-nupack-serve-mfe)
 - [Installation requirements](#installation-requirements)
 - [Run nupack-serve](#run-nupack-serve)
 
@@ -212,7 +212,7 @@ localhost:9000/example/mfe
 ```
 
 This address is mapped to a sample function that reproduces the example showed
-[above](#a-practical-example--nupack-serve-mfe): compute the MFE of human
+[above](#a-practical-example-nupack-serve-mfe): compute the MFE of human
 target gene E2F1's binding site sequence with the two putatively cooperating
 miRNAs hsa-miR-205 and hsa-miR-342-3p.  
 
