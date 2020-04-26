@@ -551,8 +551,8 @@ int complexes_parameters(char* provenance, int nStrands, char **seqs,
   char FIELD_NEXT[] = ", ";
   char LIST_STARTS[] = "[";
   char LIST_ENDS[]   = "]";
-  char PAIR_STARTS[] = "(";
-  char PAIR_ENDS[]   = ")";
+  char PAIR_STARTS[] = "[";
+  char PAIR_ENDS[]   = "]";
   char COMMA[] = ",";
   char QUOTE[] = "\"";
 
@@ -794,8 +794,8 @@ int complexes_results(char* provenance, int complex_id, int permutation_id,
   char PROVENANCE_ENDS[] = " }\n";
   char LIST_STARTS[] = "[";
   char LIST_ENDS[]   = "]";
-  char PAIR_STARTS[] = "(";
-  char PAIR_ENDS[]   = ")";
+  char PAIR_STARTS[] = "[";
+  char PAIR_ENDS[]   = "]";
   char COMMA[] = ",";
 
 
@@ -850,6 +850,13 @@ int complexes_results(char* provenance, int complex_id, int permutation_id,
   } else if(strcmp(position, LIST_ENDS) == 0){
     len_entry_complexes += (strlen(LIST_ENDS) + strlen(PROVENANCE_ENDS));
   }
+  /*
+  if(strcmp(position, LIST_ENDS) == 0){
+    len_entry_complexes += (strlen(LIST_ENDS) + strlen(PROVENANCE_ENDS));
+  } else {
+    len_entry_complexes += strlen(COMMA);
+  }
+  */
 
   len_provenance += len_entry_complexes;
 
@@ -892,7 +899,7 @@ int complexes_results(char* provenance, int complex_id, int permutation_id,
                     strcat(provenance, FIELD_COMPLEXES),
                     LIST_STARTS);
   }
-  if(strcmp(position, COMMA) == 0){
+  if( (strcmp(position, COMMA) == 0) || (strcmp(position, LIST_STARTS)) ){
     provenance = strcat(provenance, COMMA);
   }
   provenance = strcat(
