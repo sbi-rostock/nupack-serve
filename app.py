@@ -52,7 +52,7 @@ def mfe(request):
 # and hsa-miR-342-3p
 #
 @app.route("/example/mfe")
-def mfe(request):
+def example_mfe(request):
 
   global NUPACK_LICENSE_TERMS
   target = "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu"
@@ -99,7 +99,7 @@ def complexes(request):
 # hsa-miR-342-3p
 #
 @app.route("/example/complexes")
-def complexes(request):
+def example_complexes(request):
 
   global NUPACK_LICENSE_TERMS
   target = "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu"
