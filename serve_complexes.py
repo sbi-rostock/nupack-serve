@@ -9,8 +9,8 @@ def complexes(target, mir1, mir2):
 
     result = None
 
-    # spawn a subprocess for the provided call
-    p = pexpect.spawn(call, encoding="ascii")
+    # spawn a subprocess
+    p = pexpect.spawn("complexes", encoding="ascii")
 
     # suppress echo
     p.setecho(False)
