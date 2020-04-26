@@ -186,7 +186,7 @@ WORKDIR /tmp/nupack3.2.2/build
 RUN cmake ../ \
   && make \
   && make install
-COPY ["app.py", "serve_mfe.py", "/srv/"]
+COPY ["app.py", "serve_mfe.py", "serve_complexes.py", "/srv/"]
 ENV PATH="${PATH}:/srv"
 WORKDIR /srv
 USER user

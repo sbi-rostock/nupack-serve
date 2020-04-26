@@ -6,6 +6,7 @@ from starlette.routing import Route
 from starlette.staticfiles import StaticFiles
 import uvicorn
 import serve_mfe
+import serve_complexes
 
 
 NUPACK_LICENSE_LOCATION = "/tmp/nupack3.2.2/LICENSE"
