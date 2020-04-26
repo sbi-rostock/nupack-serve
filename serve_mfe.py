@@ -9,7 +9,7 @@ def mfe(target, mir1, mir2):
 
     result = None
 
-    # spawn a subprocess for the provided call
+    # spawn a subprocess
     p = pexpect.spawn("mfe -multi", encoding="ascii")
 
     # suppress echo
