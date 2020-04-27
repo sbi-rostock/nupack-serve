@@ -20,6 +20,17 @@ RESULT  = "result"
 
 
 
+# response assembler
+def response(status, result):
+  r = {}
+
+  r[LICENSE] = NUPACK_LICENSE_TERMS
+  r[STATUS]  = status
+  r[RESULT]  = result
+  return JSONResponse(r)
+
+
+
 #
 # app
 #
@@ -33,16 +44,10 @@ app = Starlette(debug=True)
 @app.route("/mfe", methods=["POST"])
 def mfe(payload):
 
-  global NUPACK_LICENSE_TERMS
-  response = {}
-
   status, result = serve_mfe.mfe(payload)
 
   # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return response(status, result)
 
 #
 # nupac-serve mfe example:
@@ -62,8 +67,7 @@ def example_mfe(request):
     PERMUTATIONS: ["1 2 3"]
   }
 
-  response = mfe(json.dumps(payload))
-  return response
+  return mfe(json.dumps(payload))
 
 
 
@@ -73,16 +77,10 @@ def example_mfe(request):
 @app.route("/complexes", methods=["POST"])
 def complexes(payload):
 
-  global NUPACK_LICENSE_TERMS
-  response = {}
-
   status, result = serve_complexes.complexes(payload)
 
   # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return response(status, result)
 
 #
 # nupac-serve complexes example:
@@ -104,8 +102,7 @@ def example_complexes(request):
     PERMUTATIONS: ["1 2 3", "1 2", "1 3"]
   }
 
-  response = complexes(json.dumps(payload))
-  return response
+  return complexes(json.dumps(payload))
 
 
 
@@ -115,16 +112,10 @@ def example_complexes(request):
 @app.route("/concentrations", methods=["POST"])
 def concentrations(payload):
 
-  global NUPACK_LICENSE_TERMS
-  response = {}
-
   status, result = serve_concentrations.concentrations(payload)
 
   # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return response(status, result)
 
 #
 # nupac-serve concentrations example:
@@ -150,8 +141,7 @@ def example_concentrations(request):
     ]
   }
 
-  response = concentrations(json.dumps(payload))
-  return response
+  return concentrations(json.dumps(payload))
 
 
 
