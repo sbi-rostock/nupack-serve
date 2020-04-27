@@ -49,7 +49,6 @@ app = Starlette(debug=True)
 
 @app.route("/", methods=["GET", "POST"])
 def usage(request):
-  print(request.body())
   r = {}
 
   r[USAGE]    = USAGE_DESCRIPTION
