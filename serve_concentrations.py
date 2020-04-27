@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# This module handles the execution of the modified NUPACK concentrations
+# function.
+
 from common import *
 import io
 import json

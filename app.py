@@ -1,4 +1,9 @@
-# nupack-serve app
+#!/usr/bin/env python3
+
+# This module implements the nupack-serve app, which handles calls to:
+# - serve-mfe
+# - serve-complexes
+# - serve-concentrations
 
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
@@ -20,6 +25,17 @@ RESULT  = "result"
 
 
 
+# response assembler
+def response(status, result):
+  r = {}
+
+  r[LICENSE] = NUPACK_LICENSE_TERMS
+  r[STATUS]  = status
+  r[RESULT]  = result
+  return JSONResponse(r)
+
+
+
 #
 # app
 #
@@ -30,22 +46,13 @@ app = Starlette(debug=True)
 #
 # nupac-serve mfe
 #
-@app.route("/mfe/{target}/{mir1}/{mir2}")
-def mfe(request):
+@app.route("/mfe", methods=["POST"])
+def mfe(payload):
 
-  global NUPACK_LICENSE_TERMS
-  target = request.path_params["target"]
-  mir1 = request.path_params["mir1"]
-  mir2 = request.path_params["mir2"]
-  response = {}
-
-  status, result = serve_mfe.mfe(target, mir1, mir2)
+  status, result = serve_mfe.mfe(payload)
 
   # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return response(status, result)
 
 #
 # nupac-serve mfe example:
@@ -57,41 +64,28 @@ def mfe(request):
 @app.route("/example/mfe")
 def example_mfe(request):
 
-  global NUPACK_LICENSE_TERMS
-  target = "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu"
-  mir1 = "uccuucauuccaccggagucug"
-  mir2 = "ucucacacagaaaucgcacccgu"
-  response = {}
+  payload = {
+    SEQ_NUM: "3",
+    SEQ_TARGET: "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu",
+    SEQ_MIR1: "uccuucauuccaccggagucug",
+    SEQ_MIR2: "ucucacacagaaaucgcacccgu",
+    PERMUTATIONS: ["1 2 3"]
+  }
 
-  status, result = serve_mfe.mfe(target, mir1, mir2)
-
-  # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return mfe(json.dumps(payload))
 
 
 
 #
 # nupac-serve complexes
 #
-@app.route("/complexes/{target}/{mir1}/{mir2}")
-def complexes(request):
+@app.route("/complexes", methods=["POST"])
+def complexes(payload):
 
-  global NUPACK_LICENSE_TERMS
-  target = request.path_params["target"]
-  mir1 = request.path_params["mir1"]
-  mir2 = request.path_params["mir2"]
-  response = {}
-
-  status, result = serve_complexes.complexes(target, mir1, mir2)
+  status, result = serve_complexes.complexes(payload)
 
   # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return response(status, result)
 
 #
 # nupac-serve complexes example:
@@ -104,19 +98,16 @@ def complexes(request):
 @app.route("/example/complexes")
 def example_complexes(request):
 
-  global NUPACK_LICENSE_TERMS
-  target = "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu"
-  mir1 = "uccuucauuccaccggagucug"
-  mir2 = "ucucacacagaaaucgcacccgu"
-  response = {}
+  payload = {
+    SEQ_NUM: "3",
+    SEQ_TARGET: "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu",
+    SEQ_MIR1: "uccuucauuccaccggagucug",
+    SEQ_MIR2: "ucucacacagaaaucgcacccgu",
+    MAX_COMPLEX_SIZE: "1",
+    PERMUTATIONS: ["1 2 3", "1 2", "1 3"]
+  }
 
-  status, result = serve_complexes.complexes(target, mir1, mir2)
-
-  # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return complexes(json.dumps(payload))
 
 
 
@@ -126,16 +117,10 @@ def example_complexes(request):
 @app.route("/concentrations", methods=["POST"])
 def concentrations(payload):
 
-  global NUPACK_LICENSE_TERMS
-  response = {}
-
   status, result = serve_concentrations.concentrations(payload)
 
   # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  return response(status, result)
 
 #
 # nupac-serve concentrations example:
@@ -161,8 +146,7 @@ def example_concentrations(request):
     ]
   }
 
-  response = concentrations(json.dumps(payload))
-  return response
+  return concentrations(json.dumps(payload))
 
 
 

@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
+# This module handles the execution of the modified NUPACK mfe function.
+
+from common import *
 import io
 import json
 import pexpect
 
 
-def mfe(target, mir1, mir2):
+def mfe(payload):
 
+    payload = json.loads(payload)
     result = None
 
     # spawn a subprocess
@@ -17,22 +21,23 @@ def mfe(target, mir1, mir2):
 
     # provide number of sequences
     p.expect("Enter number of strands")
-    p.sendline("3")
+    p.sendline(payload[SEQ_NUM])
 
     # provide target sequence
     p.expect("Enter sequence for strand type")
-    p.sendline(target)
+    p.sendline(payload[SEQ_TARGET])
 
     # provide mir1 sequence
     p.expect("Enter sequence for strand type")
-    p.sendline(mir1)
+    p.sendline(payload[SEQ_MIR1])
 
     # provide mir2 sequence
     p.expect("Enter sequence for strand type")
-    p.sendline(mir2)
+    p.sendline(payload[SEQ_MIR2])
 
-    p.expect("Enter strand permutation")
-    p.sendline("1 2 3")
+    for entry in payload[PERMUTATIONS]:
+      p.expect("Enter strand permutation")
+      p.sendline(entry)
 
     # start log the subprocess' result
     log = io.StringIO()

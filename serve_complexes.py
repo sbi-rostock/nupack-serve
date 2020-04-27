@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
+# This module handles the execution of the modified NUPACK complexes function.
+
+from common import *
 import io
 import json
 import pexpect
 
 
-def complexes(target, mir1, mir2):
+def complexes(payload):
 
+    payload = json.loads(payload)
     result = None
 
     # spawn a subprocess
@@ -15,36 +19,30 @@ def complexes(target, mir1, mir2):
     # suppress echo
     p.setecho(False)
 
-    # interact to provide its input
+    # provide number of sequences
     p.expect("Enter number of different sequences")
-    p.sendline("3")
+    p.sendline(payload[SEQ_NUM])
 
-    # provide target sequence
+    # provide all sequences
     p.expect("Enter sequence")
-    p.sendline(target)
+    p.sendline(payload[SEQ_TARGET])
 
     # provide mir1 sequence
     p.expect("Enter sequence")
-    p.sendline(mir1)
+    p.sendline(payload[SEQ_MIR1])
 
     # provide mir2 sequence
     p.expect("Enter sequence")
-    p.sendline(mir2)
+    p.sendline(payload[SEQ_MIR2])
 
+    # provide max complex size
     p.expect("Enter max complex size to completely enumerate")
-    p.sendline("1")
+    p.sendline(payload[MAX_COMPLEX_SIZE])
 
-    # premutation 1
-    p.expect("Enter permutation")
-    p.sendline("1 2 3")
-
-    # premutation 2
-    p.expect("Enter permutation")
-    p.sendline("1 2")
-
-    # premutation 2
-    p.expect("Enter permutation")
-    p.sendline("1 3")
+    # provide permutations
+    for entry in payload[PERMUTATIONS]:
+      p.expect("Enter permutation")
+      p.sendline(entry)
 
     # start log the subprocess' result
     log = io.StringIO()
