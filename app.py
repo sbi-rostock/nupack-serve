@@ -30,16 +30,13 @@ app = Starlette(debug=True)
 #
 # nupac-serve mfe
 #
-@app.route("/mfe/{target}/{mir1}/{mir2}")
-def mfe(request):
+@app.route("/mfe", methods=["POST"])
+def mfe(payload):
 
   global NUPACK_LICENSE_TERMS
-  target = request.path_params["target"]
-  mir1 = request.path_params["mir1"]
-  mir2 = request.path_params["mir2"]
   response = {}
 
-  status, result = serve_mfe.mfe(target, mir1, mir2)
+  status, result = serve_mfe.mfe(payload)
 
   # send response
   response[LICENSE] = NUPACK_LICENSE_TERMS
@@ -57,19 +54,16 @@ def mfe(request):
 @app.route("/example/mfe")
 def example_mfe(request):
 
-  global NUPACK_LICENSE_TERMS
-  target = "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu"
-  mir1 = "uccuucauuccaccggagucug"
-  mir2 = "ucucacacagaaaucgcacccgu"
-  response = {}
+  payload = {
+    SEQ_NUM: "3",
+    SEQ_TARGET: "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu",
+    SEQ_MIR1: "uccuucauuccaccggagucug",
+    SEQ_MIR2: "ucucacacagaaaucgcacccgu",
+    PERMUTATIONS: ["1 2 3"]
+  }
 
-  status, result = serve_mfe.mfe(target, mir1, mir2)
-
-  # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  response = mfe(json.dumps(payload))
+  return response
 
 
 
