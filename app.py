@@ -61,7 +61,7 @@ def usage(request):
 #
 # nupac-serve mfe
 #
-@app.route("/mfe", methods=["POST"])
+@app.route("/mfe", methods=["GET"])
 def mfe(payload):
 
   status, result = serve_mfe.mfe(payload)
@@ -94,7 +94,7 @@ def example_mfe(request):
 #
 # nupac-serve complexes
 #
-@app.route("/complexes", methods=["POST"])
+@app.route("/complexes", methods=["GET"])
 def complexes(payload):
 
   status, result = serve_complexes.complexes(payload)
@@ -129,7 +129,7 @@ def example_complexes(request):
 #
 # nupac-serve concentrations
 #
-@app.route("/concentrations", methods=["POST"])
+@app.route("/concentrations", methods=["GET"])
 def concentrations(payload):
 
   status, result = serve_concentrations.concentrations(payload)
