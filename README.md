@@ -186,7 +186,23 @@ For this reason, we instruct mfe to return results and provenance metadata in th
 JSON format.
 
 ```
-{ "version": "3.2.2", "command": "mfe -multi", "cutoff": 0.001, "sequence": "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu+uccuucauuccaccggagucug+ucucacacagaaaucgcacccgu", "dangles": "1", "temperature (C)": 37.0, "concentration Na (M)": 1.0000, "concentration Mg (M)": 0.0000, "pseudoknots": false, "sequence length (nt)": 99, "minimum free energy (Kcal/mol)": -50.563, "dot-bracket": ".((((.((((.(.(((((((((((((......)))))..((((((((((((((..)))))))))).)))).......))))))))..).)))).))))", "pairs": [(2,98),(3,97),(4,96),(5,95),(7,93),(8,92),(9,91),(10,90),(12,88),(14,85),(15,84),(16,83),(17,82),(18,81),(19,80),(20,79),(21,78),(22,37),(23,36),(24,35),(25,34),(26,33),(40,70),(41,69),(42,68),(43,67),(44,65),(45,64),(46,63),(47,62),(48,61),(49,60),(50,59),(51,58),(52,57),(53,56)] }
+{
+  "version": "3.2.2",
+  "command": "mfe -multi",
+  "cutoff": 0.001,
+  "sequence": "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu+uccuucauuccaccggagucug+ucucacacagaaaucgcacccgu",
+  "dangles": "1",
+  "temperature (C)": 37.0,
+  "concentration Na (M)": 1.0000,
+  "concentration Mg (M)": 0.0000,
+  "pseudoknots": false,
+  "sequence length (nt)": 99,
+  "minimum free energy (Kcal/mol)": -50.563,
+  "dot-bracket": ".((((.((((.(.(((((((((((((......)))))..((((((((((((((..)))))))))).)))).......))))))))..).)))).))))",
+  "pairs": [
+    (2,98),(3,97),(4,96),(5,95),(7,93),(8,92),(9,91),(10,90),(12,88),(14,85),(15,84),(16,83),(17,82),(18,81),(19,80),(20,79),(21,78),(22,37),(23,36),(24,35),(25,34),(26,33),(40,70),(41,69),(42,68),(43,67),(44,65),(45,64),(46,63),(47,62),(48,61),(49,60),(50,59),(51,58),(52,57),(53,56)
+   ]
+ }
 ```
 <p align="right"><a href="#top">&#x25B2; back to top</a></p>
 
@@ -232,9 +248,10 @@ localhost:9000
 
 You should obtain something like this:
 ```
-{"usage":"Nupack-serve is a wrapper for NUPACK: a software suite for the analysis and design of nucleic acid structures, devices, and systems (Wolfe et al. 2017).",
-"homepage":"https://github.com/sbi-rostock/nupack-serve",
-"license":"NUPACK Software License Agreement" <-- here cut for brevity
+{
+  "usage":"Nupack-serve is a wrapper for NUPACK: a software suite for the analysis and design of nucleic acid structures, devices, and systems (Wolfe et al. 2017).",
+  "homepage":"https://github.com/sbi-rostock/nupack-serve",
+  "license":"NUPACK Software License Agreement" <-- here cut for brevity
 }
 ```
 
@@ -265,9 +282,26 @@ localhost:9000/example/mfe
 
 You should obtain something like this:
 ```
-{"license":"NUPACK Software License Agreement", <-- here cut for brevity
-"status":0, <-- exit status of the subprocess that executed mfe in the container
-"result":{"version":"3.2.2","command":"/usr/local/bin/mfe -multi","cutoff":0.001,"sequence":"ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu+uccuucauuccaccggagucug+ucucacacagaaaucgcacccgu","dangles":"1","temperature (C)":37.0,"concentration Na (M)":1.0,"concentration Mg (M)":0.0,"pseudoknots":false,"sequence length (nt)":99,"minimum free energy (Kcal/mol)":-50.563,"dot-bracket":".((((.((((.(.(((((((((((((......)))))..((((((((((((((..)))))))))).)))).......))))))))..).)))).))))","pairs":[[2,98],[3,97],[4,96],[5,95],[7,93],[8,92],[9,91],[10,90],[12,88],[14,85],[15,84],[16,83],[17,82],[18,81],[19,80],[20,79],[21,78],[22,37],[23,36],[24,35],[25,34],[26,33],[40,70],[41,69],[42,68],[43,67],[44,65],[45,64],[46,63],[47,62],[48,61],[49,60],[50,59],[51,58],[52,57],[53,56]]} <-- mfe result
+{
+  "license":"NUPACK Software License Agreement", <-- here cut for brevity
+  "status":0, <-- exit status of the subprocess that executed mfe in the container
+  "result":{ <-- mfe result
+    "version":"3.2.2",
+    "command":"/usr/local/bin/mfe -multi",
+    "cutoff":0.001,
+    "sequence":"ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu+uccuucauuccaccggagucug+ucucacacagaaaucgcacccgu",
+    "dangles":"1",
+    "temperature (C)":37.0,
+    "concentration Na (M)":1.0,
+    "concentration Mg (M)":0.0,
+    "pseudoknots":false,
+    "sequence length (nt)":99,
+    "minimum free energy (Kcal/mol)":-50.563,
+    "dot-bracket":".((((.((((.(.(((((((((((((......)))))..((((((((((((((..)))))))))).)))).......))))))))..).)))).))))",
+    "pairs":[
+      [2,98],[3,97],[4,96],[5,95],[7,93],[8,92],[9,91],[10,90],[12,88],[14,85],[15,84],[16,83],[17,82],[18,81],[19,80],[20,79],[21,78],[22,37],[23,36],[24,35],[25,34],[26,33],[40,70],[41,69],[42,68],[43,67],[44,65],[45,64],[46,63],[47,62],[48,61],[49,60],[50,59],[51,58],[52,57],[53,56]
+    ]
+  }
 }
 ```
 <p align="right"><a href="#top">&#x25B2; back to top</a></p>
