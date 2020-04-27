@@ -1,4 +1,9 @@
-# nupack-serve app
+#!/usr/bin/env python3
+
+# This module implements the nupack-serve app, which handles calls to:
+# - serve-mfe
+# - serve-complexes
+# - serve-concentrations
 
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
