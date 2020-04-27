@@ -232,8 +232,8 @@ int concentrations_results(char* provenance, int numSS, int nTotal, double kT,
   char PROVENANCE_ENDS[] = " }\n";
   char LIST_STARTS[] = "[";
   char LIST_ENDS[]   = "]";
-  char PAIR_STARTS[] = "(";
-  char PAIR_ENDS[]   = ")";
+  char PAIR_STARTS[] = "[";
+  char PAIR_ENDS[]   = "]";
   char COMMA[] = ",";
 
 
