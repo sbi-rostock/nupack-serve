@@ -76,16 +76,13 @@ def example_mfe(request):
 #
 # nupac-serve complexes
 #
-@app.route("/complexes/{target}/{mir1}/{mir2}")
-def complexes(request):
+@app.route("/complexes", methods=["POST"])
+def complexes(payload):
 
   global NUPACK_LICENSE_TERMS
-  target = request.path_params["target"]
-  mir1 = request.path_params["mir1"]
-  mir2 = request.path_params["mir2"]
   response = {}
 
-  status, result = serve_complexes.complexes(target, mir1, mir2)
+  status, result = serve_complexes.complexes(payload)
 
   # send response
   response[LICENSE] = NUPACK_LICENSE_TERMS
@@ -104,19 +101,17 @@ def complexes(request):
 @app.route("/example/complexes")
 def example_complexes(request):
 
-  global NUPACK_LICENSE_TERMS
-  target = "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu"
-  mir1 = "uccuucauuccaccggagucug"
-  mir2 = "ucucacacagaaaucgcacccgu"
-  response = {}
+  payload = {
+    SEQ_NUM: "3",
+    SEQ_TARGET: "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu",
+    SEQ_MIR1: "uccuucauuccaccggagucug",
+    SEQ_MIR2: "ucucacacagaaaucgcacccgu",
+    MAX_COMPLEX_SIZE: "1",
+    PERMUTATIONS: ["1 2 3", "1 2", "1 3"]
+  }
 
-  status, result = serve_complexes.complexes(target, mir1, mir2)
-
-  # send response
-  response[LICENSE] = NUPACK_LICENSE_TERMS
-  response[STATUS]  = status
-  response[RESULT]  = result
-  return JSONResponse(response)
+  response = complexes(json.dumps(payload))
+  return response
 
 
 
