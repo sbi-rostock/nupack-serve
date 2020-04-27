@@ -1,3 +1,6 @@
+# This module contains the constants that are shared among the nupack-serve
+# operations
+
 SEQ_NUM = "number of sequences"
 SEQ_TARGET = "target sequence"
 SEQ_MIR1 = "mir1 sequence"
