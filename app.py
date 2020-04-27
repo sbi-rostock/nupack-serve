@@ -47,7 +47,7 @@ def response(status, result):
 #
 app = Starlette(debug=True)
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def usage(request):
   r = {}
 
@@ -61,7 +61,7 @@ def usage(request):
 #
 # nupac-serve mfe
 #
-@app.route("/mfe", methods=["GET"])
+@app.route("/mfe", methods=["POST"])
 def mfe(payload):
 
   status, result = serve_mfe.mfe(payload)
@@ -76,7 +76,7 @@ def mfe(payload):
 # binding site sequence and the putatively cooperating miRNA pair hsa-miR-205
 # and hsa-miR-342-3p
 #
-@app.route("/example/mfe")
+@app.route("/example/mfe", methods=["GET"])
 def example_mfe(request):
 
   payload = {
@@ -94,7 +94,7 @@ def example_mfe(request):
 #
 # nupac-serve complexes
 #
-@app.route("/complexes", methods=["GET"])
+@app.route("/complexes", methods=["POST"])
 def complexes(payload):
 
   status, result = serve_complexes.complexes(payload)
@@ -110,7 +110,7 @@ def complexes(payload):
 # sequence and the putatively cooperating miRNA pair hsa-miR-205 and
 # hsa-miR-342-3p
 #
-@app.route("/example/complexes")
+@app.route("/example/complexes", methods=["GET"])
 def example_complexes(request):
 
   payload = {
@@ -129,7 +129,7 @@ def example_complexes(request):
 #
 # nupac-serve concentrations
 #
-@app.route("/concentrations", methods=["GET"])
+@app.route("/concentrations", methods=["POST"])
 def concentrations(payload):
 
   status, result = serve_concentrations.concentrations(payload)
@@ -144,7 +144,7 @@ def concentrations(payload):
 # aligning Human target gene E2F1's with the putatively cooperating miRNA
 # pair hsa-miR-205 and hsa-miR-342-3p
 #
-@app.route("/example/concentrations")
+@app.route("/example/concentrations", methods=["GET"])
 def example_concentrations(request):
 
   payload = {
