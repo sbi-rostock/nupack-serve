@@ -17,11 +17,17 @@ import serve_complexes
 import serve_concentrations
 
 
+USAGE    = "usage"
+HOMEPAGE = "homepage"
+LICENSE  = "license"
+STATUS   = "status"
+RESULT   = "result"
+
+# values
 NUPACK_LICENSE_LOCATION = "/tmp/nupack3.2.2/LICENSE"
 NUPACK_LICENSE_TERMS = None
-LICENSE = "license"
-STATUS  = "status"
-RESULT  = "result"
+USAGE_DESCRIPTION = "Nupack-serve is a wrapper for NUPACK: a software suite for the analysis and design of nucleic acid structures, devices, and systems (Wolfe et al. 2017)."
+HOMEPAGE_URL = "https://github.com/sbi-rostock/nupack-serve"
 
 
 
@@ -40,6 +46,15 @@ def response(status, result):
 # app
 #
 app = Starlette(debug=True)
+
+@app.route("/")
+def usage(request):
+  r = {}
+
+  r[USAGE]    = USAGE_DESCRIPTION
+  r[HOMEPAGE] = HOMEPAGE_URL
+  r[LICENSE]  = NUPACK_LICENSE_TERMS
+  return JSONResponse(r)
 
 
 
