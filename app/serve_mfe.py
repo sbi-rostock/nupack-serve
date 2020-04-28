@@ -35,8 +35,8 @@ def mfe(parameters):
     p.sendline(parameters[SEQ_MIR2])
 
     for entry in parameters[PERMUTATIONS]:
-      p.expect("Enter strand permutation")
-      p.sendline(entry)
+        p.expect("Enter strand permutation")
+        p.sendline(entry)
 
     # start log the subprocess' result
     log = io.StringIO()

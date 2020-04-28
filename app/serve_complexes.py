@@ -40,8 +40,8 @@ def complexes(parameters):
 
     # provide permutations
     for entry in parameters[PERMUTATIONS]:
-      p.expect("Enter permutation")
-      p.sendline(entry)
+        p.expect("Enter permutation")
+        p.sendline(entry)
 
     # start log the subprocess' result
     log = io.StringIO()

@@ -29,8 +29,8 @@ def concentrations(parameters):
 
     # provide entries concentrations
     for entry in range(len(parameters[LIST_CONCENTRATIONS])):
-      p.expect("Enter concentration")
-      p.sendline(parameters[LIST_CONCENTRATIONS][entry])
+        p.expect("Enter concentration")
+        p.sendline(parameters[LIST_CONCENTRATIONS][entry])
 
     # provide temperature
     p.expect("Enter temperature")
@@ -38,8 +38,8 @@ def concentrations(parameters):
 
     # provide entries ocx
     for entry in range(len(parameters[OCX])):
-      p.expect("Enter complex ocx")
-      p.sendline(parameters[OCX][entry])
+        p.expect("Enter complex ocx")
+        p.sendline(parameters[OCX][entry])
 
     # start log the subprocess' result
     log = io.StringIO()
