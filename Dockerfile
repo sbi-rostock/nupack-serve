@@ -173,8 +173,7 @@ RUN apt-get update && \
   && rm -rf /var/lib/apt/lists/*
 
 # nupack-serve dependencies
-RUN pip install aiofiles \
-  pexpect \
+RUN pip install pexpect \
   starlette \
   uvicorn \
   virtualenv
@@ -186,8 +185,8 @@ WORKDIR /tmp/nupack3.2.2/build
 RUN cmake ../ \
   && make \
   && make install
-COPY ["app.py", "serve_mfe.py", "serve_complexes.py", "/srv/"]
+ADD app /srv/
 ENV PATH="${PATH}:/srv"
 WORKDIR /srv
 USER user
-CMD ["python3", "app.py"]
+CMD ["python3", "main.py"]

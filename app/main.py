@@ -10,6 +10,7 @@ from starlette.responses import JSONResponse
 from starlette.requests import Request
 from common import *
 import json
+import uvicorn
 import serve_mfe
 import serve_complexes
 import serve_concentrations
@@ -224,4 +225,12 @@ def example_concentrations(request):
     }
     status, result = serve_concentrations.concentrations(parameters)
     return serve_result(status, result)
+
+
+
+#
+# main
+#
+if __name__ == "__main__":
+    uvicorn.run(app, host='0.0.0.0', port=8000)
 
