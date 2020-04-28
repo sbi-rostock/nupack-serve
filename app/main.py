@@ -181,7 +181,7 @@ def example_complexes(request):
 #
 # concentrations
 #
-@app.route("/concentrations", methods=["POST"])
+@app.route("/concentrations", methods=["GET"])
 async def concentrations(request):
     """
     Returns nupack-serve concentrations.
