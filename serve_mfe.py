@@ -8,9 +8,8 @@ import json
 import pexpect
 
 
-def mfe(payload):
+def mfe(parameters):
 
-    payload = json.loads(payload)
     result = None
 
     # spawn a subprocess
@@ -21,21 +20,21 @@ def mfe(payload):
 
     # provide number of sequences
     p.expect("Enter number of strands")
-    p.sendline(payload[SEQ_NUM])
+    p.sendline(parameters[SEQ_NUM])
 
     # provide target sequence
     p.expect("Enter sequence for strand type")
-    p.sendline(payload[SEQ_TARGET])
+    p.sendline(parameters[SEQ_TARGET])
 
     # provide mir1 sequence
     p.expect("Enter sequence for strand type")
-    p.sendline(payload[SEQ_MIR1])
+    p.sendline(parameters[SEQ_MIR1])
 
     # provide mir2 sequence
     p.expect("Enter sequence for strand type")
-    p.sendline(payload[SEQ_MIR2])
+    p.sendline(parameters[SEQ_MIR2])
 
-    for entry in payload[PERMUTATIONS]:
+    for entry in parameters[PERMUTATIONS]:
       p.expect("Enter strand permutation")
       p.sendline(entry)
 
