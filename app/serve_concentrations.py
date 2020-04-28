@@ -9,9 +9,8 @@ import json
 import pexpect
 
 
-def concentrations(payload):
+def concentrations(parameters):
 
-    payload = json.loads(payload)
     result = None
 
     # spawn a subprocess
@@ -22,25 +21,25 @@ def concentrations(payload):
 
     # provide number of complexes
     p.expect("Enter number of complex IDs")
-    p.sendline(str(payload[NUM_COMPLEXES]))
+    p.sendline(str(parameters[NUM_COMPLEXES]))
 
     # provide number of concentrations
     p.expect("Enter number of different concentrations")
-    p.sendline(str(len(payload[LIST_CONCENTRATIONS])))
+    p.sendline(str(len(parameters[LIST_CONCENTRATIONS])))
 
     # provide entries concentrations
-    for entry in range(len(payload[LIST_CONCENTRATIONS])):
-      p.expect("Enter concentration")
-      p.sendline(payload[LIST_CONCENTRATIONS][entry])
+    for entry in range(len(parameters[LIST_CONCENTRATIONS])):
+        p.expect("Enter concentration")
+        p.sendline(parameters[LIST_CONCENTRATIONS][entry])
 
     # provide temperature
     p.expect("Enter temperature")
-    p.sendline(payload[TEMP])
+    p.sendline(parameters[TEMP])
 
     # provide entries ocx
-    for entry in range(len(payload[OCX])):
-      p.expect("Enter complex ocx")
-      p.sendline(payload[OCX][entry])
+    for entry in range(len(parameters[OCX])):
+        p.expect("Enter complex ocx")
+        p.sendline(parameters[OCX][entry])
 
     # start log the subprocess' result
     log = io.StringIO()
