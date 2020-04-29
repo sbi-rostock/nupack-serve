@@ -25,7 +25,9 @@ NUPACK utilities.
   - [Reproducibility](#reproducibility)
 - [Installation requirements](#installation-requirements)
 - [Run nupack-serve](#run-nupack-serve)
-- [Usage example](#usage-example)
+- [Usage-examples](#usage-examples)
+  - [With a browser](#with-a-browser)
+  - [With a python script](#with-a-python-script)
 
 
 
@@ -223,8 +225,7 @@ For this reason, we provide NUPACK's functions within a docker container.
 
 The only requirement is [Docker](https://www.docker.com/), which can be
 installed in different ways depending on the underlying operative system:
-- Unix users should follow the [Docker installation for Linux](https://docs.docker.com/compose/install/#install-compose-on-linux-systems#install-compose-on-linux-systems),
-and install both Docker and Docker compose
+- Unix users should follow the [Docker installation for Linux](https://docs.docker.com/engine/install/)
 - MacOS 10.13+ users should follow the [Docker installation for Mac](https://docs.docker.com/docker-for-mac/install/)
 - Windows 10+ users, should follow the [Docker installation for Windows](https://docs.docker.com/docker-for-windows/install/)
 - For legacy systems, users can rely on the [Docker Toolbox](https://docs.docker.com/toolbox/overview/).
@@ -263,7 +264,7 @@ You can now:
 
 
 
-## Usage example
+## Usage examples
 
 Nupack-serve wraps NUPACK's *mfe*, *complexes* and *concentrations* in a python
 application which returns:
@@ -271,11 +272,22 @@ application which returns:
 2. The exit status of the subprocess which executed the called NUPACK function
 3. Results and provenance metadata in the JSON format
 
-With reference to the example [above](#practical-benefits), you can compute
-the MFE of human target gene E2F1's binding site sequence with the two
-putatively cooperating miRNAs hsa-miR-205 and hsa-miR-342-3p.  
+We provide sample executions of *nupack-serve mfe*, *nupack-serve complexes*,
+and *nupack-serve concentrations*.  
+Examples refer to the physico-chemical properties of the RNA triplex formed by:
+- Human target gene [E2F1](https://www.ncbi.nlm.nih.gov/nuccore/NM_005225)
+- Human miRNA [hsa-miR-205](http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MIMAT0000266)
+- Human miRNA [hsa-miR-342-3p](http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MIMAT0000753)
+<p align="right"><a href="#top">&#x25B2; back to top</a></p>
 
-In your browser, type:
+
+
+### With a browser
+
+Sample nupack-serve operations are available at
+``localhost:9000/example/{OPERATION}``.  
+
+To test *nupack-serve mfe*, open your browser and type:
 ```
 localhost:9000/example/mfe
 ```
@@ -304,4 +316,53 @@ You should obtain something like this:
   }
 }
 ```
+
+Change operation to test *nupack-serve complexes* and *nupack-serve
+concentrations*.
+<p align="right"><a href="#top">&#x25B2; back to top</a></p>
+
+
+
+#### With a python script
+
+Nupack-serve operations are available at
+``localhost:9000/{OPERATION}``.  
+
+To test *nupack-serve mfe*, open a file ``test.py`` and write:
+```
+#!/usr/bin/env python3
+import json
+import requests
+
+
+if __name__ == "__main__":
+
+    parameters = {
+        "number of sequences": "3",
+        "target sequence": "ccgggggugaaugugugugagcaugugugugugcauguaccggggaaugaaggu",
+        "mir1 sequence": "uccuucauuccaccggagucug",
+        "mir2 sequence": "ucucacacagaaaucgcacccgu",
+        "permutations": ["1 2 3"]
+    }
+
+    # request nupack-mfe with the defined parameterization
+    response = requests.get("http://localhost:9000/mfe", data=json.dumps(parameters))
+
+    # pretty print
+    if response.status_code == 200:
+        j = response.content.decode('utf8').replace("'", '"')
+        data = json.loads(j)
+        print(json.dumps(data, indent=4, sort_keys=True))
+```
+
+Then, launch it with:
+```
+$ ./test.py
+```
+
+You will obtain the same result as the one you obtain by pointing your browser
+to ``localhost:9000/example/mfe``.  
+
+Change operation and parameterization to test *nupack-serve complexes* and
+*nupack-serve concentrations*.
 <p align="right"><a href="#top">&#x25B2; back to top</a></p>
