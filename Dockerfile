@@ -189,4 +189,4 @@ ADD app /srv/
 ENV PATH="${PATH}:/srv"
 WORKDIR /srv
 USER user
-CMD ["python3", "main.py"]
+ENTRYPOINT ["main.py"]
