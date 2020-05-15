@@ -57,7 +57,7 @@ for each complex.
 
 ## Practical benefits
 
-Following, we illustrate the benefits of this solution using NUPACL's mfe as
+Following, we illustrate the benefits of this solution using NUPACK's mfe as
 an example.  
 
 Mfe computes the minimum free energy (MFE) secondary structure(s), of
